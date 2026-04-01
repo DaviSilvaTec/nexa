@@ -36,6 +36,12 @@ Consultar este arquivo ao iniciar o projeto, ao orientar o Codex, ao revisar a a
 - `changelog.md`
   Registro cronológico de mudanças, descobertas, limitações práticas e aprendizados do projeto com data e horário.
 
+### Frente visual
+- `frontend/visual-redesign-plan.md`
+  Plano passo a passo da trilha de redesign visual da Web App.
+- `frontend/visual-redesign-changelog.md`
+  Registro isolado das mudanças visuais feitas durante a frente de redesign.
+
 ### Branding
 - `branding/nexa.md`
   Identidade do nome NEXA, significado, posicionamento e nomenclatura interna recomendada.

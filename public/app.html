@@ -5,14 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>NEXA</title>
     <style>
+      @import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap");
+
       :root {
-        --bg: #f3efe7;
-        --panel: #fffaf1;
-        --line: #d6c8b2;
-        --ink: #1d1a17;
-        --muted: #6c6255;
-        --accent: #c66a2b;
-        --accent-strong: #9f4f19;
+        --bg: #efe6d6;
+        --bg-deep: #d7c5aa;
+        --panel: rgba(255, 250, 241, 0.9);
+        --panel-strong: #fffaf2;
+        --panel-support: rgba(251, 243, 230, 0.84);
+        --line: rgba(116, 87, 48, 0.22);
+        --line-strong: rgba(116, 87, 48, 0.42);
+        --ink: #1f1811;
+        --muted: #665948;
+        --accent: #b95e1d;
+        --accent-strong: #8f4514;
+        --accent-soft: rgba(185, 94, 29, 0.12);
+        --shadow: 0 24px 60px rgba(70, 51, 26, 0.12);
+        --shadow-soft: 0 12px 28px rgba(70, 51, 26, 0.08);
       }
 
       * {
@@ -21,40 +30,94 @@
 
       body {
         margin: 0;
-        font-family: Georgia, "Times New Roman", serif;
+        min-height: 100vh;
+        font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
         color: var(--ink);
+        line-height: 1.5;
         background:
-          radial-gradient(circle at top left, rgba(198, 106, 43, 0.18), transparent 28%),
-          linear-gradient(180deg, #f8f3ea 0%, var(--bg) 100%);
+          radial-gradient(circle at top left, rgba(185, 94, 29, 0.16), transparent 26%),
+          radial-gradient(circle at 80% 0%, rgba(108, 83, 53, 0.12), transparent 22%),
+          linear-gradient(180deg, #f7f0e4 0%, var(--bg) 56%, #eadfcb 100%);
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.32;
+        background-image:
+          linear-gradient(rgba(83, 60, 28, 0.03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(83, 60, 28, 0.03) 1px, transparent 1px);
+        background-size: 28px 28px;
       }
 
       .shell {
-        max-width: 1200px;
+        position: relative;
+        max-width: 1420px;
         margin: 0 auto;
-        padding: 32px 20px 56px;
+        padding: 28px 20px 64px;
       }
 
       .hero {
-        margin-bottom: 28px;
+        margin-bottom: 24px;
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.8fr);
+        gap: 18px;
+        align-items: stretch;
+      }
+
+      @media (max-width: 980px) {
+        .hero-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .hero-copy {
+        position: relative;
+        padding: 22px 24px 26px;
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        background:
+          linear-gradient(135deg, rgba(255, 250, 242, 0.92), rgba(249, 239, 221, 0.86));
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .hero-copy::after {
+        content: "";
+        position: absolute;
+        right: -40px;
+        top: -40px;
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(185, 94, 29, 0.16), transparent 68%);
       }
 
       .eyebrow {
         display: inline-block;
-        margin-bottom: 10px;
-        padding: 6px 10px;
-        border: 1px solid var(--line);
+        margin-bottom: 12px;
+        padding: 7px 11px;
+        border: 1px solid var(--line-strong);
         border-radius: 999px;
         font-size: 12px;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.14em;
+        font-weight: 700;
         text-transform: uppercase;
         color: var(--muted);
-        background: rgba(255, 250, 241, 0.85);
+        background: rgba(255, 250, 241, 0.86);
       }
 
       h1 {
         margin: 0 0 10px;
-        font-size: clamp(32px, 5vw, 56px);
-        line-height: 0.95;
+        font-family: "Fraunces", Georgia, serif;
+        font-size: clamp(42px, 6vw, 74px);
+        line-height: 0.9;
+        letter-spacing: -0.04em;
       }
 
       .hero p {
@@ -62,13 +125,72 @@
         margin: 0;
         color: var(--muted);
         font-size: 18px;
+        line-height: 1.55;
+      }
+
+      .hero-note {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 22px 20px;
+        border-radius: 24px;
+        border: 1px solid var(--line);
+        background:
+          linear-gradient(180deg, rgba(255, 248, 235, 0.82), rgba(241, 230, 210, 0.88));
+        box-shadow: var(--shadow-soft);
+      }
+
+      .hero-note-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        width: fit-content;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: var(--accent-strong);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .hero-note h2 {
+        margin: 0;
+        font-family: "Fraunces", Georgia, serif;
+        font-size: 24px;
+        line-height: 1;
+      }
+
+      .hero-note p {
+        margin: 0;
+        font-size: 14px;
+        color: var(--muted);
+      }
+
+      .hero-note-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .hero-note-grid span {
+        display: block;
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: rgba(255, 252, 246, 0.72);
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--ink);
       }
 
       .grid {
         display: grid;
-        grid-template-columns: minmax(320px, 1.5fr) minmax(280px, 0.9fr);
-        gap: 16px;
-        align-items: stretch;
+        grid-template-columns: minmax(0, 1.65fr) minmax(300px, 0.82fr);
+        gap: 18px;
+        align-items: start;
       }
 
       @media (max-width: 920px) {
@@ -80,27 +202,61 @@
       .panel {
         background: var(--panel);
         border: 1px solid var(--line);
-        border-radius: 18px;
-        padding: 18px;
-        box-shadow: 0 12px 32px rgba(78, 59, 35, 0.08);
+        border-radius: 24px;
+        padding: 20px;
+        box-shadow: var(--shadow-soft);
         min-height: 100%;
+        backdrop-filter: blur(8px);
+      }
+
+      .panel--primary {
+        position: relative;
+        background:
+          linear-gradient(180deg, rgba(255, 251, 243, 0.98), rgba(252, 244, 230, 0.9));
+        box-shadow: var(--shadow);
+      }
+
+      .panel--primary::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 6px;
+        border-radius: 24px 24px 0 0;
+        background: linear-gradient(90deg, var(--accent-strong), rgba(185, 94, 29, 0.18));
+      }
+
+      .panel--support {
+        background: var(--panel-support);
+      }
+
+      @media (min-width: 921px) {
+        .panel--support {
+          position: sticky;
+          top: 20px;
+        }
       }
 
       .panel h2 {
-        margin: 0 0 12px;
-        font-size: 20px;
+        margin: 0 0 10px;
+        font-family: "Fraunces", Georgia, serif;
+        font-size: 25px;
+        letter-spacing: -0.03em;
       }
 
       .panel p {
         margin: 0 0 14px;
         color: var(--muted);
-        font-size: 14px;
+        font-size: 13.5px;
+        line-height: 1.62;
       }
 
       label {
         display: block;
         margin: 0;
-        font-size: 13px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
         color: var(--muted);
       }
 
@@ -108,17 +264,30 @@
       textarea {
         width: 100%;
         margin-top: 6px;
-        padding: 11px 12px;
-        border: 1px solid var(--line);
-        border-radius: 12px;
-        background: #fff;
+        padding: 13px 14px;
+        border: 1px solid rgba(117, 86, 48, 0.28);
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.94);
         color: var(--ink);
         font: inherit;
+        transition:
+          border-color 0.18s ease,
+          box-shadow 0.18s ease,
+          transform 0.18s ease;
+      }
+
+      input:focus,
+      textarea:focus,
+      select:focus {
+        outline: none;
+        border-color: rgba(185, 94, 29, 0.56);
+        box-shadow: 0 0 0 4px rgba(185, 94, 29, 0.11);
       }
 
       textarea {
-        min-height: 280px;
+        min-height: 320px;
         resize: none;
+        line-height: 1.6;
       }
 
       .stack {
@@ -128,7 +297,7 @@
       }
 
       .session-input-panel {
-        min-height: 560px;
+        min-height: 650px;
       }
 
       .session-form-body {
@@ -154,22 +323,29 @@
         display: flex;
         flex-direction: column;
         gap: 10px;
-        padding-top: 10px;
+        padding-top: 16px;
+        border-top: 1px solid rgba(117, 86, 48, 0.16);
       }
 
       .inline-checkbox {
         display: flex;
         align-items: center;
         gap: 10px;
-        font-size: 14px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.03em;
         color: var(--muted);
+        text-transform: none;
       }
 
       .inline-select {
         display: flex;
         flex-direction: column;
         gap: 6px;
-        font-size: 14px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
         color: var(--muted);
       }
 
@@ -184,24 +360,64 @@
 
       button {
         appearance: none;
-        border: 0;
+        border: 1px solid transparent;
         border-radius: 999px;
         padding: 12px 16px;
         background: var(--accent);
         color: #fffaf1;
         font: inherit;
+        font-weight: 600;
+        letter-spacing: 0.01em;
         cursor: pointer;
+        transition:
+          transform 0.18s ease,
+          box-shadow 0.18s ease,
+          background 0.18s ease,
+          border-color 0.18s ease;
+        box-shadow: 0 10px 20px rgba(143, 69, 20, 0.16);
       }
 
       button:hover {
         background: var(--accent-strong);
+        transform: translateY(-1px);
       }
 
       button:disabled {
-        opacity: 0.5;
+        opacity: 0.42;
         cursor: not-allowed;
         pointer-events: none;
         box-shadow: none;
+        filter: saturate(0.65);
+      }
+
+      .button-pill {
+        position: relative;
+        min-height: 52px;
+        padding: 12px 20px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+      }
+
+      .button-primary {
+        background: linear-gradient(180deg, #c86a28, #a44e18);
+        border-color: rgba(103, 46, 14, 0.28);
+      }
+
+      .button-primary:hover {
+        background: linear-gradient(180deg, #b75f23, #8b4315);
+      }
+
+      .button-emphasis {
+        background: linear-gradient(180deg, #284f7a, #1e3957);
+        color: #f3f7fb;
+        border-color: rgba(22, 45, 69, 0.3);
+        box-shadow: 0 12px 24px rgba(30, 57, 87, 0.18);
+      }
+
+      .button-emphasis:hover {
+        background: linear-gradient(180deg, #23476f, #19324d);
       }
 
       .button-row {
@@ -227,12 +443,19 @@
         display: flex;
         gap: 8px;
         flex-wrap: wrap;
+        padding: 4px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: rgba(255, 252, 246, 0.66);
       }
 
       .list-tab {
         min-height: 42px;
         padding: 10px 16px;
         border-radius: 12px;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
       }
 
       .list-tab.is-active {
@@ -247,14 +470,17 @@
       .settings-panel {
         margin-top: 8px;
         padding: 14px;
-        border: 1px dashed var(--line);
-        border-radius: 14px;
-        background: rgba(255, 255, 255, 0.55);
+        border: 1px dashed rgba(117, 86, 48, 0.28);
+        border-radius: 18px;
+        background: rgba(255, 253, 249, 0.62);
       }
 
       .settings-panel summary {
         cursor: pointer;
         font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        font-size: 12px;
         color: var(--ink);
       }
 
@@ -289,20 +515,14 @@
       .settings-info strong {
         display: inline-block;
         min-width: 132px;
+        font-size: 12px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
       }
 
       .settings-grid input,
       .settings-grid select {
         margin-top: 6px;
-      }
-
-      .button-pill {
-        min-height: 52px;
-        padding: 12px 20px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        white-space: nowrap;
       }
 
       .button-row > button:not(.session-item) {
@@ -329,13 +549,14 @@
       }
 
       .button-secondary {
-        background: #efe2cf;
+        background: rgba(239, 226, 207, 0.88);
         color: var(--ink);
         border: 1px solid var(--line);
+        box-shadow: none;
       }
 
       .button-secondary:hover {
-        background: #e5d2ba;
+        background: rgba(229, 210, 186, 0.92);
       }
 
       .microphone-button {
@@ -395,7 +616,8 @@
 
       .status-line {
         margin: 0;
-        font-size: 13px;
+        font-size: 12px;
+        line-height: 1.6;
         color: var(--muted);
       }
 
@@ -404,11 +626,13 @@
         flex-wrap: wrap;
         align-items: center;
         gap: 8px 14px;
-        margin-top: 6px;
+        margin-top: 8px;
       }
 
       .session-summary-meta p {
         margin: 0;
+        font-size: 12px;
+        color: var(--muted);
       }
 
       .session-header {
@@ -434,7 +658,7 @@
       }
 
       .output {
-        margin-top: 24px;
+        margin-top: 18px;
         display: grid;
         gap: 16px;
       }
@@ -444,31 +668,240 @@
         padding: 18px;
         min-height: 220px;
         overflow: auto;
-        border-radius: 18px;
+        border-radius: 22px;
         border: 1px solid #2d2924;
         background: #181512;
         color: #f9f3e9;
         font-size: 13px;
         line-height: 1.45;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
       }
 
       .response-card {
-        background: var(--panel);
+        position: relative;
+        background:
+          linear-gradient(180deg, rgba(255, 251, 243, 0.98), rgba(251, 243, 230, 0.92));
         border: 1px solid var(--line);
-        border-radius: 18px;
-        padding: 18px;
-        box-shadow: 0 12px 32px rgba(78, 59, 35, 0.08);
+        border-radius: 26px;
+        padding: 22px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .response-card::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 5px;
+        background: linear-gradient(90deg, rgba(31, 24, 17, 0.88), rgba(185, 94, 29, 0.22));
       }
 
       .response-card h2 {
-        margin: 0 0 14px;
-        font-size: 20px;
+        margin: 0 0 16px;
+        font-family: "Fraunces", Georgia, serif;
+        font-size: 28px;
+        letter-spacing: -0.03em;
       }
 
       .response-block + .response-block {
-        margin-top: 14px;
-        padding-top: 14px;
+        margin-top: 16px;
+        padding-top: 16px;
         border-top: 1px solid var(--line);
+      }
+
+      .response-block {
+        position: relative;
+      }
+
+      .response-card > .response-block {
+        padding: 16px 18px;
+        border: 1px solid rgba(117, 86, 48, 0.12);
+        border-radius: 18px;
+        background: rgba(255, 253, 248, 0.6);
+      }
+
+      .response-card > .response-block + .response-block {
+        margin-top: 14px;
+        padding-top: 16px;
+      }
+
+      .response-block--session {
+        background:
+          linear-gradient(180deg, rgba(255, 251, 243, 0.98), rgba(247, 238, 221, 0.92));
+        border-color: rgba(117, 86, 48, 0.18);
+      }
+
+      .response-block--proposal {
+        background:
+          linear-gradient(180deg, rgba(255, 252, 247, 0.98), rgba(249, 242, 230, 0.96));
+        border-color: rgba(185, 94, 29, 0.2);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+      }
+
+      .response-block--proposal::after {
+        content: "";
+        position: absolute;
+        right: 18px;
+        top: 16px;
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(185, 94, 29, 0.11), transparent 70%);
+        pointer-events: none;
+      }
+
+      .response-block--review {
+        background:
+          linear-gradient(180deg, rgba(244, 248, 255, 0.96), rgba(232, 239, 251, 0.92));
+        border-color: rgba(72, 107, 163, 0.2);
+      }
+
+      .response-block--financial {
+        background:
+          linear-gradient(180deg, rgba(252, 248, 241, 0.94), rgba(246, 236, 216, 0.9));
+        border-color: rgba(117, 86, 48, 0.18);
+      }
+
+      .proposal-shell,
+      .review-shell {
+        position: relative;
+        margin-top: 12px;
+        border: 1px solid rgba(117, 86, 48, 0.14);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.76);
+      }
+
+      .proposal-shell {
+        background: linear-gradient(180deg, rgba(255, 253, 249, 0.98), rgba(248, 240, 227, 0.96));
+      }
+
+      .review-shell {
+        background: linear-gradient(180deg, rgba(250, 252, 255, 0.98), rgba(236, 242, 251, 0.95));
+      }
+
+      .proposal-shell-header,
+      .review-shell-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        padding: 16px 18px 14px;
+        border-bottom: 1px solid rgba(117, 86, 48, 0.1);
+      }
+
+      .proposal-shell-header {
+        background: linear-gradient(180deg, rgba(255, 248, 235, 0.9), rgba(255, 248, 235, 0.42));
+      }
+
+      .review-shell-header {
+        background: linear-gradient(180deg, rgba(236, 244, 255, 0.94), rgba(236, 244, 255, 0.46));
+      }
+
+      .proposal-shell-title,
+      .review-shell-title {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .proposal-shell-kicker,
+      .review-shell-kicker {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .proposal-shell-title strong,
+      .review-shell-title strong {
+        font-family: "Fraunces", Georgia, serif;
+        font-size: 22px;
+        line-height: 1.05;
+        letter-spacing: -0.03em;
+      }
+
+      .proposal-shell-subtitle,
+      .review-shell-subtitle {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      .proposal-meta-grid,
+      .review-meta-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        padding: 16px 18px;
+      }
+
+      .proposal-meta-card,
+      .review-meta-card {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        min-height: 100%;
+        padding: 12px 13px;
+        border: 1px solid rgba(117, 86, 48, 0.12);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.68);
+      }
+
+      .review-meta-card {
+        background: rgba(255, 255, 255, 0.72);
+      }
+
+      .proposal-meta-label,
+      .review-meta-label {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .proposal-meta-value,
+      .review-meta-value {
+        font-size: 13px;
+        line-height: 1.55;
+        color: var(--ink);
+      }
+
+      .proposal-meta-value strong,
+      .review-meta-value strong {
+        font-weight: 600;
+      }
+
+      .proposal-editor-wrap,
+      .review-editor-wrap {
+        padding: 0 18px 18px;
+      }
+
+      .proposal-editor-label,
+      .review-editor-label {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+
+      .proposal-editor-label strong,
+      .review-editor-label strong {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .proposal-editor-label span,
+      .review-editor-label span {
+        color: var(--muted);
+        font-size: 12px;
       }
 
       .response-actions {
@@ -477,15 +910,56 @@
         gap: 10px;
       }
 
+      .response-actions {
+        padding-top: 6px;
+      }
+
+      .response-actions [data-session-status-action="approve"] {
+        background: linear-gradient(180deg, #c86a28, #a44e18);
+      }
+
+      .response-actions [data-session-status-action="confirm-proposal"] {
+        background: linear-gradient(180deg, #284f7a, #1e3957);
+        border-color: rgba(22, 45, 69, 0.3);
+        color: #f3f7fb;
+        box-shadow: 0 12px 24px rgba(30, 57, 87, 0.18);
+      }
+
+      .response-actions [data-session-status-action="confirm-proposal"]:hover {
+        background: linear-gradient(180deg, #23476f, #19324d);
+      }
+
       .response-block h3 {
-        margin: 0 0 8px;
-        font-size: 15px;
+        margin: 0 0 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .response-block h3::before {
+        content: "";
+        width: 18px;
+        height: 1px;
+        background: rgba(117, 86, 48, 0.45);
       }
 
       .response-block p,
       .response-block ul {
         margin: 0;
         color: var(--ink);
+        font-size: 14px;
+        line-height: 1.7;
+      }
+
+      .response-block p + p,
+      .response-block p + ul,
+      .response-block ul + p {
+        margin-top: 8px;
       }
 
       .response-block pre {
@@ -498,22 +972,28 @@
         background: #fff;
         color: var(--ink);
         font-size: 13px;
-        line-height: 1.5;
+        line-height: 1.7;
         white-space: pre-wrap;
       }
 
       .proposal-draft-editor {
         width: 100%;
         min-height: 22rem;
-        margin-top: 10px;
+        margin-top: 0;
         resize: vertical;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(251, 247, 240, 0.95));
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
       }
 
       .proposal-draft-review-editor {
         width: 100%;
         min-height: 20rem;
-        margin-top: 10px;
+        margin-top: 0;
         resize: vertical;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(242, 247, 255, 0.94));
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
       }
 
       .proposal-draft-actions {
@@ -521,11 +1001,45 @@
         justify-content: flex-end;
         flex-wrap: wrap;
         gap: 10px;
-        margin-top: 12px;
+        margin-top: 0;
+        padding: 14px 18px 18px;
+        border-top: 1px dashed rgba(117, 86, 48, 0.18);
+        background: linear-gradient(180deg, rgba(255, 253, 249, 0.24), rgba(255, 249, 239, 0.72));
+      }
+
+      .proposal-draft-actions [data-session-status-action="save-proposal-draft"],
+      .proposal-draft-actions [data-session-status-action="accept-proposal-draft-review"] {
+        background: linear-gradient(180deg, #c86a28, #a44e18);
+        color: #fffaf1;
+        border-color: rgba(103, 46, 14, 0.28);
+        box-shadow: 0 10px 20px rgba(143, 69, 20, 0.16);
+      }
+
+      .proposal-draft-actions [data-session-status-action="save-proposal-draft"]:hover,
+      .proposal-draft-actions [data-session-status-action="accept-proposal-draft-review"]:hover {
+        background: linear-gradient(180deg, #b75f23, #8b4315);
       }
 
       .response-block ul {
         padding-left: 18px;
+      }
+
+      @media (max-width: 760px) {
+        .proposal-meta-grid,
+        .review-meta-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .proposal-shell-header,
+        .review-shell-header {
+          flex-direction: column;
+        }
+
+        .proposal-editor-label,
+        .review-editor-label {
+          flex-direction: column;
+          align-items: flex-start;
+        }
       }
 
       .muted {
@@ -536,12 +1050,13 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        padding: 6px 10px;
+        padding: 7px 11px;
         border-radius: 999px;
         border: 1px solid var(--line);
         font-size: 12px;
         font-weight: 700;
-        letter-spacing: 0.03em;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
       }
 
       .session-status-badge--review {
@@ -571,19 +1086,50 @@
 
       .session-list {
         display: grid;
-        gap: 10px;
+        gap: 12px;
+      }
+
+      .list-panel {
+        max-height: 48vh;
+        overflow: auto;
+        padding-right: 4px;
       }
 
       .session-item {
-        border-radius: 14px;
-        padding: 12px 14px;
-        background: #fff;
+        position: relative;
+        border-radius: 18px;
+        padding: 16px;
+        background: rgba(255, 254, 251, 0.92);
         border: 1px solid var(--line);
+        box-shadow: 0 10px 24px rgba(70, 51, 26, 0.05);
+        overflow: hidden;
+      }
+
+      .session-item::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: rgba(117, 86, 48, 0.2);
+      }
+
+      .session-item--model::before {
+        background: linear-gradient(180deg, #4a6d92, #27445f);
+      }
+
+      .session-item--cancelled::before {
+        background: linear-gradient(180deg, #b55c52, #86322b);
       }
 
       .session-item--ready {
-        background: #f4fbef;
-        border-color: #cfe5bf;
+        background: linear-gradient(180deg, #f2fbe9, #edf8e4);
+        border-color: #c7dfb4;
+      }
+
+      .session-item--ready::before {
+        background: linear-gradient(180deg, #77a544, #4a7d2b);
       }
 
       .session-item:hover {
@@ -599,16 +1145,73 @@
         display: block;
       }
 
+      .session-item-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        width: fit-content;
+        margin-bottom: 10px;
+        padding: 5px 9px;
+        border-radius: 999px;
+        border: 1px solid rgba(117, 86, 48, 0.16);
+        background: rgba(255, 250, 241, 0.74);
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+      }
+
+      .session-item strong {
+        font-size: 16px;
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+      }
+
       .session-item small {
-        margin-top: 4px;
+        margin-top: 2px;
+        font-size: 12px;
+        line-height: 1.5;
         color: var(--muted);
       }
 
       .session-item-preview {
         display: flex;
         flex-direction: column;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      .session-item-meta {
+        display: grid;
         gap: 6px;
-        margin-bottom: 10px;
+      }
+
+      .session-item-customer {
+        font-size: 12px;
+        font-weight: 700;
+        color: #4d4031;
+      }
+
+      .session-item-ref {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        width: fit-content;
+        padding: 5px 9px;
+        border-radius: 999px;
+        background: rgba(40, 79, 122, 0.08);
+        color: #27445f;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+      }
+
+      .session-item-preview p {
+        margin: 0;
+        font-size: 12px;
+        line-height: 1.55;
+        color: var(--muted);
       }
 
       .session-item-status {
@@ -620,37 +1223,64 @@
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
+        padding-top: 10px;
+        border-top: 1px dashed rgba(117, 86, 48, 0.16);
       }
 
       .session-item-actions button {
         min-height: 42px;
         padding: 10px 14px;
         border-radius: 12px;
+        font-size: 12px;
+        box-shadow: none;
       }
 
       .button-danger {
-        background: #f5ddd8;
+        background: linear-gradient(180deg, #f7e3df, #f0d1ca);
         color: #7b251b;
         border: 1px solid #d8b0a9;
       }
 
       .button-danger:hover {
-        background: #edcbc2;
+        background: linear-gradient(180deg, #f0d5ce, #e6beb5);
+      }
+
+      .response-card .muted {
+        color: #746553;
       }
     </style>
   </head>
   <body>
     <main class="shell">
       <section class="hero">
-        <div class="eyebrow">ALLTEC NEXA</div>
-        <h1>NEXA</h1>
-        <p>
-          Networked EXecution Agent
-        </p>
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <div class="eyebrow">ALLTEC NEXA</div>
+            <h1>NEXA</h1>
+            <p>
+              Networked EXecution Agent
+            </p>
+          </div>
+          <aside class="hero-note" aria-label="Resumo operacional da interface">
+            <span class="hero-note-label">Mesa de operação</span>
+            <div>
+              <h2>Console comercial assistido</h2>
+              <p>
+                Entrada livre, revisão técnica, consolidação comercial e fechamento operacional em um fluxo único.
+              </p>
+            </div>
+            <div class="hero-note-grid">
+              <span>Entrada em linguagem natural</span>
+              <span>Revisão guiada</span>
+              <span>Consolidação de proposta</span>
+              <span>Fechamento com Bling</span>
+            </div>
+          </aside>
+        </div>
       </section>
 
       <section class="grid">
-        <form class="panel stack session-input-panel" id="ai-agent-response-form">
+        <form class="panel panel--primary stack session-input-panel" id="ai-agent-response-form">
           <h2>Interação com o NEXA</h2>
           <div class="session-form-body">
             <p>
@@ -674,7 +1304,7 @@
                     <path d="M12 15a3 3 0 0 0 3-3V7a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3zm5-3a1 1 0 0 1 2 0 7 7 0 0 1-6 6.93V21h3a1 1 0 0 1 0 2H8a1 1 0 0 1 0-2h3v-2.07A7 7 0 0 1 5 12a1 1 0 0 1 2 0 5 5 0 0 0 10 0z"/>
                   </svg>
                 </button>
-                <button type="submit" class="button-pill" id="submit-ai-agent-button" disabled>Enviar ao NEXA</button>
+                <button type="submit" class="button-pill button-primary" id="submit-ai-agent-button" disabled>Enviar ao NEXA</button>
                 <button type="button" class="button-secondary button-pill" id="cancel-ai-agent-button">Cancelar</button>
               </div>
               <label class="inline-checkbox">
@@ -688,7 +1318,7 @@
           </div>
         </form>
 
-        <aside class="panel stack">
+        <aside class="panel panel--support stack">
           <h2>Sessões Recentes</h2>
           <p>
             Orçamentos assistidos já processados nesta interface. Clique para carregar
@@ -984,7 +1614,7 @@
           ${
             session
               ? `
-                <div class="response-block">
+                <div class="response-block response-block--session">
                   <div class="session-header">
                     <div class="session-header-copy">
                       <h3>Sessão</h3>
@@ -1014,7 +1644,7 @@
                     </button>
                     <button
                       type="button"
-                      class="button-pill"
+                      class="button-pill button-primary"
                       data-session-status-action="approve"
                       data-session-id="${escapeHtml(session.id || '')}"
                       ${sessionActionState.approveDisabled ? 'disabled' : ''}
@@ -1032,7 +1662,7 @@
                     </button>
                     <button
                       type="button"
-                      class="button-secondary button-pill"
+                      class="button-pill button-emphasis"
                       data-session-status-action="confirm-proposal"
                       data-session-id="${escapeHtml(session.id || '')}"
                       ${sessionActionState.confirmDisabled ? 'disabled' : ''}
@@ -1142,7 +1772,7 @@
             <h3>Sugestões</h3>
             ${renderList(aiInterpretation?.suggestions || localResponse?.suggestions || [])}
           </div>
-          <div class="response-block">
+          <div class="response-block response-block--financial">
             <h3>Resumo Financeiro dos Materiais</h3>
             <p><strong>Venda:</strong> ${Number(displayFinancialSummary?.saleTotal || 0).toFixed(2)}</p>
             <p><strong>Custo:</strong> ${Number(displayFinancialSummary?.costTotal || 0).toFixed(2)}</p>
@@ -1156,49 +1786,87 @@
           ${
             proposalDraft
               ? `
-                <div class="response-block">
+                <div class="response-block response-block--proposal">
                   <h3>Proposta Comercial</h3>
-                  <p><strong>Título:</strong> ${escapeHtml(proposalDraft.title || '')}</p>
-                  <p><strong>Gerada em:</strong> ${escapeHtml(proposalDraft.generatedAt || '')}</p>
-                  <p><strong>Cliente Bling:</strong> ${
-                    resolvedCustomer?.id
-                      ? `${escapeHtml(resolvedCustomer.name || 'Resolvido')} <span class="muted">(#${escapeHtml(String(resolvedCustomer.id || ''))})</span>`
-                      : customerResolutionCandidate
-                        ? '<span class="muted">Ainda não resolvido automaticamente. O NEXA tentará confirmar o cliente no envio ao Bling.</span>'
-                        : '<span class="muted">Não resolvido</span>'
-                  }</p>
-                  ${
-                    blingQuoteReference?.id && !blingQuote?.id
-                      ? `
-                        <p><strong>Editando proposta Bling:</strong> #${escapeHtml(String(blingQuoteReference.number || 'sem número'))} <span class="muted">(ID ${escapeHtml(String(blingQuoteReference.id || ''))})</span></p>
-                      `
-                      : ''
-                  }
-                  ${
-                    proposalConfirmation?.confirmedAt
-                      ? `<p><strong>Confirmada em:</strong> ${escapeHtml(proposalConfirmation.confirmedAt || '')}</p>`
-                      : ''
-                  }
-                  ${
-                    blingQuote?.id
-                      ? `
-                        <p><strong>Bling ID:</strong> ${escapeHtml(String(blingQuote.id || ''))}</p>
-                        <p><strong>Número:</strong> ${escapeHtml(String(blingQuote.number || ''))}</p>
-                      `
-                      : ''
-                  }
+                  <div class="proposal-shell">
+                    <div class="proposal-shell-header">
+                      <div class="proposal-shell-title">
+                        <span class="proposal-shell-kicker">Modo de conferência</span>
+                        <strong>${escapeHtml(proposalDraft.title || 'Proposta comercial')}</strong>
+                        <p class="proposal-shell-subtitle">Revise texto, cliente e composição antes do envio operacional ao Bling.</p>
+                      </div>
+                      <div class="session-status-badge ${sessionActionState.badgeClass}">
+                        ${escapeHtml(sessionStatus)}
+                      </div>
+                    </div>
+                    <div class="proposal-meta-grid">
+                      <div class="proposal-meta-card">
+                        <span class="proposal-meta-label">Geração</span>
+                        <div class="proposal-meta-value">${escapeHtml(proposalDraft.generatedAt || 'Não registrada')}</div>
+                      </div>
+                      <div class="proposal-meta-card">
+                        <span class="proposal-meta-label">Cliente Bling:</span>
+                        <div class="proposal-meta-value">${
+                          resolvedCustomer?.id
+                            ? `${escapeHtml(resolvedCustomer.name || 'Resolvido')} <span class="muted">(#${escapeHtml(String(resolvedCustomer.id || ''))})</span>`
+                            : customerResolutionCandidate
+                              ? '<span class="muted">Ainda não resolvido automaticamente. O NEXA tentará confirmar o cliente no envio ao Bling.</span>'
+                              : '<span class="muted">Não resolvido</span>'
+                        }</div>
+                      </div>
+                      ${
+                        blingQuoteReference?.id && !blingQuote?.id
+                          ? `
+                            <div class="proposal-meta-card">
+                              <span class="proposal-meta-label">Proposta em edição</span>
+                              <div class="proposal-meta-value">#${escapeHtml(String(blingQuoteReference.number || 'sem número'))} <span class="muted">(ID ${escapeHtml(String(blingQuoteReference.id || ''))})</span></div>
+                            </div>
+                          `
+                          : ''
+                      }
+                      ${
+                        proposalConfirmation?.confirmedAt
+                          ? `
+                            <div class="proposal-meta-card">
+                              <span class="proposal-meta-label">Confirmação</span>
+                              <div class="proposal-meta-value">${escapeHtml(proposalConfirmation.confirmedAt || '')}</div>
+                            </div>
+                          `
+                          : ''
+                      }
+                      ${
+                        blingQuote?.id
+                          ? `
+                            <div class="proposal-meta-card">
+                              <span class="proposal-meta-label">Bling ID</span>
+                              <div class="proposal-meta-value">${escapeHtml(String(blingQuote.id || ''))}</div>
+                            </div>
+                            <div class="proposal-meta-card">
+                              <span class="proposal-meta-label">Número</span>
+                              <div class="proposal-meta-value">${escapeHtml(String(blingQuote.number || ''))}</div>
+                            </div>
+                          `
+                          : ''
+                      }
+                    </div>
                   ${
                     sessionStatus === 'Proposta comercial pronta'
                       ? `
-                        <textarea class="proposal-draft-editor" data-proposal-draft-editor data-session-id="${escapeHtml(session.id || '')}">${escapeHtml(proposalDraft.commercialBody || '')}</textarea>
-                        <label class="inline-select">
-                          Modelo de IA para revisão
-                          <select id="proposal-review-model-selector">
-                            <option>gpt-5-nano</option>
-                            <option>gpt-5.4-mini</option>
-                            <option>gpt-5.4</option>
-                          </select>
-                        </label>
+                        <div class="proposal-editor-wrap">
+                          <div class="proposal-editor-label">
+                            <strong>Corpo comercial em edição</strong>
+                            <span>Este texto será a base do envio ao Bling.</span>
+                          </div>
+                          <textarea class="proposal-draft-editor" data-proposal-draft-editor data-session-id="${escapeHtml(session.id || '')}">${escapeHtml(proposalDraft.commercialBody || '')}</textarea>
+                          <label class="inline-select">
+                            Modelo de IA para revisão
+                            <select id="proposal-review-model-selector">
+                              <option>gpt-5-nano</option>
+                              <option>gpt-5.4-mini</option>
+                              <option>gpt-5.4</option>
+                            </select>
+                          </label>
+                        </div>
                         <div class="proposal-draft-actions">
                           <button
                             type="button"
@@ -1210,7 +1878,7 @@
                           </button>
                           <button
                             type="button"
-                            class="button-secondary button-pill"
+                            class="button-pill button-primary"
                             data-session-status-action="save-proposal-draft"
                             data-session-id="${escapeHtml(session.id || '')}"
                           >
@@ -1218,8 +1886,17 @@
                           </button>
                         </div>
                       `
-                      : `<pre>${escapeHtml(proposalDraft.commercialBody || '')}</pre>`
+                      : `
+                        <div class="proposal-editor-wrap">
+                          <div class="proposal-editor-label">
+                            <strong>Corpo comercial consolidado</strong>
+                            <span>Versão pronta para leitura e conferência.</span>
+                          </div>
+                          <pre>${escapeHtml(proposalDraft.commercialBody || '')}</pre>
+                        </div>
+                      `
                   }
+                  </div>
                 </div>
               `
               : ''
@@ -1227,32 +1904,58 @@
           ${
             proposalDraftReview
               ? `
-                <div class="response-block">
+                <div class="response-block response-block--review">
                   <h3>Revisão do Rascunho</h3>
-                  <p><strong>Revisado em:</strong> ${escapeHtml(proposalDraftReview.reviewedAt || '')}</p>
-                  <p><strong>Confiança:</strong> ${escapeHtml(proposalDraftReview.confidence || 'baixo')}</p>
-                  <p>${escapeHtml(proposalDraftReview.summary || '')}</p>
-                  <p><strong>Notas de ajuste:</strong></p>
-                  ${renderList(proposalDraftReview.adjustmentNotes || [])}
-                  <p><strong>Sugestão ajustada:</strong></p>
-                  <textarea class="proposal-draft-review-editor" data-proposal-draft-review-editor data-session-id="${escapeHtml(session.id || '')}">${escapeHtml(proposalDraftReview.suggestedCommercialBody || '')}</textarea>
-                  <div class="proposal-draft-actions">
-                    <button
-                      type="button"
-                      class="button-secondary button-pill"
-                      data-session-status-action="reject-proposal-draft-review"
-                      data-session-id="${escapeHtml(session.id || '')}"
-                    >
-                      Rejeitar revisão
-                    </button>
-                    <button
-                      type="button"
-                      class="button-secondary button-pill"
-                      data-session-status-action="accept-proposal-draft-review"
-                      data-session-id="${escapeHtml(session.id || '')}"
-                    >
-                      Aceitar revisão
-                    </button>
+                  <div class="review-shell">
+                    <div class="review-shell-header">
+                      <div class="review-shell-title">
+                        <span class="review-shell-kicker">Leitura de ajuste</span>
+                        <strong>Rascunho revisado pelo NEXA</strong>
+                        <p class="review-shell-subtitle">${escapeHtml(proposalDraftReview.summary || '')}</p>
+                      </div>
+                      <div class="session-status-badge session-status-badge--proposal">
+                        Revisão pendente
+                      </div>
+                    </div>
+                    <div class="review-meta-grid">
+                      <div class="review-meta-card">
+                        <span class="review-meta-label">Revisado em</span>
+                        <div class="review-meta-value">${escapeHtml(proposalDraftReview.reviewedAt || '')}</div>
+                      </div>
+                      <div class="review-meta-card">
+                        <span class="review-meta-label">Confiança</span>
+                        <div class="review-meta-value">${escapeHtml(proposalDraftReview.confidence || 'baixo')}</div>
+                      </div>
+                      <div class="review-meta-card" style="grid-column: 1 / -1;">
+                        <span class="review-meta-label">Notas de ajuste</span>
+                        <div class="review-meta-value">${renderList(proposalDraftReview.adjustmentNotes || [])}</div>
+                      </div>
+                    </div>
+                    <div class="review-editor-wrap">
+                      <div class="review-editor-label">
+                        <strong>Sugestão ajustada</strong>
+                        <span>Você pode editar antes de aceitar ou rejeitar.</span>
+                      </div>
+                      <textarea class="proposal-draft-review-editor" data-proposal-draft-review-editor data-session-id="${escapeHtml(session.id || '')}">${escapeHtml(proposalDraftReview.suggestedCommercialBody || '')}</textarea>
+                    </div>
+                    <div class="proposal-draft-actions">
+                      <button
+                        type="button"
+                        class="button-secondary button-pill"
+                        data-session-status-action="reject-proposal-draft-review"
+                        data-session-id="${escapeHtml(session.id || '')}"
+                      >
+                        Rejeitar revisão
+                      </button>
+                      <button
+                        type="button"
+                        class="button-pill button-primary"
+                        data-session-status-action="accept-proposal-draft-review"
+                        data-session-id="${escapeHtml(session.id || '')}"
+                      >
+                        Aceitar revisão
+                      </button>
+                    </div>
                   </div>
                 </div>
               `
@@ -2041,18 +2744,21 @@
 
                 return `
                 <article
-                  class="session-item ${(session.status || 'Aguardando aprovacao') === 'Finalizada' ? 'session-item--ready' : ''}"
+                  class="session-item ${(session.status || 'Aguardando aprovacao') === 'Finalizada' ? 'session-item--ready' : ''} ${(session.status || 'Aguardando aprovacao') === 'Cancelado' ? 'session-item--cancelled' : ''}"
                   data-session-id="${escapeHtml(session.id)}"
                   data-session-created-at="${escapeHtml(session.createdAt || '')}"
                 >
                   <div class="session-item-preview">
+                    <span class="session-item-kicker">Sessão assistida</span>
                     <strong>${escapeHtml(buildSessionCardTitle(session))}</strong>
-                    <small>${escapeHtml(session.updatedAt || '')}</small>
-                    <small>${escapeHtml(buildCustomerLabel(session.customerQuery || ''))}</small>
-                    <div class="session-status-badge session-item-status ${actionState.badgeClass}">
-                      ${escapeHtml(session.status || 'Aguardando aprovacao')}
+                    <div class="session-item-meta">
+                      <small>${escapeHtml(session.updatedAt || '')}</small>
+                      <span class="session-item-customer">${escapeHtml(buildCustomerLabel(session.customerQuery || ''))}</span>
+                      <div class="session-status-badge session-item-status ${actionState.badgeClass}">
+                        ${escapeHtml(session.status || 'Aguardando aprovacao')}
+                      </div>
+                      <small>${escapeHtml(truncateText(session.originalText || '', 96))}</small>
                     </div>
-                    <small>${escapeHtml(truncateText(session.originalText || '', 96))}</small>
                   </div>
                   <div class="session-item-actions">
                     ${
@@ -2180,17 +2886,20 @@
           modelList.innerHTML = models
             .map(
               (model) => `
-                <article class="session-item session-item--ready" data-model-id="${escapeHtml(model.id)}">
+                <article class="session-item session-item--ready session-item--model" data-model-id="${escapeHtml(model.id)}">
                   <div class="session-item-preview">
+                    <span class="session-item-kicker">Modelo salvo</span>
                     <strong>${escapeHtml(model.title || 'Modelo sem título')}</strong>
-                    <small>${escapeHtml(model.updatedAt || '')}</small>
-                    <small>${escapeHtml(buildCustomerLabel(model.customerQuery || ''))}</small>
-                    ${
-                      model.blingQuoteNumber
-                        ? `<small>Proposta Bling #${escapeHtml(String(model.blingQuoteNumber))}</small>`
-                        : ''
-                    }
-                    <small>${escapeHtml(truncateText(model.previewText || '', 120))}</small>
+                    <div class="session-item-meta">
+                      <small>${escapeHtml(model.updatedAt || '')}</small>
+                      <span class="session-item-customer">${escapeHtml(buildCustomerLabel(model.customerQuery || ''))}</span>
+                      ${
+                        model.blingQuoteNumber
+                          ? `<span class="session-item-ref">Proposta Bling #${escapeHtml(String(model.blingQuoteNumber))}</span>`
+                          : ''
+                      }
+                      <small>${escapeHtml(truncateText(model.previewText || '', 120))}</small>
+                    </div>
                   </div>
                   <div class="session-item-actions">
                     <button type="button" class="button-secondary" data-model-action="use" data-model-id="${escapeHtml(model.id)}">Usar modelo</button>
