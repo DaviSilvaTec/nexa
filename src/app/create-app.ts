@@ -669,6 +669,7 @@ export function createApp(dependencies?: Partial<AppDependencies>): FastifyInsta
     const params = request.params as { sessionId: string };
     const body = request.body as {
       commercialBody?: string;
+      reviewInstructions?: string;
     };
 
     try {
@@ -676,6 +677,7 @@ export function createApp(dependencies?: Partial<AppDependencies>): FastifyInsta
         {
           sessionId: params.sessionId,
           commercialBody: body.commercialBody ?? '',
+          reviewInstructions: body.reviewInstructions ?? '',
         },
         {
           aiBudgetSessionRepository: appDependencies.aiBudgetSessionRepository,

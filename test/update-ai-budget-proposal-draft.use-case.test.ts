@@ -161,6 +161,7 @@ test('updates a generated proposal draft while the session is in proposal review
     {
       sessionId: 'session-1',
       commercialBody: 'Cliente: Posto Alonso\n\nVersão ajustada manualmente',
+      reviewInstructions: 'Remover uma observação duplicada e revisar a abertura.',
       updatedAt: new Date('2026-03-31T12:20:00.000Z'),
     },
         {
@@ -187,6 +188,12 @@ test('updates a generated proposal draft while the session is in proposal review
     (result.session.payload as { proposalDraft?: { editedAt?: string } }).proposalDraft
       ?.editedAt,
     '2026-03-31T12:20:00.000Z',
+  );
+  assert.equal(
+    (
+      result.session.payload as { proposalDraft?: { reviewInstructions?: string } }
+    ).proposalDraft?.reviewInstructions,
+    'Remover uma observação duplicada e revisar a abertura.',
   );
 });
 

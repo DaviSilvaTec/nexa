@@ -883,6 +883,60 @@
         max-width: 66ch;
       }
 
+      .inline-audio-field {
+        display: grid;
+        gap: 10px;
+        margin-top: 16px;
+        padding: 16px 18px;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: rgba(255, 251, 245, 0.9);
+      }
+
+      .inline-audio-field-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+      }
+
+      .inline-audio-field-copy {
+        display: grid;
+        gap: 4px;
+      }
+
+      .inline-audio-field-copy strong {
+        font-size: 14px;
+        letter-spacing: 0.01em;
+      }
+
+      .inline-audio-field-copy span {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .inline-audio-controls {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        flex-shrink: 0;
+      }
+
+      .inline-audio-controls .microphone-button {
+        width: 42px;
+        height: 42px;
+      }
+
+      .inline-audio-status {
+        margin: 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .inline-audio-textarea {
+        min-height: 124px;
+      }
+
       .session-summary-meta {
         display: flex;
         flex-wrap: wrap;
@@ -2800,6 +2854,39 @@
                               <option>gpt-5.4</option>
                             </select>
                           </label>
+                          <div class="inline-audio-field">
+                            <div class="inline-audio-field-header">
+                              <div class="inline-audio-field-copy">
+                                <strong>Instruções para revisão</strong>
+                                <span>Informe correções, remoções, acréscimos ou ajustes antes de mandar o rascunho para revisão.</span>
+                              </div>
+                              <div class="inline-audio-controls">
+                                <button
+                                  type="button"
+                                  class="microphone-button microphone-button--idle"
+                                  data-speech-target="proposal-review-instructions-${escapeHtml(session.id || '')}"
+                                  aria-label="Iniciar captura de voz para instruções de revisão"
+                                  title="Clique para ditar instruções de revisão"
+                                >
+                                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path
+                                      fill="currentColor"
+                                      d="M12 15a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm5-3a1 1 0 1 1 2 0 7 7 0 0 1-6 6.92V22h2a1 1 0 1 1 0 2H9a1 1 0 1 1 0-2h2v-3.08A7 7 0 0 1 5 12a1 1 0 0 1 2 0 5 5 0 1 0 10 0Z"
+                                    />
+                                  </svg>
+                                </button>
+                                <p class="inline-audio-status" id="proposal-review-instructions-${escapeHtml(session.id || '')}-status">
+                                  Voz inativa. Clique no microfone para começar.
+                                </p>
+                              </div>
+                            </div>
+                            <textarea
+                              class="proposal-draft-editor inline-audio-textarea"
+                              data-proposal-review-instructions-editor
+                              data-session-id="${escapeHtml(session.id || '')}"
+                              id="proposal-review-instructions-${escapeHtml(session.id || '')}"
+                            >${escapeHtml(proposalDraft.reviewInstructions || '')}</textarea>
+                          </div>
                         </div>
                         <div class="proposal-draft-actions">
                           <button
@@ -2903,6 +2990,34 @@
         if (reviewModelSelector instanceof HTMLSelectElement) {
           reviewModelSelector.value = getDefaultAiModel();
         }
+
+        nexaResponse
+          .querySelectorAll('[data-speech-target]')
+          .forEach((speechTrigger) => {
+            const targetId = speechTrigger.getAttribute('data-speech-target');
+
+            if (!targetId) {
+              return;
+            }
+
+            const textArea = document.getElementById(targetId);
+            const status = document.getElementById(`${targetId}-status`);
+
+            if (
+              speechTrigger instanceof HTMLButtonElement &&
+              textArea instanceof HTMLTextAreaElement &&
+              status instanceof HTMLElement
+            ) {
+              setupSpeechControl({
+                button: speechTrigger,
+                statusElement: status,
+                textArea,
+                idleMessage: 'Voz inativa. Clique no microfone para começar.',
+                completedMessage:
+                  'Captura encerrada. Revise as instruções antes de mandar para revisão.',
+              });
+            }
+          });
 
         nexaResponse
           .querySelectorAll('[data-session-status-action]')
@@ -3077,7 +3192,11 @@
                   const editor = nexaResponse.querySelector(
                     `[data-proposal-draft-editor][data-session-id="${sessionId}"]`,
                   );
+                  const reviewInstructionsEditor = nexaResponse.querySelector(
+                    `[data-proposal-review-instructions-editor][data-session-id="${sessionId}"]`,
+                  );
                   const commercialBody = editor?.value || '';
+                  const reviewInstructions = reviewInstructionsEditor?.value || '';
 
                   output.textContent = `Salvando rascunho comercial da sessão ${sessionId}...`;
                   const response = await fetch(
@@ -3089,6 +3208,7 @@
                       },
                       body: JSON.stringify({
                         commercialBody,
+                        reviewInstructions,
                       }),
                     },
                   );
@@ -4008,12 +4128,17 @@
         }
       }
 
-      function setupSpeechInput() {
+      function setupSpeechControl({
+        button,
+        statusElement,
+        textArea,
+        idleMessage,
+        completedMessage,
+      }) {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
-          speechStatus.textContent =
-            'Reconhecimento de voz não suportado neste navegador.';
-          speechButton.disabled = true;
+          statusElement.textContent = 'Reconhecimento de voz não suportado neste navegador.';
+          button.disabled = true;
           return;
         }
 
@@ -4022,28 +4147,27 @@
         recognition.interimResults = true;
         recognition.continuous = true;
 
-        const form = document.getElementById('ai-agent-response-form');
-        const textArea = form.querySelector('textarea[name="originalText"]');
         let finalTranscript = '';
         let shouldKeepListening = false;
         let manuallyStopping = false;
         let recognitionActive = false;
 
         function renderSpeechButton() {
-          speechButton.classList.toggle('microphone-button--idle', !shouldKeepListening);
-          speechButton.classList.toggle('microphone-button--listening', shouldKeepListening);
-          speechButton.setAttribute(
+          button.classList.toggle('microphone-button--idle', !shouldKeepListening);
+          button.classList.toggle('microphone-button--listening', shouldKeepListening);
+          button.setAttribute(
             'aria-label',
             shouldKeepListening ? 'Terminar captura de voz' : 'Iniciar captura de voz',
           );
-          speechButton.title = shouldKeepListening
+          button.title = shouldKeepListening
             ? 'Clique para terminar a captura'
             : 'Clique para começar a falar';
         }
 
         recognition.onstart = () => {
           recognitionActive = true;
-          speechStatus.textContent = 'Ouvindo... clique novamente no microfone para terminar.';
+          statusElement.textContent =
+            'Ouvindo... clique novamente no microfone para terminar.';
         };
 
         recognition.onresult = (event) => {
@@ -4066,14 +4190,15 @@
           recognitionActive = false;
           manuallyStopping = false;
           renderSpeechButton();
-          speechStatus.textContent = `Falha no reconhecimento de voz: ${event.error}.`;
+          statusElement.textContent = `Falha no reconhecimento de voz: ${event.error}.`;
         };
 
         recognition.onend = () => {
           recognitionActive = false;
 
           if (shouldKeepListening && !manuallyStopping) {
-            speechStatus.textContent = 'A escuta foi retomada automaticamente. Continue falando.';
+            statusElement.textContent =
+              'A escuta foi retomada automaticamente. Continue falando.';
             setTimeout(() => {
               if (shouldKeepListening && !recognitionActive) {
                 recognition.start();
@@ -4085,17 +4210,17 @@
           manuallyStopping = false;
           shouldKeepListening = false;
           renderSpeechButton();
-          speechStatus.textContent = textArea.value.trim()
-            ? 'Captura encerrada. Revise o texto antes de enviar ao NEXA.'
-            : 'Voz inativa. Clique no microfone para começar.';
+          statusElement.textContent = textArea.value.trim()
+            ? completedMessage
+            : idleMessage;
         };
 
-        speechButton.addEventListener('click', () => {
+        button.addEventListener('click', () => {
           if (shouldKeepListening) {
             manuallyStopping = true;
             shouldKeepListening = false;
             renderSpeechButton();
-            speechStatus.textContent = 'Encerrando captura de voz...';
+            statusElement.textContent = 'Encerrando captura de voz...';
             recognition.stop();
             return;
           }
@@ -4108,6 +4233,27 @@
         });
 
         renderSpeechButton();
+      }
+
+      function setupSpeechInput() {
+        const form = document.getElementById('ai-agent-response-form');
+        const textArea = form.querySelector('textarea[name="originalText"]');
+
+        if (
+          !(speechButton instanceof HTMLButtonElement) ||
+          !(speechStatus instanceof HTMLElement) ||
+          !(textArea instanceof HTMLTextAreaElement)
+        ) {
+          return;
+        }
+
+        setupSpeechControl({
+          button: speechButton,
+          statusElement: speechStatus,
+          textArea,
+          idleMessage: 'Voz inativa. Clique no microfone para começar.',
+          completedMessage: 'Captura encerrada. Revise o texto antes de enviar ao NEXA.',
+        });
       }
 
       function responseDateFromSessionCard(sessionCard) {

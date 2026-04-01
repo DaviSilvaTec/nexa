@@ -12,6 +12,7 @@ import { updateCommercialBodyMaterialSection } from './update-commercial-body-ma
 interface UpdateAiBudgetProposalDraftInput {
   sessionId: string;
   commercialBody: string;
+  reviewInstructions?: string;
   updatedAt?: Date;
 }
 
@@ -50,6 +51,7 @@ export async function updateAiBudgetProposalDraft(
 
   const updatedAt = (input.updatedAt ?? new Date()).toISOString();
   const draftCommercialBody = input.commercialBody.trim();
+  const reviewInstructions = (input.reviewInstructions ?? '').trim();
   const parsedMaterialItems = extractMaterialItemsFromCommercialBody(draftCommercialBody);
   const expandedMaterialCandidates = await buildExpandedMaterialCandidates(
     parsedMaterialItems,
@@ -98,6 +100,7 @@ export async function updateAiBudgetProposalDraft(
         ...proposalDraft,
         ...(extractedCustomerQuery ? { customerQuery: extractedCustomerQuery } : {}),
         commercialBody,
+        reviewInstructions,
         financialSummary,
         materialItems: reconciledMaterialItems,
         ...(materialReconciliation

@@ -412,6 +412,7 @@ Função:
 - lê a interpretação atual;
 - monta o corpo comercial;
 - consolida materiais e serviços exibidos no orçamento;
+- inicializa `reviewInstructions` como string vazia;
 - registra o rascunho na sessão.
 
 ### 2. Edição manual
@@ -420,9 +421,24 @@ Caso de uso:
 
 Função:
 - salva o novo corpo do rascunho;
+- salva também `proposalDraft.reviewInstructions`;
 - relê seções relevantes do texto;
 - atualiza materiais reconciliados;
 - ajusta partes do payload derivadas do texto salvo.
+
+Comportamento real da Web App nessa etapa:
+- enquanto a sessão está em `Proposta comercial pronta`, o bloco do rascunho mostra:
+  - o editor principal do corpo comercial;
+  - o seletor de modelo para revisão;
+  - um campo adicional `Instruções para revisão`;
+  - um microfone próprio para ditar essas instruções.
+- o campo adicional usa o mesmo mecanismo de voz do formulário principal, mas grava o texto diretamente na `textarea` de instruções.
+- ao clicar `Salvar mudanças`, o front envia:
+  - `commercialBody`
+  - `reviewInstructions`
+
+Observação importante:
+- nesta etapa o campo já é persistido no `proposalDraft`, mas ainda não entra no payload enviado para `reviewProposalDraft`; isso fica para a próxima etapa do plano.
 
 ### 3. Revisão assistida
 Caso de uso:

@@ -929,6 +929,7 @@ test('updates a generated proposal draft through the HTTP API', async () => {
     url: `/local/ai-sessions/${sessionId}/proposal-draft/save`,
     payload: {
       commercialBody: 'Versão ajustada manualmente',
+      reviewInstructions: 'Corrigir a redação e remover um item opcional.',
     },
   });
 
@@ -936,6 +937,10 @@ test('updates a generated proposal draft through the HTTP API', async () => {
   assert.equal(
     saved.json().session.payload.proposalDraft.commercialBody,
     'Versão ajustada manualmente',
+  );
+  assert.equal(
+    saved.json().session.payload.proposalDraft.reviewInstructions,
+    'Corrigir a redação e remover um item opcional.',
   );
 
   await app.close();

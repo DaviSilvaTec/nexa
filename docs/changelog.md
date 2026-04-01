@@ -26,6 +26,21 @@ Consultar este arquivo ao:
 
 ## ENTRADAS
 
+### 2026-04-01 15:00:00 -03
+- __Rascunho comercial ganhou campo persistido de instruções para revisão com ditado próprio__ ✓
+- A área de `Proposta Comercial` agora renderiza um campo adicional `Instruções para revisão` logo abaixo do rascunho principal quando a sessão está em `Proposta comercial pronta`.
+- Esse campo possui microfone próprio, usando a mesma infraestrutura de reconhecimento de voz da entrada principal, mas com mensagens específicas para orientar a captura das instruções de ajuste.
+- O salvamento do rascunho passou a persistir `reviewInstructions` dentro de `proposalDraft`, sem depender do bloco temporário de revisão assistida.
+- A geração inicial do rascunho agora já cria `proposalDraft.reviewInstructions` como string vazia, para manter a estrutura persistida estável desde o primeiro `proposal-draft`.
+- Nesta etapa, o campo já existe na interface e já é salvo no backend, mas ainda não altera o payload enviado para a revisão assistida; essa integração fica na etapa seguinte.
+- Arquivos impactados:
+- [app.html](/home/usuario/workspace/Antigravity/2026/NeXa/public/app.html)
+- [create-app.ts](/home/usuario/workspace/Antigravity/2026/NeXa/src/app/create-app.ts)
+- [generate-ai-budget-proposal-draft.ts](/home/usuario/workspace/Antigravity/2026/NeXa/src/application/use-cases/generate-ai-budget-proposal-draft.ts)
+- [update-ai-budget-proposal-draft.ts](/home/usuario/workspace/Antigravity/2026/NeXa/src/application/use-cases/update-ai-budget-proposal-draft.ts)
+- [update-ai-budget-proposal-draft.use-case.test.ts](/home/usuario/workspace/Antigravity/2026/NeXa/test/update-ai-budget-proposal-draft.use-case.test.ts)
+- [ai-assisted-agent-response-route.test.ts](/home/usuario/workspace/Antigravity/2026/NeXa/test/ai-assisted-agent-response-route.test.ts)
+
 ### 2026-04-01 14:05:00 -03
 - __Painel de Configurações passou a ter comportamento real e persistido na Web App__ ✓
 - O grupo `Log` agora controla de fato a visibilidade do console lateral local e revela o seletor `Nível de log`, que filtra a saída por severidade entre `debug`, `warn` e `error`.

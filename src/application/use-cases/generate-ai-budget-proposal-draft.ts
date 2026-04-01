@@ -25,6 +25,7 @@ interface ProposalDraftSectionItem {
 interface GeneratedProposalDraft {
   generatedAt: string;
   title: string;
+  reviewInstructions: string;
   customerQuery: string | null;
   resolvedCustomer: {
     id: string;
@@ -139,6 +140,7 @@ function buildProposalDraft(
   return {
     generatedAt,
     title: `Proposta comercial - ${resolvedCustomer?.name ?? session.customerQuery ?? 'Cliente não identificado'}`,
+    reviewInstructions: '',
     customerQuery: session.customerQuery,
     resolvedCustomer,
     budgetDescription,
