@@ -807,6 +807,27 @@
         .session-actions .button-pill {
           width: 100%;
         }
+
+        .response-card-header,
+        .bling-preview-banner,
+        .bling-preview-header {
+          display: grid;
+          grid-template-columns: 1fr;
+        }
+
+        .response-view-tabs {
+          width: 100%;
+          justify-content: stretch;
+        }
+
+        .response-view-tab {
+          flex: 1 1 0;
+          justify-content: center;
+        }
+
+        .bling-preview-summary {
+          grid-template-columns: 1fr 1fr;
+        }
       }
 
       .button-secondary {
@@ -1021,6 +1042,292 @@
         font-family: "Fraunces", Georgia, serif;
         font-size: 28px;
         letter-spacing: -0.03em;
+      }
+
+      .response-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+
+      .response-card-header h2 {
+        margin: 0;
+      }
+
+      .response-view-tabs {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: rgba(255, 252, 246, 0.72);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.76);
+      }
+
+      .response-view-tab {
+        min-height: 42px;
+        padding: 10px 16px;
+        border-radius: 14px;
+        background: transparent;
+        color: var(--muted);
+        border: 0;
+        box-shadow: none;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .response-view-tab:hover {
+        transform: none;
+        background: rgba(226, 209, 183, 0.72);
+        color: var(--ink);
+      }
+
+      .response-view-tab.is-active {
+        background: linear-gradient(180deg, #c86a28, #a44e18);
+        color: #fffaf1;
+        box-shadow: 0 10px 18px rgba(143, 69, 20, 0.14);
+      }
+
+      .response-view-tab:disabled {
+        opacity: 0.42;
+      }
+
+      .bling-preview-shell {
+        display: grid;
+        gap: 16px;
+        margin-top: 12px;
+      }
+
+      .bling-preview-banner {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        padding: 16px 18px;
+        border: 1px solid rgba(39, 77, 118, 0.16);
+        border-radius: 18px;
+        background: linear-gradient(135deg, rgba(244, 248, 255, 0.96), rgba(231, 239, 250, 0.92));
+      }
+
+      .bling-preview-banner strong {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 16px;
+        letter-spacing: 0.01em;
+      }
+
+      .bling-preview-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 9px 12px;
+        border-radius: 999px;
+        background: rgba(39, 77, 118, 0.1);
+        color: #274d76;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+
+      .bling-preview-document {
+        border: 1px solid rgba(39, 77, 118, 0.14);
+        border-radius: 24px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 249, 252, 0.96));
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 18px 30px rgba(39, 77, 118, 0.08);
+        overflow: hidden;
+      }
+
+      .bling-preview-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        padding: 22px 24px 18px;
+        border-bottom: 1px solid rgba(39, 77, 118, 0.1);
+        background: linear-gradient(180deg, rgba(245, 248, 252, 0.96), rgba(245, 248, 252, 0.7));
+      }
+
+      .bling-preview-title {
+        display: grid;
+        gap: 6px;
+      }
+
+      .bling-preview-kicker {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .bling-preview-title strong {
+        font-family: "Fraunces", Georgia, serif;
+        font-size: 28px;
+        line-height: 1.02;
+        letter-spacing: -0.03em;
+      }
+
+      .bling-preview-title p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .bling-preview-meta {
+        display: grid;
+        gap: 10px;
+        min-width: 220px;
+      }
+
+      .bling-preview-meta-card {
+        display: grid;
+        gap: 4px;
+        padding: 12px 14px;
+        border: 1px solid rgba(39, 77, 118, 0.1);
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.78);
+      }
+
+      .bling-preview-meta-card span {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .bling-preview-meta-card strong {
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .bling-preview-body {
+        display: grid;
+        gap: 18px;
+        padding: 22px 24px 24px;
+      }
+
+      .bling-preview-block {
+        display: grid;
+        gap: 10px;
+      }
+
+      .bling-preview-block h3 {
+        margin: 0;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .bling-preview-description {
+        margin: 0;
+        padding: 14px 16px;
+        border: 1px solid rgba(117, 86, 48, 0.12);
+        border-radius: 16px;
+        background: rgba(255, 252, 247, 0.78);
+        color: var(--ink);
+        white-space: pre-wrap;
+        font-size: 14px;
+        line-height: 1.75;
+      }
+
+      .bling-preview-table-wrap {
+        overflow-x: auto;
+        border: 1px solid rgba(39, 77, 118, 0.1);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.86);
+      }
+
+      .bling-preview-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 760px;
+      }
+
+      .bling-preview-table thead th {
+        padding: 12px 14px;
+        text-align: left;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--muted);
+        background: rgba(243, 247, 252, 0.94);
+        border-bottom: 1px solid rgba(39, 77, 118, 0.1);
+      }
+
+      .bling-preview-table tbody td {
+        padding: 14px;
+        border-bottom: 1px solid rgba(39, 77, 118, 0.08);
+        font-size: 13px;
+        line-height: 1.55;
+        vertical-align: top;
+      }
+
+      .bling-preview-table tbody tr:last-child td {
+        border-bottom: 0;
+      }
+
+      .bling-preview-item-name {
+        display: grid;
+        gap: 4px;
+      }
+
+      .bling-preview-item-name strong {
+        font-size: 14px;
+      }
+
+      .bling-preview-item-name span {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .bling-preview-summary {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .bling-preview-summary-card {
+        display: grid;
+        gap: 6px;
+        padding: 14px 16px;
+        border: 1px solid rgba(39, 77, 118, 0.1);
+        border-radius: 16px;
+        background: rgba(245, 248, 252, 0.88);
+      }
+
+      .bling-preview-summary-card span {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .bling-preview-summary-card strong {
+        font-size: 16px;
+      }
+
+      .bling-preview-note {
+        margin: 0;
+        padding: 14px 16px;
+        border: 1px dashed rgba(39, 77, 118, 0.16);
+        border-radius: 16px;
+        background: rgba(241, 246, 252, 0.72);
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.7;
       }
 
       .response-block + .response-block {
@@ -2040,6 +2347,29 @@
                   </span>
                 </div>
               </div>
+              <div class="setting-group">
+                <div class="setting-group-toggle">
+                  <label for="show-bling-preview-toggle">
+                    <span class="setting-label">Prévia Bling</span>
+                  </label>
+                  <span class="setting-group-controls">
+                    <span class="setting-info-wrap">
+                      <button
+                        type="button"
+                        class="setting-info-trigger"
+                        aria-label="Detalhes da opção Prévia Bling"
+                        aria-expanded="false"
+                      >
+                        i
+                      </button>
+                      <span class="setting-info-popover">
+                        Libera uma aba superior para conferir como o orçamento está sendo montado antes do envio ao Bling.
+                      </span>
+                    </span>
+                    <input type="checkbox" id="show-bling-preview-toggle" />
+                  </span>
+                </div>
+              </div>
             </div>
             <div class="settings-info">
               <div><strong>Token Bling:</strong> <span id="bling-token-status">Carregando...</span></div>
@@ -2054,7 +2384,26 @@
 
       <section class="output">
         <article class="response-card" id="nexa-response">
-          <h2>Retorno do NEXA</h2>
+          <div class="response-card-header">
+            <h2>Retorno do NEXA</h2>
+            <div class="response-view-tabs">
+              <button
+                type="button"
+                class="response-view-tab is-active"
+                id="response-view-summary-tab"
+              >
+                Retorno
+              </button>
+              <button
+                type="button"
+                class="response-view-tab"
+                id="response-view-bling-tab"
+                hidden
+              >
+                Prévia Bling
+              </button>
+            </div>
+          </div>
           <div class="response-block">
             <p class="muted">Aguardando execução...</p>
           </div>
@@ -2097,6 +2446,9 @@
       const enableReviewBehaviorOptions = document.getElementById('enable-review-behavior-options');
       const reviewBehaviorSelector = document.getElementById('review-behavior-selector');
       const focusTextToggle = document.getElementById('focus-text-toggle');
+      const showBlingPreviewToggle = document.getElementById('show-bling-preview-toggle');
+      const responseViewSummaryTab = document.getElementById('response-view-summary-tab');
+      const responseViewBlingTab = document.getElementById('response-view-bling-tab');
       const settingInfoWraps = Array.from(document.querySelectorAll('.setting-info-wrap'));
       let activeSessionId = null;
       let activeSessionOriginalText = '';
@@ -2104,6 +2456,8 @@
       let activeModelId = null;
       let activeModelMode = null;
       let activeSidebarTab = 'sessions';
+      let activeResponseView = 'summary';
+      let currentRenderableResponsePayload = null;
       let operationCountdownTimer = null;
       const OPERATION_TIMEOUT_SECONDS = 120;
       const OPERATION_POLL_INTERVAL_SECONDS = 5;
@@ -2118,6 +2472,7 @@
         reviewBehaviorEnabled: 'nexa.reviewBehaviorEnabled',
         reviewBehavior: 'nexa.reviewBehavior',
         focusText: 'nexa.focusText',
+        showBlingPreview: 'nexa.showBlingPreview',
       };
       const SUPPORTED_AI_MODELS = ['gpt-5-nano', 'gpt-5.4-mini', 'gpt-5.4'];
       const SUPPORTED_THEMES = ['classic', 'compact', 'high-contrast'];
@@ -2339,6 +2694,12 @@
           : false;
       }
 
+      function shouldShowBlingPreview() {
+        return showBlingPreviewToggle instanceof HTMLInputElement
+          ? showBlingPreviewToggle.checked
+          : false;
+      }
+
       function saveDefaultAiModel(model) {
         try {
           window.localStorage.setItem(
@@ -2383,6 +2744,10 @@
           readStoredSetting(SETTINGS_STORAGE_KEYS.reviewBehavior, 'manual'),
         );
         const focusText = readStoredBoolean(SETTINGS_STORAGE_KEYS.focusText, true);
+        const showBlingPreview = readStoredBoolean(
+          SETTINGS_STORAGE_KEYS.showBlingPreview,
+          false,
+        );
 
         if (showLogsToggle instanceof HTMLInputElement) {
           showLogsToggle.checked = showLogs;
@@ -2494,6 +2859,17 @@
             );
           });
         }
+
+        if (showBlingPreviewToggle instanceof HTMLInputElement) {
+          showBlingPreviewToggle.checked = showBlingPreview;
+          showBlingPreviewToggle.addEventListener('change', () => {
+            writeStoredSetting(
+              SETTINGS_STORAGE_KEYS.showBlingPreview,
+              showBlingPreviewToggle.checked ? 'true' : 'false',
+            );
+            renderCurrentResponseView();
+          });
+        }
       }
 
       function closeSettingInfoPopovers(activeWrap = null) {
@@ -2546,10 +2922,257 @@
         updateSubmitButtonState();
       }
 
+      function formatCurrency(value) {
+        const amount = Number(value || 0);
+        return amount.toLocaleString('pt-BR', {
+          style: 'currency',
+          currency: 'BRL',
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
+      }
+
+      function parseBrazilianCurrency(value) {
+        const match = String(value || '').match(/R\$\s*([\d\.\,]+)/i);
+
+        if (!match) {
+          return null;
+        }
+
+        const normalized = match[1].replace(/\./g, '').replace(',', '.');
+        const amount = Number(normalized);
+        return Number.isFinite(amount) ? amount : null;
+      }
+
+      function parseMinimumLaborValue(proposalDraft, serviceItems) {
+        const commercialBody = String(proposalDraft?.commercialBody || '');
+        const explicitLine = commercialBody.match(/Soma mínima da mão de obra:\s*(R\$\s*[\d\.\,]+)/i);
+        const explicitValue = parseBrazilianCurrency(explicitLine?.[1]);
+
+        if (explicitValue !== null) {
+          return explicitValue;
+        }
+
+        return (serviceItems || []).reduce((total, item) => {
+          const text = String(item?.estimatedValueText || '');
+          const parts = text.match(/R\$\s*[\d\.\,]+/gi) || [];
+          const firstValue = parseBrazilianCurrency(parts[0]);
+          return total + (firstValue ?? 0);
+        }, 0);
+      }
+
+      function buildBlingPreviewData({
+        session,
+        proposalDraft,
+        proposalConfirmation,
+        blingQuoteReference,
+        blingQuote,
+        resolvedCustomer,
+        extraction,
+        aiInterpretation,
+        displayMaterialItems,
+        displayFinancialSummary,
+      }) {
+        const serviceItems = aiInterpretation?.serviceItems || [];
+        const laborTotal = parseMinimumLaborValue(proposalDraft, serviceItems);
+        const materialRows = (displayMaterialItems || []).map((item, index) => ({
+          kind: 'material',
+          line: index + 1,
+          description: item.catalogItemName || item.description || 'Material sem descrição',
+          supportText: item.catalogItemName
+            ? item.description && item.description !== item.catalogItemName
+              ? item.description
+              : item.sourceQuery || ''
+            : item.sourceQuery || '',
+          quantityText: item.quantityText || 'Quantidade a validar',
+          unitValue: Number(item?.unitPrice || item?.price || 0),
+          totalValue: Number(item?.lineTotal || item?.price || 0),
+          source: item.catalogItemName ? 'Catálogo local vinculado' : 'Estimativa do rascunho',
+        }));
+        const rows = [...materialRows];
+
+        if (laborTotal > 0) {
+          rows.push({
+            kind: 'service',
+            line: rows.length + 1,
+            description: 'Mão de Obra - SERVIÇOS DIVERSOS',
+            supportText: 'Linha técnica usada para representar a soma mínima da mão de obra.',
+            quantityText: `${laborTotal.toFixed(2)} unidades`,
+            unitValue: 1,
+            totalValue: laborTotal,
+            source: 'Soma mínima da mão de obra',
+          });
+        }
+
+        const materialSaleTotal = Number(displayFinancialSummary?.saleTotal || 0);
+        const previewItemsTotal = rows.reduce(
+          (total, item) => total + Number(item.totalValue || 0),
+          0,
+        );
+
+        return {
+          title: proposalDraft?.title || 'Orçamento em preparação',
+          description:
+            proposalDraft?.commercialBody ||
+            aiInterpretation?.budgetDescription ||
+            'Sem corpo comercial disponível.',
+          customerName:
+            resolvedCustomer?.name ||
+            proposalDraft?.customerQuery ||
+            session?.customerQuery ||
+            extraction?.customerQuery ||
+            'Cliente ainda não consolidado',
+          customerId: resolvedCustomer?.id || null,
+          createdAt:
+            proposalConfirmation?.confirmedAt ||
+            proposalDraft?.generatedAt ||
+            session?.updatedAt ||
+            '',
+          blingNumber:
+            blingQuote?.number ||
+            blingQuoteReference?.number ||
+            null,
+          blingId: blingQuote?.id || blingQuoteReference?.id || null,
+          rows,
+          serviceItems,
+          laborTotal,
+          materialSaleTotal,
+          previewItemsTotal,
+          grossProfit: Number(displayFinancialSummary?.grossProfit || 0),
+          materialCostTotal: Number(displayFinancialSummary?.costTotal || 0),
+        };
+      }
+
+      function renderBlingPreview(preview) {
+        return `
+          <div class="bling-preview-shell">
+            <div class="bling-preview-banner">
+              <div>
+                <strong>Conferência final antes do envio</strong>
+                <p class="muted">Esta aba mostra a montagem atual do orçamento com os dados que o NEXA já consolidou para o envio ao Bling.</p>
+              </div>
+              <span class="bling-preview-badge">Formato de orçamento Bling</span>
+            </div>
+            <div class="bling-preview-document">
+              <div class="bling-preview-header">
+                <div class="bling-preview-title">
+                  <span class="bling-preview-kicker">Proposta comercial</span>
+                  <strong>${escapeHtml(preview.title)}</strong>
+                  <p>Prévia operacional do documento como ele tende a ser recebido e montado no Bling.</p>
+                </div>
+                <div class="bling-preview-meta">
+                  <div class="bling-preview-meta-card">
+                    <span>Cliente</span>
+                    <strong>${escapeHtml(preview.customerName)}</strong>
+                  </div>
+                  <div class="bling-preview-meta-card">
+                    <span>Referência Bling</span>
+                    <strong>${
+                      preview.blingId
+                        ? `#${escapeHtml(String(preview.blingNumber || 'sem número'))} · ID ${escapeHtml(String(preview.blingId))}`
+                        : 'Nova proposta ainda não enviada'
+                    }</strong>
+                  </div>
+                  <div class="bling-preview-meta-card">
+                    <span>Base temporal</span>
+                    <strong>${escapeHtml(preview.createdAt || 'Não registrada')}</strong>
+                  </div>
+                </div>
+              </div>
+              <div class="bling-preview-body">
+                <div class="bling-preview-block">
+                  <h3>Descrição que acompanha o orçamento</h3>
+                  <p class="bling-preview-description">${escapeHtml(preview.description)}</p>
+                </div>
+                <div class="bling-preview-block">
+                  <h3>Itens que entram na proposta</h3>
+                  <div class="bling-preview-table-wrap">
+                    <table class="bling-preview-table">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Item</th>
+                          <th>Quantidade</th>
+                          <th>Origem</th>
+                          <th>Valor unitário</th>
+                          <th>Total previsto</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${
+                          preview.rows.length
+                            ? preview.rows
+                                .map(
+                                  (row) => `
+                                    <tr>
+                                      <td>${escapeHtml(String(row.line))}</td>
+                                      <td>
+                                        <div class="bling-preview-item-name">
+                                          <strong>${escapeHtml(row.description)}</strong>
+                                          ${
+                                            row.supportText
+                                              ? `<span>${escapeHtml(row.supportText)}</span>`
+                                              : ''
+                                          }
+                                        </div>
+                                      </td>
+                                      <td>${escapeHtml(row.quantityText)}</td>
+                                      <td>${escapeHtml(row.source)}</td>
+                                      <td>${formatCurrency(row.unitValue)}</td>
+                                      <td>${formatCurrency(row.totalValue)}</td>
+                                    </tr>
+                                  `,
+                                )
+                                .join('')
+                            : `
+                              <tr>
+                                <td colspan="6">
+                                  <span class="muted">Ainda não há itens suficientes consolidados para pré-visualizar o envio.</span>
+                                </td>
+                              </tr>
+                            `
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div class="bling-preview-summary">
+                  <div class="bling-preview-summary-card">
+                    <span>Venda de materiais</span>
+                    <strong>${formatCurrency(preview.materialSaleTotal)}</strong>
+                  </div>
+                  <div class="bling-preview-summary-card">
+                    <span>Custo dos materiais</span>
+                    <strong>${formatCurrency(preview.materialCostTotal)}</strong>
+                  </div>
+                  <div class="bling-preview-summary-card">
+                    <span>Mão de obra usada</span>
+                    <strong>${formatCurrency(preview.laborTotal)}</strong>
+                  </div>
+                  <div class="bling-preview-summary-card">
+                    <span>Total previsto da proposta</span>
+                    <strong>${formatCurrency(preview.previewItemsTotal)}</strong>
+                  </div>
+                </div>
+                <p class="bling-preview-note">
+                  Esta é uma prévia operacional. Ela usa os materiais consolidados do rascunho e a linha
+                  de <strong>Soma mínima da mão de obra</strong> quando disponível. O objetivo é permitir
+                  conferência visual antes do envio final ao Bling.
+                </p>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
       function renderNexaResponse(payload) {
+        currentRenderableResponsePayload = payload;
+
         if (!payload || payload.type !== 'ai_assisted_agent_response_built') {
           nexaResponse.innerHTML = `
-            <h2>Retorno do NEXA</h2>
+            <div class="response-card-header">
+              <h2>Retorno do NEXA</h2>
+            </div>
             <div class="response-block">
               <p class="muted">Resposta fora do formato esperado.</p>
             </div>
@@ -2596,9 +3219,53 @@
           : 'Lista de Materiais';
         const displayFinancialSummary =
           proposalDraft?.financialSummary || localResponse?.financialSummary || {};
+        const blingPreviewEnabled = shouldShowBlingPreview();
+        const blingPreview = buildBlingPreviewData({
+          session,
+          proposalDraft,
+          proposalConfirmation,
+          blingQuoteReference,
+          blingQuote,
+          resolvedCustomer,
+          extraction,
+          aiInterpretation,
+          displayMaterialItems,
+          displayFinancialSummary,
+        });
+        const hasBlingPreview = Boolean(proposalDraft);
+
+        if (!hasBlingPreview) {
+          activeResponseView = 'summary';
+        } else if (!blingPreviewEnabled && activeResponseView === 'bling') {
+          activeResponseView = 'summary';
+        }
 
         nexaResponse.innerHTML = `
-          <h2>Retorno do NEXA</h2>
+          <div class="response-card-header">
+            <h2>${activeResponseView === 'bling' ? 'Prévia de envio ao Bling' : 'Retorno do NEXA'}</h2>
+            <div class="response-view-tabs">
+              <button
+                type="button"
+                class="response-view-tab ${activeResponseView === 'summary' ? 'is-active' : ''}"
+                id="response-view-summary-tab"
+              >
+                Retorno
+              </button>
+              <button
+                type="button"
+                class="response-view-tab ${activeResponseView === 'bling' ? 'is-active' : ''}"
+                id="response-view-bling-tab"
+                ${blingPreviewEnabled ? '' : 'hidden'}
+                ${hasBlingPreview ? '' : 'disabled'}
+              >
+                ${hasBlingPreview ? 'Prévia Bling' : 'Prévia indisponível'}
+              </button>
+            </div>
+          </div>
+          ${
+            activeResponseView === 'bling' && blingPreviewEnabled && hasBlingPreview
+              ? renderBlingPreview(blingPreview)
+              : `
           ${
             session
               ? `
@@ -2982,7 +3649,13 @@
               `
               : ''
           }
+        `}
         `;
+
+        bindResponseViewTabs({
+          blingPreviewEnabled,
+          hasBlingPreview,
+        });
 
         const reviewModelSelector = document.getElementById(
           'proposal-review-model-selector',
@@ -3326,9 +3999,48 @@
           });
       }
 
+      function bindResponseViewTabs({ blingPreviewEnabled, hasBlingPreview }) {
+        const summaryTab = document.getElementById('response-view-summary-tab');
+        const blingTab = document.getElementById('response-view-bling-tab');
+
+        summaryTab?.addEventListener('click', () => {
+          activeResponseView = 'summary';
+          renderCurrentResponseView();
+        });
+
+        blingTab?.addEventListener('click', () => {
+          if (!blingPreviewEnabled || !hasBlingPreview) {
+            return;
+          }
+
+          activeResponseView = 'bling';
+          renderCurrentResponseView();
+        });
+      }
+
+      function renderCurrentResponseView() {
+        if (!currentRenderableResponsePayload) {
+          return;
+        }
+
+        renderNexaResponse(currentRenderableResponsePayload);
+      }
+
       function renderIdleResponse() {
+        currentRenderableResponsePayload = null;
+        activeResponseView = 'summary';
         nexaResponse.innerHTML = `
-          <h2>Retorno do NEXA</h2>
+          <div class="response-card-header">
+            <h2>Retorno do NEXA</h2>
+            <div class="response-view-tabs">
+              <button type="button" class="response-view-tab is-active" id="response-view-summary-tab">
+                Retorno
+              </button>
+              <button type="button" class="response-view-tab" id="response-view-bling-tab" hidden>
+                Prévia Bling
+              </button>
+            </div>
+          </div>
           <div class="response-block">
             <p class="muted">Aguardando execução...</p>
           </div>
@@ -3344,8 +4056,19 @@
 
       function renderOperationWaiting(operation, secondsUntilTimeout) {
         const phase = formatOperationPhase(operation?.phase || 'queued');
+        activeResponseView = 'summary';
         nexaResponse.innerHTML = `
-          <h2>Retorno do NEXA</h2>
+          <div class="response-card-header">
+            <h2>Retorno do NEXA</h2>
+            <div class="response-view-tabs">
+              <button type="button" class="response-view-tab is-active" id="response-view-summary-tab">
+                Retorno
+              </button>
+              <button type="button" class="response-view-tab" id="response-view-bling-tab" hidden>
+                Prévia Bling
+              </button>
+            </div>
+          </div>
           <div class="response-block response-block--waiting">
             <h3>Processando orçamento</h3>
             <div class="waiting-shell">
@@ -3511,6 +4234,7 @@
           originalTextField.value = '';
         }
 
+        activeResponseView = 'summary';
         clearActiveSessionState();
         clearActiveModelState();
         renderIdleResponse();
