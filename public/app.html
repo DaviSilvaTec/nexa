@@ -1,0 +1,2520 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NEXA</title>
+    <style>
+      :root {
+        --bg: #f3efe7;
+        --panel: #fffaf1;
+        --line: #d6c8b2;
+        --ink: #1d1a17;
+        --muted: #6c6255;
+        --accent: #c66a2b;
+        --accent-strong: #9f4f19;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top left, rgba(198, 106, 43, 0.18), transparent 28%),
+          linear-gradient(180deg, #f8f3ea 0%, var(--bg) 100%);
+      }
+
+      .shell {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 32px 20px 56px;
+      }
+
+      .hero {
+        margin-bottom: 28px;
+      }
+
+      .eyebrow {
+        display: inline-block;
+        margin-bottom: 10px;
+        padding: 6px 10px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        background: rgba(255, 250, 241, 0.85);
+      }
+
+      h1 {
+        margin: 0 0 10px;
+        font-size: clamp(32px, 5vw, 56px);
+        line-height: 0.95;
+      }
+
+      .hero p {
+        max-width: 760px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 18px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: minmax(320px, 1.5fr) minmax(280px, 0.9fr);
+        gap: 16px;
+        align-items: stretch;
+      }
+
+      @media (max-width: 920px) {
+        .grid {
+          grid-template-columns: minmax(320px, 1fr);
+        }
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 18px;
+        box-shadow: 0 12px 32px rgba(78, 59, 35, 0.08);
+        min-height: 100%;
+      }
+
+      .panel h2 {
+        margin: 0 0 12px;
+        font-size: 20px;
+      }
+
+      .panel p {
+        margin: 0 0 14px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      label {
+        display: block;
+        margin: 0;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      input,
+      textarea {
+        width: 100%;
+        margin-top: 6px;
+        padding: 11px 12px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #fff;
+        color: var(--ink);
+        font: inherit;
+      }
+
+      textarea {
+        min-height: 280px;
+        resize: none;
+      }
+
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .session-input-panel {
+        min-height: 560px;
+      }
+
+      .session-form-body {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+
+      .field-block {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+
+      .field-block textarea {
+        flex: 1 1 auto;
+      }
+
+      .form-footer {
+        margin-top: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding-top: 10px;
+      }
+
+      .inline-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 14px;
+        color: var(--muted);
+      }
+
+      .inline-select {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-size: 14px;
+        color: var(--muted);
+      }
+
+      .inline-select select {
+        margin-top: 0;
+      }
+
+      .inline-checkbox input {
+        width: auto;
+        margin-top: 0;
+      }
+
+      button {
+        appearance: none;
+        border: 0;
+        border-radius: 999px;
+        padding: 12px 16px;
+        background: var(--accent);
+        color: #fffaf1;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: var(--accent-strong);
+      }
+
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+        box-shadow: none;
+      }
+
+      .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .primary-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .session-actions {
+        display: flex;
+        align-items: center;
+      }
+
+      .list-tabs {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .list-tab {
+        min-height: 42px;
+        padding: 10px 16px;
+        border-radius: 12px;
+      }
+
+      .list-tab.is-active {
+        background: var(--accent);
+        color: #fffaf1;
+      }
+
+      .list-panel.is-hidden {
+        display: none;
+      }
+
+      .settings-panel {
+        margin-top: 8px;
+        padding: 14px;
+        border: 1px dashed var(--line);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.55);
+      }
+
+      .settings-panel summary {
+        cursor: pointer;
+        font-weight: 700;
+        color: var(--ink);
+      }
+
+      .settings-panel summary::marker {
+        color: var(--muted);
+      }
+
+      .settings-panel p {
+        margin-top: 10px;
+      }
+
+      .settings-grid {
+        display: grid;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .settings-grid label {
+        margin: 0;
+      }
+
+      .settings-info {
+        display: grid;
+        gap: 6px;
+        margin-top: 10px;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: rgba(255, 250, 241, 0.9);
+      }
+
+      .settings-info strong {
+        display: inline-block;
+        min-width: 132px;
+      }
+
+      .settings-grid input,
+      .settings-grid select {
+        margin-top: 6px;
+      }
+
+      .button-pill {
+        min-height: 52px;
+        padding: 12px 20px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+      }
+
+      .button-row > button:not(.session-item) {
+        flex: 0 0 auto;
+      }
+
+      @media (max-width: 640px) {
+        .primary-actions,
+        .session-actions {
+          display: grid;
+          grid-template-columns: 1fr;
+          width: 100%;
+        }
+
+        .primary-actions .microphone-button {
+          width: 100%;
+          border-radius: 16px;
+        }
+
+        .primary-actions .button-pill,
+        .session-actions .button-pill {
+          width: 100%;
+        }
+      }
+
+      .button-secondary {
+        background: #efe2cf;
+        color: var(--ink);
+        border: 1px solid var(--line);
+      }
+
+      .button-secondary:hover {
+        background: #e5d2ba;
+      }
+
+      .microphone-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 52px;
+        height: 52px;
+        padding: 0;
+        border-radius: 50%;
+        transition:
+          background 0.18s ease,
+          transform 0.18s ease,
+          box-shadow 0.18s ease;
+      }
+
+      .microphone-button svg {
+        width: 22px;
+        height: 22px;
+        fill: currentColor;
+      }
+
+      .microphone-button--idle {
+        background: #2e8b57;
+        color: #f8f3ea;
+        box-shadow: 0 0 0 0 rgba(46, 139, 87, 0.28);
+      }
+
+      .microphone-button--idle:hover {
+        background: #257149;
+      }
+
+      .microphone-button--listening {
+        background: #b4372f;
+        color: #fff4ef;
+        box-shadow: 0 0 0 8px rgba(180, 55, 47, 0.16);
+        animation: pulse 1.2s ease-in-out infinite;
+      }
+
+      .microphone-button--listening:hover {
+        background: #9a2c25;
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+
+        50% {
+          transform: scale(1.04);
+        }
+
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      .status-line {
+        margin: 0;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .session-summary-meta {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px 14px;
+        margin-top: 6px;
+      }
+
+      .session-summary-meta p {
+        margin: 0;
+      }
+
+      .session-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .session-header-copy {
+        min-width: 0;
+        flex: 1 1 auto;
+      }
+
+      .session-header-copy h3 {
+        margin: 0 0 8px;
+      }
+
+      .session-header-badge {
+        flex: 0 0 auto;
+        align-self: flex-start;
+        margin: 0;
+      }
+
+      .output {
+        margin-top: 24px;
+        display: grid;
+        gap: 16px;
+      }
+
+      .output pre {
+        margin: 0;
+        padding: 18px;
+        min-height: 220px;
+        overflow: auto;
+        border-radius: 18px;
+        border: 1px solid #2d2924;
+        background: #181512;
+        color: #f9f3e9;
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .response-card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 18px;
+        box-shadow: 0 12px 32px rgba(78, 59, 35, 0.08);
+      }
+
+      .response-card h2 {
+        margin: 0 0 14px;
+        font-size: 20px;
+      }
+
+      .response-block + .response-block {
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+      }
+
+      .response-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .response-block h3 {
+        margin: 0 0 8px;
+        font-size: 15px;
+      }
+
+      .response-block p,
+      .response-block ul {
+        margin: 0;
+        color: var(--ink);
+      }
+
+      .response-block pre {
+        margin: 10px 0 0;
+        padding: 14px;
+        min-height: auto;
+        overflow: auto;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--ink);
+        font-size: 13px;
+        line-height: 1.5;
+        white-space: pre-wrap;
+      }
+
+      .proposal-draft-editor {
+        width: 100%;
+        min-height: 22rem;
+        margin-top: 10px;
+        resize: vertical;
+      }
+
+      .proposal-draft-review-editor {
+        width: 100%;
+        min-height: 20rem;
+        margin-top: 10px;
+        resize: vertical;
+      }
+
+      .proposal-draft-actions {
+        display: flex;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .response-block ul {
+        padding-left: 18px;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      .session-status-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+      }
+
+      .session-status-badge--review {
+        background: #f7ead6;
+        color: #7b4c18;
+      }
+
+      .session-status-badge--approved {
+        background: #dcefdc;
+        color: #285c36;
+      }
+
+      .session-status-badge--proposal {
+        background: #dde6f7;
+        color: #23406f;
+      }
+
+      .session-status-badge--ready {
+        background: #e5f6de;
+        color: #2f6a32;
+      }
+
+      .session-status-badge--cancelled {
+        background: #f1dede;
+        color: #7b251b;
+      }
+
+      .session-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .session-item {
+        border-radius: 14px;
+        padding: 12px 14px;
+        background: #fff;
+        border: 1px solid var(--line);
+      }
+
+      .session-item--ready {
+        background: #f4fbef;
+        border-color: #cfe5bf;
+      }
+
+      .session-item:hover {
+        background: #fff;
+      }
+
+      .session-item--ready:hover {
+        background: #f4fbef;
+      }
+
+      .session-item strong,
+      .session-item small {
+        display: block;
+      }
+
+      .session-item small {
+        margin-top: 4px;
+        color: var(--muted);
+      }
+
+      .session-item-preview {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 10px;
+      }
+
+      .session-item-status {
+        align-self: flex-start;
+        margin: 0;
+      }
+
+      .session-item-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .session-item-actions button {
+        min-height: 42px;
+        padding: 10px 14px;
+        border-radius: 12px;
+      }
+
+      .button-danger {
+        background: #f5ddd8;
+        color: #7b251b;
+        border: 1px solid #d8b0a9;
+      }
+
+      .button-danger:hover {
+        background: #edcbc2;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero">
+        <div class="eyebrow">ALLTEC NEXA</div>
+        <h1>NEXA</h1>
+        <p>
+          Networked EXecution Agent
+        </p>
+      </section>
+
+      <section class="grid">
+        <form class="panel stack session-input-panel" id="ai-agent-response-form">
+          <h2>Interação com o NEXA</h2>
+          <div class="session-form-body">
+            <p>
+              Fale ou digite como falaria no dia a dia. O navegador pode converter sua fala
+              em texto e o NEXA faz a extração inicial antes de consultar a base local.
+            </p>
+            <label class="field-block">
+              Texto original
+              <textarea name="originalText"></textarea>
+            </label>
+            <div class="form-footer">
+              <div class="primary-actions">
+                <button
+                  type="button"
+                  id="speech-button"
+                  class="microphone-button microphone-button--idle"
+                  aria-label="Iniciar captura de voz"
+                  title="Clique para começar a falar"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 15a3 3 0 0 0 3-3V7a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3zm5-3a1 1 0 0 1 2 0 7 7 0 0 1-6 6.93V21h3a1 1 0 0 1 0 2H8a1 1 0 0 1 0-2h3v-2.07A7 7 0 0 1 5 12a1 1 0 0 1 2 0 5 5 0 0 0 10 0z"/>
+                  </svg>
+                </button>
+                <button type="submit" class="button-pill" id="submit-ai-agent-button" disabled>Enviar ao NEXA</button>
+                <button type="button" class="button-secondary button-pill" id="cancel-ai-agent-button">Cancelar</button>
+              </div>
+              <label class="inline-checkbox">
+                <input type="checkbox" id="budget-finished-checkbox" />
+                Terminado. Liberar envio ao NEXA.
+              </label>
+              <p class="status-line" id="speech-status">
+                Voz inativa. Clique no microfone para começar e clique novamente para terminar.
+              </p>
+            </div>
+          </div>
+        </form>
+
+        <aside class="panel stack">
+          <h2>Sessões Recentes</h2>
+          <p>
+            Orçamentos assistidos já processados nesta interface. Clique para carregar
+            uma sessão salva e retomar a análise rapidamente.
+          </p>
+          <div class="list-tabs">
+            <button type="button" class="button-secondary list-tab is-active" id="session-tab-button">
+              Sessões
+            </button>
+            <button type="button" class="button-secondary list-tab" id="model-tab-button">
+              Modelos
+            </button>
+          </div>
+          <div class="session-actions">
+            <button type="button" class="button-secondary button-pill" id="refresh-sessions-button">
+              Atualizar Sessões
+            </button>
+          </div>
+          <div class="list-panel" id="session-list-panel">
+            <div class="session-list" id="ai-session-list">
+              <p class="muted">Carregando sessões...</p>
+            </div>
+          </div>
+          <div class="list-panel is-hidden" id="model-list-panel">
+            <div class="session-list" id="ai-model-list">
+              <p class="muted">Carregando modelos...</p>
+            </div>
+          </div>
+          <details class="settings-panel">
+            <summary>Configurações</summary>
+            <p>
+              Ajustes operacionais e visuais do NEXA. O modelo padrão e o status do token
+              do Bling já estão ativos; os demais controles continuam reservados para a
+              evolução do MVP.
+            </p>
+            <div class="settings-grid">
+              <label>
+                Nível de log
+                <select disabled>
+                  <option>Completo durante testes</option>
+                  <option>Avisos + erros</option>
+                  <option>Somente erros</option>
+                </select>
+              </label>
+              <label>
+                Modelo de IA
+                <select id="default-ai-model-selector">
+                  <option>gpt-5-nano</option>
+                  <option>gpt-5.4-mini</option>
+                  <option>gpt-5.4</option>
+                </select>
+              </label>
+              <label>
+                Tema visual
+                <select disabled>
+                  <option>Clássico NEXA</option>
+                  <option>Compacto operacional</option>
+                  <option>Contraste alto</option>
+                </select>
+              </label>
+              <label>
+                Comportamento de revisão
+                <select disabled>
+                  <option>Manual com aprovação</option>
+                  <option>Manual com dupla conferência</option>
+                  <option>Somente sugestão assistida</option>
+                </select>
+              </label>
+              <label>
+                <input type="checkbox" disabled />
+                Abrir sessões com foco automático no texto
+              </label>
+              <label>
+                <input type="checkbox" disabled />
+                Mostrar logs detalhados na interface
+              </label>
+            </div>
+            <div class="settings-info">
+              <div><strong>Token Bling:</strong> <span id="bling-token-status">Carregando...</span></div>
+              <div><strong>Validade:</strong> <span id="bling-token-expiry">Carregando...</span></div>
+              <button type="button" class="button-secondary button-pill" id="refresh-bling-token-button">
+                Renovar token Bling
+              </button>
+            </div>
+          </details>
+        </aside>
+      </section>
+
+      <section class="output">
+        <article class="response-card" id="nexa-response">
+          <h2>Retorno do NEXA</h2>
+          <div class="response-block">
+            <p class="muted">Aguardando execução...</p>
+          </div>
+        </article>
+
+        <pre id="output">Aguardando execução...</pre>
+      </section>
+    </main>
+
+    <script>
+      const output = document.getElementById('output');
+      const nexaResponse = document.getElementById('nexa-response');
+      const aiAgentResponseForm = document.getElementById('ai-agent-response-form');
+      const speechButton = document.getElementById('speech-button');
+      const speechStatus = document.getElementById('speech-status');
+      const sessionList = document.getElementById('ai-session-list');
+      const modelList = document.getElementById('ai-model-list');
+      const blingTokenStatus = document.getElementById('bling-token-status');
+      const blingTokenExpiry = document.getElementById('bling-token-expiry');
+      const refreshBlingTokenButton = document.getElementById('refresh-bling-token-button');
+      const refreshSessionsButton = document.getElementById('refresh-sessions-button');
+      const sessionTabButton = document.getElementById('session-tab-button');
+      const modelTabButton = document.getElementById('model-tab-button');
+      const sessionListPanel = document.getElementById('session-list-panel');
+      const modelListPanel = document.getElementById('model-list-panel');
+      const originalTextField = aiAgentResponseForm.querySelector('textarea[name="originalText"]');
+      const submitAiAgentButton = document.getElementById('submit-ai-agent-button');
+      const cancelAiAgentButton = document.getElementById('cancel-ai-agent-button');
+      const budgetFinishedCheckbox = document.getElementById('budget-finished-checkbox');
+      const defaultAiModelSelector = document.getElementById('default-ai-model-selector');
+      let activeSessionId = null;
+      let activeSessionOriginalText = '';
+      let activeSessionCreatedAt = '';
+      let activeModelId = null;
+      let activeModelMode = null;
+      let activeSidebarTab = 'sessions';
+      let operationCountdownTimer = null;
+      const OPERATION_TIMEOUT_SECONDS = 120;
+      const OPERATION_POLL_INTERVAL_SECONDS = 5;
+      const DEFAULT_AI_MODEL = 'gpt-5-nano';
+      const AI_MODEL_STORAGE_KEY = 'nexa.defaultAiModel';
+      const SUPPORTED_AI_MODELS = ['gpt-5-nano', 'gpt-5.4-mini', 'gpt-5.4'];
+
+      function renderList(items) {
+        if (!items || items.length === 0) {
+          return '<p class="muted">Nenhum item.</p>';
+        }
+
+        return `<ul>${items.map((item) => `<li>${escapeHtml(String(item))}</li>`).join('')}</ul>`;
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? '')
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;');
+      }
+
+      function truncateText(value, maxLength = 96) {
+        const normalized = String(value ?? '').replace(/\s+/g, ' ').trim();
+
+        if (normalized.length <= maxLength) {
+          return normalized;
+        }
+
+        return `${normalized.slice(0, Math.max(0, maxLength - 1)).trim()}…`;
+      }
+
+      function buildSessionCardTitle(session) {
+        const summaryTitle = String(session?.summaryTitle || '').trim();
+
+        if (summaryTitle) {
+          return truncateText(summaryTitle, 72);
+        }
+
+        const sourceText = String(session?.originalText || '').trim();
+        if (sourceText) {
+          const firstBlock = sourceText.split(/\n+/)[0] || sourceText;
+          const firstSentence = firstBlock.split(/[.!?]/)[0] || firstBlock;
+          return truncateText(firstSentence, 72);
+        }
+
+        return session?.customerQuery || 'Sessão sem título';
+      }
+
+      function buildCustomerLabel(customerName) {
+        return customerName ? `Cliente: ${customerName}` : 'Cliente não identificado';
+      }
+
+      function countMeaningfulWords(value) {
+        return String(value ?? '')
+          .trim()
+          .split(/\s+/)
+          .map((word) => word.trim())
+          .filter((word) => word.length > 0).length;
+      }
+
+      function normalizeAiModelSelection(value) {
+        return SUPPORTED_AI_MODELS.includes(value) ? value : DEFAULT_AI_MODEL;
+      }
+
+      function getDefaultAiModel() {
+        if (defaultAiModelSelector instanceof HTMLSelectElement) {
+          return normalizeAiModelSelection(defaultAiModelSelector.value);
+        }
+
+        return DEFAULT_AI_MODEL;
+      }
+
+      function saveDefaultAiModel(model) {
+        try {
+          window.localStorage.setItem(
+            AI_MODEL_STORAGE_KEY,
+            normalizeAiModelSelection(model),
+          );
+        } catch {}
+      }
+
+      function loadDefaultAiModel() {
+        let storedModel = DEFAULT_AI_MODEL;
+
+        try {
+          storedModel = normalizeAiModelSelection(
+            window.localStorage.getItem(AI_MODEL_STORAGE_KEY) || DEFAULT_AI_MODEL,
+          );
+        } catch {}
+
+        if (defaultAiModelSelector instanceof HTMLSelectElement) {
+          defaultAiModelSelector.value = storedModel;
+        }
+      }
+
+      function updateSubmitButtonState() {
+        if (!submitAiAgentButton) {
+          return;
+        }
+
+        submitAiAgentButton.disabled = !budgetFinishedCheckbox?.checked;
+      }
+
+      function resetSendConfirmation() {
+        if (budgetFinishedCheckbox) {
+          budgetFinishedCheckbox.checked = false;
+        }
+
+        updateSubmitButtonState();
+      }
+
+      function renderNexaResponse(payload) {
+        if (!payload || payload.type !== 'ai_assisted_agent_response_built') {
+          nexaResponse.innerHTML = `
+            <h2>Retorno do NEXA</h2>
+            <div class="response-block">
+              <p class="muted">Resposta fora do formato esperado.</p>
+            </div>
+          `;
+          return;
+        }
+
+        const extraction = payload.intakeExtraction?.extraction;
+        const localResponse = payload.localResponse?.response;
+        const aiInterpretation = payload.aiResponse?.interpretation;
+        const session = payload.session;
+        const proposalDraft = payload.proposalDraft || payload?.proposalDraft || payload?.session?.payload?.proposalDraft;
+        const proposalConfirmation =
+          payload.proposalConfirmation ||
+          payload?.session?.payload?.proposalConfirmation;
+        const proposalDraftReview =
+          payload.proposalDraftReview ||
+          payload?.session?.payload?.proposalDraftReview;
+        const blingQuoteReference =
+          payload.blingQuoteReference || payload?.session?.payload?.blingQuoteReference;
+        const blingQuote = payload.blingQuote || payload?.session?.payload?.blingQuote;
+        const sessionStatus = session?.status || localResponse?.status || 'Aguardando aprovacao';
+        const resolvedCustomer =
+          payload?.resolvedCustomer ||
+          proposalDraft?.resolvedCustomer ||
+          payload?.aiContext?.payload?.customer?.contact ||
+          null;
+        const customerResolutionCandidate = [
+          resolvedCustomer?.id,
+          resolvedCustomer?.name,
+          proposalDraft?.customerQuery,
+          session?.customerQuery,
+          extraction?.customerQuery,
+        ].some((value) => String(value ?? '').trim().length > 0);
+        const sessionActionState = getSessionActionState(sessionStatus, {
+          canAttemptBlingConfirmation: customerResolutionCandidate,
+        });
+        const displayMaterialItems =
+          proposalDraft?.materialItems?.length
+            ? proposalDraft.materialItems
+            : aiInterpretation?.materialItems || [];
+        const materialBlockTitle = proposalDraft?.materialItems?.length
+          ? 'Materiais Consolidados'
+          : 'Lista de Materiais';
+        const displayFinancialSummary =
+          proposalDraft?.financialSummary || localResponse?.financialSummary || {};
+
+        nexaResponse.innerHTML = `
+          <h2>Retorno do NEXA</h2>
+          ${
+            session
+              ? `
+                <div class="response-block">
+                  <div class="session-header">
+                    <div class="session-header-copy">
+                      <h3>Sessão</h3>
+                      <p><strong>ID:</strong> ${escapeHtml(session.id || '')}</p>
+                      <div class="session-summary-meta">
+                        <p><strong>Criada em:</strong> ${escapeHtml(session.createdAt || '')}</p>
+                        ${
+                          blingQuoteReference?.id
+                            ? `<p><strong>Proposta em edição:</strong> #${escapeHtml(String(blingQuoteReference.number || 'sem número'))} <span class="muted">(ID ${escapeHtml(String(blingQuoteReference.id || ''))})</span></p>`
+                            : ''
+                        }
+                      </div>
+                    </div>
+                    <div class="session-status-badge session-header-badge ${sessionActionState.badgeClass}">
+                      ${escapeHtml(sessionStatus)}
+                    </div>
+                  </div>
+                  <div class="response-actions">
+                    <button
+                      type="button"
+                      class="button-secondary button-pill"
+                      data-session-status-action="review"
+                      data-session-id="${escapeHtml(session.id || '')}"
+                      ${sessionActionState.reviewDisabled ? 'disabled' : ''}
+                    >
+                      ${sessionActionState.reviewLabel}
+                    </button>
+                    <button
+                      type="button"
+                      class="button-pill"
+                      data-session-status-action="approve"
+                      data-session-id="${escapeHtml(session.id || '')}"
+                      ${sessionActionState.approveDisabled ? 'disabled' : ''}
+                    >
+                      Aprovar
+                    </button>
+                    <button
+                      type="button"
+                      class="button-secondary button-pill"
+                      data-session-status-action="proposal-draft"
+                      data-session-id="${escapeHtml(session.id || '')}"
+                      ${sessionActionState.proposalDisabled ? 'disabled' : ''}
+                    >
+                      Gerar proposta comercial
+                    </button>
+                    <button
+                      type="button"
+                      class="button-secondary button-pill"
+                      data-session-status-action="confirm-proposal"
+                      data-session-id="${escapeHtml(session.id || '')}"
+                      ${sessionActionState.confirmDisabled ? 'disabled' : ''}
+                    >
+                      Confirmar e enviar ao Bling
+                    </button>
+                    <button
+                      type="button"
+                      class="button-secondary button-pill"
+                      data-session-status-action="cancel"
+                      data-session-id="${escapeHtml(session.id || '')}"
+                      ${sessionActionState.cancelDisabled ? 'disabled' : ''}
+                    >
+                      Cancelar sessão
+                    </button>
+                  </div>
+                </div>
+              `
+              : ''
+          }
+          <div class="response-block">
+            <h3>Texto Recebido</h3>
+            <p>${escapeHtml(localResponse?.receivedText || '')}</p>
+          </div>
+          <div class="response-block">
+            <h3>Extração Inicial</h3>
+            <p><strong>Cliente provável:</strong> ${escapeHtml(extraction?.customerQuery || 'Não identificado')}</p>
+            <p><strong>Materiais extraídos:</strong></p>
+            ${renderList(extraction?.materialQueries || [])}
+          </div>
+          <div class="response-block">
+            <h3>Descrição do Orçamento</h3>
+            <p>${escapeHtml(aiInterpretation?.budgetDescription || localResponse?.structuredSuggestion || '')}</p>
+          </div>
+          <div class="response-block">
+            <h3>Descrição dos Trabalhos</h3>
+            <p>${escapeHtml(aiInterpretation?.workDescription || '')}</p>
+          </div>
+          <div class="response-block">
+            <h3>${materialBlockTitle}</h3>
+            ${
+              displayMaterialItems?.length
+                ? `<ul>${displayMaterialItems
+                    .map(
+                      (item) =>
+                        `<li>${escapeHtml(item.description)}${
+                          item.quantityText ? ` - ${escapeHtml(item.quantityText)}` : ''
+                        }${
+                          item.catalogItemName
+                            ? ` <span class="muted">(catálogo: ${escapeHtml(item.catalogItemName)})</span>`
+                            : ''
+                        }</li>`,
+                    )
+                    .join('')}</ul>`
+                : '<p class="muted">Nenhum material sugerido.</p>'
+            }
+          </div>
+          <div class="response-block">
+            <h3>Lista de Serviços</h3>
+            ${
+              aiInterpretation?.serviceItems?.length
+                ? `<ul>${aiInterpretation.serviceItems
+                    .map(
+                      (item) =>
+                        `<li>${escapeHtml(item.description)}${
+                          item.quantityText ? ` - ${escapeHtml(item.quantityText)}` : ''
+                        }${
+                          item.estimatedValueText
+                            ? ` <span class="muted">(valor estimado: ${escapeHtml(item.estimatedValueText)})</span>`
+                            : ''
+                        }</li>`,
+                    )
+                    .join('')}</ul>`
+                : '<p class="muted">Nenhum serviço sugerido.</p>'
+            }
+          </div>
+          <div class="response-block">
+            <h3>Pesquisa de Mão de Obra</h3>
+            <p><strong>Status:</strong> ${escapeHtml(aiInterpretation?.laborPriceResearch?.status || 'pendente')}</p>
+            <p>${escapeHtml(aiInterpretation?.laborPriceResearch?.summary || '')}</p>
+            ${
+              aiInterpretation?.laborPriceResearch?.estimatedLaborRange
+                ? `<p><strong>Faixa estimada:</strong> ${escapeHtml(aiInterpretation.laborPriceResearch.estimatedLaborRange)}</p>`
+                : ''
+            }
+            ${
+              aiInterpretation?.laborPriceResearch?.estimatedHours
+                ? `<p><strong>Horas estimadas:</strong> ${escapeHtml(aiInterpretation.laborPriceResearch.estimatedHours)}</p>`
+                : ''
+            }
+            ${
+              aiInterpretation?.laborPriceResearch?.basis
+                ? `<p><strong>Base:</strong> ${escapeHtml(aiInterpretation.laborPriceResearch.basis)}</p>`
+                : ''
+            }
+            <p><strong>Confiança:</strong> ${escapeHtml(aiInterpretation?.laborPriceResearch?.confidence || 'baixo')}</p>
+          </div>
+          <div class="response-block">
+            <h3>Pontos de Atenção</h3>
+            ${renderList(aiInterpretation?.pointsOfAttention || localResponse?.pointsOfAttention || [])}
+          </div>
+          <div class="response-block">
+            <h3>Pendências</h3>
+            ${renderList(aiInterpretation?.pendingQuestions || [])}
+          </div>
+          <div class="response-block">
+            <h3>Sugestões</h3>
+            ${renderList(aiInterpretation?.suggestions || localResponse?.suggestions || [])}
+          </div>
+          <div class="response-block">
+            <h3>Resumo Financeiro dos Materiais</h3>
+            <p><strong>Venda:</strong> ${Number(displayFinancialSummary?.saleTotal || 0).toFixed(2)}</p>
+            <p><strong>Custo:</strong> ${Number(displayFinancialSummary?.costTotal || 0).toFixed(2)}</p>
+            <p><strong>Lucro bruto estimado:</strong> ${Number(displayFinancialSummary?.grossProfit || 0).toFixed(2)}</p>
+          </div>
+          <div class="response-block">
+            <h3>Status</h3>
+            <p><strong>Confiança:</strong> ${escapeHtml(aiInterpretation?.confidence || localResponse?.confidence || 'baixo')}</p>
+            <p><strong>Status:</strong> ${escapeHtml(sessionStatus)}</p>
+          </div>
+          ${
+            proposalDraft
+              ? `
+                <div class="response-block">
+                  <h3>Proposta Comercial</h3>
+                  <p><strong>Título:</strong> ${escapeHtml(proposalDraft.title || '')}</p>
+                  <p><strong>Gerada em:</strong> ${escapeHtml(proposalDraft.generatedAt || '')}</p>
+                  <p><strong>Cliente Bling:</strong> ${
+                    resolvedCustomer?.id
+                      ? `${escapeHtml(resolvedCustomer.name || 'Resolvido')} <span class="muted">(#${escapeHtml(String(resolvedCustomer.id || ''))})</span>`
+                      : customerResolutionCandidate
+                        ? '<span class="muted">Ainda não resolvido automaticamente. O NEXA tentará confirmar o cliente no envio ao Bling.</span>'
+                        : '<span class="muted">Não resolvido</span>'
+                  }</p>
+                  ${
+                    blingQuoteReference?.id && !blingQuote?.id
+                      ? `
+                        <p><strong>Editando proposta Bling:</strong> #${escapeHtml(String(blingQuoteReference.number || 'sem número'))} <span class="muted">(ID ${escapeHtml(String(blingQuoteReference.id || ''))})</span></p>
+                      `
+                      : ''
+                  }
+                  ${
+                    proposalConfirmation?.confirmedAt
+                      ? `<p><strong>Confirmada em:</strong> ${escapeHtml(proposalConfirmation.confirmedAt || '')}</p>`
+                      : ''
+                  }
+                  ${
+                    blingQuote?.id
+                      ? `
+                        <p><strong>Bling ID:</strong> ${escapeHtml(String(blingQuote.id || ''))}</p>
+                        <p><strong>Número:</strong> ${escapeHtml(String(blingQuote.number || ''))}</p>
+                      `
+                      : ''
+                  }
+                  ${
+                    sessionStatus === 'Proposta comercial pronta'
+                      ? `
+                        <textarea class="proposal-draft-editor" data-proposal-draft-editor data-session-id="${escapeHtml(session.id || '')}">${escapeHtml(proposalDraft.commercialBody || '')}</textarea>
+                        <label class="inline-select">
+                          Modelo de IA para revisão
+                          <select id="proposal-review-model-selector">
+                            <option>gpt-5-nano</option>
+                            <option>gpt-5.4-mini</option>
+                            <option>gpt-5.4</option>
+                          </select>
+                        </label>
+                        <div class="proposal-draft-actions">
+                          <button
+                            type="button"
+                            class="button-secondary button-pill"
+                            data-session-status-action="review-proposal-draft"
+                            data-session-id="${escapeHtml(session.id || '')}"
+                          >
+                            Mandar pra revisão
+                          </button>
+                          <button
+                            type="button"
+                            class="button-secondary button-pill"
+                            data-session-status-action="save-proposal-draft"
+                            data-session-id="${escapeHtml(session.id || '')}"
+                          >
+                            Salvar mudanças
+                          </button>
+                        </div>
+                      `
+                      : `<pre>${escapeHtml(proposalDraft.commercialBody || '')}</pre>`
+                  }
+                </div>
+              `
+              : ''
+          }
+          ${
+            proposalDraftReview
+              ? `
+                <div class="response-block">
+                  <h3>Revisão do Rascunho</h3>
+                  <p><strong>Revisado em:</strong> ${escapeHtml(proposalDraftReview.reviewedAt || '')}</p>
+                  <p><strong>Confiança:</strong> ${escapeHtml(proposalDraftReview.confidence || 'baixo')}</p>
+                  <p>${escapeHtml(proposalDraftReview.summary || '')}</p>
+                  <p><strong>Notas de ajuste:</strong></p>
+                  ${renderList(proposalDraftReview.adjustmentNotes || [])}
+                  <p><strong>Sugestão ajustada:</strong></p>
+                  <textarea class="proposal-draft-review-editor" data-proposal-draft-review-editor data-session-id="${escapeHtml(session.id || '')}">${escapeHtml(proposalDraftReview.suggestedCommercialBody || '')}</textarea>
+                  <div class="proposal-draft-actions">
+                    <button
+                      type="button"
+                      class="button-secondary button-pill"
+                      data-session-status-action="reject-proposal-draft-review"
+                      data-session-id="${escapeHtml(session.id || '')}"
+                    >
+                      Rejeitar revisão
+                    </button>
+                    <button
+                      type="button"
+                      class="button-secondary button-pill"
+                      data-session-status-action="accept-proposal-draft-review"
+                      data-session-id="${escapeHtml(session.id || '')}"
+                    >
+                      Aceitar revisão
+                    </button>
+                  </div>
+                </div>
+              `
+              : ''
+          }
+        `;
+
+        const reviewModelSelector = document.getElementById(
+          'proposal-review-model-selector',
+        );
+        if (reviewModelSelector instanceof HTMLSelectElement) {
+          reviewModelSelector.value = getDefaultAiModel();
+        }
+
+        nexaResponse
+          .querySelectorAll('[data-session-status-action]')
+          .forEach((button) => {
+            button.addEventListener('click', async () => {
+              try {
+                const sessionId = button.getAttribute('data-session-id');
+                const action = button.getAttribute('data-session-status-action');
+
+                if (!sessionId || !action) {
+                  return;
+                }
+
+                if (action === 'review') {
+                  if (
+                    sessionStatus === 'Proposta comercial pronta' ||
+                    sessionStatus === 'Cancelado'
+                  ) {
+                    output.textContent = `Reabrindo sessão ${sessionId} para revisão...`;
+                    const response = await fetch(`/local/ai-sessions/${sessionId}/review`, {
+                      method: 'POST',
+                    });
+                    const payload = await response.json();
+
+                    if (!response.ok) {
+                      throw new Error(payload?.error || 'Falha ao reabrir a sessão para revisão.');
+                    }
+                  }
+
+                  await loadSessionIntoForm(sessionId);
+                  if (originalTextField) {
+                    originalTextField.focus();
+                  }
+                  output.textContent =
+                    'Sessão preparada para revisão. Ajuste o texto e envie novamente quando necessário.';
+                  return;
+                }
+
+                if (action === 'approve') {
+                  output.textContent = `Aprovando sessão ${sessionId}...`;
+                  const response = await fetch(`/local/ai-sessions/${sessionId}/approve`, {
+                    method: 'POST',
+                  });
+                  const payload = await response.json();
+
+                  if (!response.ok) {
+                    throw new Error(payload?.error || 'Falha ao aprovar a sessão.');
+                  }
+
+                  renderNexaResponse(buildRenderablePayloadFromLoadedSession(payload.session));
+                  await loadSessionIntoForm(sessionId);
+                  await loadRecentSessions();
+                  await loadRecentModels();
+                  return;
+                }
+
+                if (action === 'proposal-draft') {
+                  output.textContent = `Gerando proposta comercial da sessão ${sessionId}...`;
+                  const response = await fetch(
+                    `/local/ai-sessions/${sessionId}/proposal-draft`,
+                    {
+                      method: 'POST',
+                    },
+                  );
+                  const payload = await response.json();
+
+                  if (!response.ok) {
+                    throw new Error(
+                      payload?.error || 'Falha ao gerar a proposta comercial.',
+                    );
+                  }
+
+                  renderNexaResponse(buildRenderablePayloadFromLoadedSession(payload.session));
+                  await loadSessionIntoForm(sessionId);
+                  await loadRecentSessions();
+                  await loadRecentModels();
+                  return;
+                }
+
+                if (action === 'review-proposal-draft') {
+                  const reviewModelSelector = document.getElementById(
+                    'proposal-review-model-selector',
+                  );
+                  const reviewModel =
+                    reviewModelSelector instanceof HTMLSelectElement
+                      ? reviewModelSelector.value
+                      : 'gpt-5-nano';
+                  output.textContent = `Enviando rascunho da sessão ${sessionId} para revisão...`;
+                  let reviewWaitingState = {
+                    stepIndex: 0,
+                    secondsUntilRefresh: OPERATION_POLL_INTERVAL_SECONDS,
+                    secondsUntilTimeout: OPERATION_TIMEOUT_SECONDS,
+                  };
+                  renderProposalReviewWaiting(reviewWaitingState);
+                  stopOperationCountdown();
+                  operationCountdownTimer = window.setInterval(() => {
+                    reviewWaitingState.secondsUntilRefresh = Math.max(
+                      reviewWaitingState.secondsUntilRefresh - 1,
+                      0,
+                    );
+                    reviewWaitingState.secondsUntilTimeout = Math.max(
+                      reviewWaitingState.secondsUntilTimeout - 1,
+                      0,
+                    );
+
+                    if (reviewWaitingState.secondsUntilRefresh === 0) {
+                      reviewWaitingState = {
+                        stepIndex: reviewWaitingState.stepIndex + 1,
+                        secondsUntilRefresh: OPERATION_POLL_INTERVAL_SECONDS,
+                        secondsUntilTimeout: reviewWaitingState.secondsUntilTimeout,
+                      };
+                    }
+
+                    renderProposalReviewWaiting(reviewWaitingState);
+                  }, 1000);
+                  const response = await fetch(
+                    `/local/ai-sessions/${sessionId}/proposal-draft/review`,
+                    {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({
+                        reviewModel,
+                      }),
+                    },
+                  );
+                  const payload = await response.json();
+                  stopOperationCountdown();
+
+                  if (!response.ok) {
+                    throw new Error(
+                      payload?.error || 'Falha ao revisar o rascunho comercial.',
+                    );
+                  }
+
+                  renderNexaResponse(buildRenderablePayloadFromLoadedSession(payload.session));
+                  await loadSessionIntoForm(sessionId);
+                  await loadRecentSessions();
+                  await loadRecentModels();
+                  return;
+                }
+
+                if (action === 'confirm-proposal') {
+                  output.textContent = `Confirmando proposta e enviando ao Bling para a sessão ${sessionId}...`;
+                  const response = await fetch(
+                    `/local/ai-sessions/${sessionId}/confirm-proposal`,
+                    {
+                      method: 'POST',
+                    },
+                  );
+                  const payload = await response.json();
+
+                  if (!response.ok) {
+                    throw new Error(
+                      payload?.error || 'Falha ao confirmar a proposta comercial no Bling.',
+                    );
+                  }
+
+                  await loadRecentSessions();
+                  await loadRecentModels();
+                  resetWorkspaceForNewBudget(
+                    `Proposta enviada ao Bling com sucesso para a sessão ${sessionId}. Tela liberada para um novo orçamento.`,
+                  );
+                  return;
+                }
+
+                if (action === 'save-proposal-draft') {
+                  const editor = nexaResponse.querySelector(
+                    `[data-proposal-draft-editor][data-session-id="${sessionId}"]`,
+                  );
+                  const commercialBody = editor?.value || '';
+
+                  output.textContent = `Salvando rascunho comercial da sessão ${sessionId}...`;
+                  const response = await fetch(
+                    `/local/ai-sessions/${sessionId}/proposal-draft/save`,
+                    {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({
+                        commercialBody,
+                      }),
+                    },
+                  );
+                  const payload = await response.json();
+
+                  if (!response.ok) {
+                    throw new Error(
+                      payload?.error || 'Falha ao salvar o rascunho comercial.',
+                    );
+                  }
+
+                  renderNexaResponse(buildRenderablePayloadFromLoadedSession(payload.session));
+                  await loadSessionIntoForm(sessionId);
+                  output.textContent = 'Rascunho comercial salvo.';
+                  await loadRecentSessions();
+                  await loadRecentModels();
+                  return;
+                }
+
+                if (action === 'accept-proposal-draft-review') {
+                  const editor = nexaResponse.querySelector(
+                    `[data-proposal-draft-review-editor][data-session-id="${sessionId}"]`,
+                  );
+                  const commercialBody = editor?.value || '';
+
+                  output.textContent = `Aplicando revisão à sessão ${sessionId}...`;
+                  const response = await fetch(
+                    `/local/ai-sessions/${sessionId}/proposal-draft/review/accept`,
+                    {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({
+                        commercialBody,
+                      }),
+                    },
+                  );
+                  const payload = await response.json();
+
+                  if (!response.ok) {
+                    throw new Error(
+                      payload?.error || 'Falha ao aceitar a revisão do rascunho.',
+                    );
+                  }
+
+                  renderNexaResponse(buildRenderablePayloadFromLoadedSession(payload.session));
+                  await loadSessionIntoForm(sessionId);
+                  output.textContent =
+                    'Revisão aceita. O rascunho principal foi atualizado.';
+                  await loadRecentSessions();
+                  await loadRecentModels();
+                  return;
+                }
+
+                if (action === 'reject-proposal-draft-review') {
+                  output.textContent = `Descartando revisão da sessão ${sessionId}...`;
+                  const response = await fetch(
+                    `/local/ai-sessions/${sessionId}/proposal-draft/review/reject`,
+                    {
+                      method: 'POST',
+                    },
+                  );
+                  const payload = await response.json();
+
+                  if (!response.ok) {
+                    throw new Error(
+                      payload?.error || 'Falha ao rejeitar a revisão do rascunho.',
+                    );
+                  }
+
+                  renderNexaResponse(buildRenderablePayloadFromLoadedSession(payload.session));
+                  await loadSessionIntoForm(sessionId);
+                  output.textContent =
+                    'Revisão descartada. O rascunho principal foi mantido.';
+                  await loadRecentSessions();
+                  await loadRecentModels();
+                  return;
+                }
+
+                if (action === 'cancel') {
+                  const confirmed = window.confirm(
+                    'Deseja cancelar esta sessão assistida? Ela continuará salva no histórico, mas ficará marcada como cancelada e não deverá seguir para proposta comercial.',
+                  );
+
+                  if (!confirmed) {
+                    output.textContent = 'Cancelamento da sessão interrompido.';
+                    return;
+                  }
+
+                  output.textContent = `Cancelando sessão ${sessionId}...`;
+                  const response = await fetch(`/local/ai-sessions/${sessionId}/cancel`, {
+                    method: 'POST',
+                  });
+                  const payload = await response.json();
+
+                  if (!response.ok) {
+                    throw new Error(payload?.error || 'Falha ao cancelar a sessão.');
+                  }
+
+                  renderNexaResponse(buildRenderablePayloadFromLoadedSession(payload.session));
+                  await loadSessionIntoForm(sessionId);
+                  await loadRecentSessions();
+                  await loadRecentModels();
+                }
+              } catch (error) {
+                output.textContent =
+                  error instanceof Error
+                    ? error.message
+                    : 'Falha ao executar a ação da sessão.';
+              }
+            });
+          });
+      }
+
+      function renderIdleResponse() {
+        nexaResponse.innerHTML = `
+          <h2>Retorno do NEXA</h2>
+          <div class="response-block">
+            <p class="muted">Aguardando execução...</p>
+          </div>
+        `;
+      }
+
+      function stopOperationCountdown() {
+        if (operationCountdownTimer) {
+          window.clearInterval(operationCountdownTimer);
+          operationCountdownTimer = null;
+        }
+      }
+
+      function renderOperationWaiting(operation, secondsUntilTimeout) {
+        nexaResponse.innerHTML = `
+          <h2>Retorno do NEXA</h2>
+          <div class="response-block">
+            <h3>Processando orçamento</h3>
+            <p>${escapeHtml(operation?.userMessage || 'O NEXA está processando sua solicitação.')}</p>
+            <p><strong>Etapa atual:</strong> ${escapeHtml(formatOperationPhase(operation?.phase || 'queued'))}</p>
+            <p><strong>Tempo restante:</strong> ${escapeHtml(String(secondsUntilTimeout))} segundos</p>
+            <p class="muted">A comunicação com o NEXA está ativa.</p>
+          </div>
+        `;
+      }
+
+      function renderProposalReviewWaiting(state) {
+        const step = getProposalReviewWaitingStep(state?.stepIndex || 0);
+
+        nexaResponse.innerHTML = `
+          <h2>Retorno do NEXA</h2>
+          <div class="response-block">
+            <h3>Revisando proposta comercial</h3>
+            <p>${escapeHtml(step.message)}</p>
+            <p><strong>Etapa atual:</strong> ${escapeHtml(step.phase)}</p>
+            <p><strong>Tempo restante:</strong> ${escapeHtml(String(state?.secondsUntilTimeout ?? OPERATION_TIMEOUT_SECONDS))} segundos</p>
+            <p class="muted">A comunicação com o NEXA está ativa.</p>
+          </div>
+        `;
+      }
+
+      function getProposalReviewWaitingStep(stepIndex) {
+        const steps = [
+          {
+            phase: 'Preparando revisão',
+            message: 'O NEXA está preparando o rascunho comercial para revisão.',
+          },
+          {
+            phase: 'Conferindo conteúdo',
+            message: 'O NEXA está revisando o texto, os agrupamentos e os valores provisórios do orçamento.',
+          },
+          {
+            phase: 'Consolidando retorno',
+            message: 'O NEXA está finalizando a sugestão revisada para exibição no rascunho.',
+          },
+        ];
+
+        return steps[Math.min(stepIndex, steps.length - 1)];
+      }
+
+      function formatOperationPhase(phase) {
+        const labels = {
+          queued: 'Preparando análise',
+          extracting_intake: 'Lendo a solicitação',
+          building_context: 'Cruzando com a base local',
+          interpreting_request: 'Estruturando orçamento',
+          saving_session: 'Salvando sessão',
+          completed: 'Concluído',
+          failed: 'Falhou',
+        };
+
+        return labels[phase] || 'Em processamento';
+      }
+
+      async function runRequest(label, url, options) {
+        output.textContent = `${label} em execução...`;
+
+        const response = await fetch(url, options);
+        const text = await response.text();
+
+        let payload;
+        try {
+          payload = JSON.parse(text);
+        } catch {
+          payload = text;
+        }
+
+        renderNexaResponse(payload);
+        await loadRecentSessions();
+        output.textContent = JSON.stringify(
+          {
+            label,
+            statusCode: response.status,
+            payload,
+          },
+          null,
+          2,
+        );
+      }
+
+      function getOriginalTextValue() {
+        return (originalTextField?.value || '').trim();
+      }
+
+      function setActiveSessionState(session, originalText) {
+        activeSessionId = session?.id || null;
+        activeSessionOriginalText = originalText || '';
+        activeSessionCreatedAt = session?.createdAt || '';
+        resetSendConfirmation();
+      }
+
+      function clearActiveSessionState() {
+        activeSessionId = null;
+        activeSessionOriginalText = '';
+        activeSessionCreatedAt = '';
+        resetSendConfirmation();
+      }
+
+      function setActiveModelState(modelId, mode) {
+        activeModelId = modelId || null;
+        activeModelMode = mode || null;
+        resetSendConfirmation();
+      }
+
+      function clearActiveModelState() {
+        activeModelId = null;
+        activeModelMode = null;
+        resetSendConfirmation();
+      }
+
+      function resetWorkspaceForNewBudget(message) {
+        if (originalTextField) {
+          originalTextField.value = '';
+        }
+
+        clearActiveSessionState();
+        clearActiveModelState();
+        renderIdleResponse();
+        output.textContent = message;
+      }
+
+      function setSidebarTab(tab) {
+        activeSidebarTab = tab === 'models' ? 'models' : 'sessions';
+        sessionTabButton?.classList.toggle('is-active', activeSidebarTab === 'sessions');
+        modelTabButton?.classList.toggle('is-active', activeSidebarTab === 'models');
+        sessionListPanel?.classList.toggle('is-hidden', activeSidebarTab !== 'sessions');
+        modelListPanel?.classList.toggle('is-hidden', activeSidebarTab !== 'models');
+      }
+
+      function buildRenderablePayloadFromLoadedSession(loadedSession) {
+        if (!loadedSession?.payload || typeof loadedSession.payload !== 'object') {
+          return loadedSession?.payload || loadedSession;
+        }
+
+        return {
+          ...loadedSession.payload,
+          session: {
+            id: loadedSession.id,
+            createdAt: loadedSession.createdAt,
+            updatedAt: loadedSession.updatedAt,
+            customerQuery: loadedSession.customerQuery,
+            confidence: loadedSession.confidence,
+            status: loadedSession.status,
+          },
+        };
+      }
+
+      function getSessionActionState(status, options = {}) {
+        const canAttemptBlingConfirmation =
+          options.canAttemptBlingConfirmation !== false;
+
+        if (status === 'Aprovado para proposta') {
+          return {
+            reviewLabel: 'Revisar',
+            reviewDisabled: true,
+            approveDisabled: true,
+            proposalDisabled: false,
+            cancelDisabled: false,
+            badgeClass: 'session-status-badge--approved',
+          };
+        }
+
+        if (status === 'Proposta comercial pronta') {
+          return {
+            reviewLabel: 'Reabrir revisão',
+            reviewDisabled: false,
+            approveDisabled: true,
+            proposalDisabled: true,
+            confirmDisabled: !canAttemptBlingConfirmation,
+            cancelDisabled: false,
+            badgeClass: 'session-status-badge--proposal',
+          };
+        }
+
+        if (status === 'Finalizada') {
+          return {
+            reviewLabel: 'Reabrir revisão',
+            reviewDisabled: false,
+            approveDisabled: true,
+            proposalDisabled: true,
+            confirmDisabled: true,
+            cancelDisabled: false,
+            badgeClass: 'session-status-badge--ready',
+          };
+        }
+
+        if (status === 'Cancelado') {
+          return {
+            reviewLabel: 'Reabrir revisão',
+            reviewDisabled: false,
+            approveDisabled: true,
+            proposalDisabled: true,
+            confirmDisabled: true,
+            cancelDisabled: true,
+            badgeClass: 'session-status-badge--cancelled',
+          };
+        }
+
+        return {
+          reviewLabel: 'Revisar',
+          reviewDisabled: true,
+          approveDisabled: false,
+          proposalDisabled: true,
+          confirmDisabled: true,
+          cancelDisabled: false,
+          badgeClass: 'session-status-badge--review',
+        };
+      }
+
+      function hasDirtyLoadedSession() {
+        return Boolean(
+          activeSessionId &&
+            getOriginalTextValue() &&
+            getOriginalTextValue() !== activeSessionOriginalText.trim(),
+        );
+      }
+
+      function hasUnsavedNewBudget() {
+        return Boolean(!activeSessionId && getOriginalTextValue());
+      }
+
+      async function submitAiAgentResponse({ originalText, sessionId, renderResponse = true }) {
+        const defaultAiModel = getDefaultAiModel();
+
+        output.textContent = sessionId
+          ? `Atualizando sessão ${sessionId}...`
+          : 'Enviando orçamento para análise do NEXA...';
+
+        const startResponse = await fetch('/local/ai-agent-response/start', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ...(sessionId ? { sessionId } : {}),
+            originalText,
+            defaultAiModel,
+          }),
+        });
+
+        const startPayload = await startResponse.json();
+
+        if (!startResponse.ok) {
+          throw new Error(startPayload?.error || 'Falha ao iniciar a análise assistida.');
+        }
+
+        let secondsUntilTimeout = OPERATION_TIMEOUT_SECONDS;
+        renderOperationWaiting(
+          {
+            phase: startPayload.phase,
+            userMessage: startPayload.userMessage,
+          },
+          secondsUntilTimeout,
+        );
+        stopOperationCountdown();
+        operationCountdownTimer = window.setInterval(() => {
+          secondsUntilTimeout = Math.max(secondsUntilTimeout - 1, 0);
+          renderOperationWaiting(
+            {
+              phase: startPayload.phase,
+              userMessage: startPayload.userMessage,
+            },
+            secondsUntilTimeout,
+          );
+        }, 1000);
+
+        let payload = null;
+
+        while (true) {
+          const operationResponse = await fetch(
+            `/local/ai-operations/${startPayload.operationId}`,
+          );
+          const operationPayload = await operationResponse.json();
+
+          if (!operationResponse.ok) {
+            stopOperationCountdown();
+            throw new Error(
+              operationPayload?.error || 'Falha ao acompanhar a operação do NEXA.',
+            );
+          }
+
+          const operation = operationPayload.operation;
+
+          if (operation.status === 'completed') {
+            stopOperationCountdown();
+            payload = operation.payload;
+            break;
+          }
+
+          if (operation.status === 'failed') {
+            stopOperationCountdown();
+            throw new Error(
+              operation.error || 'Falha controlada ao processar a solicitação.',
+            );
+          }
+
+          renderOperationWaiting(operation, secondsUntilTimeout);
+
+          await new Promise((resolve) =>
+            window.setTimeout(resolve, OPERATION_POLL_INTERVAL_SECONDS * 1000),
+          );
+        }
+
+        await loadRecentSessions();
+        await loadRecentModels();
+
+        if (renderResponse) {
+          renderNexaResponse(payload);
+          output.textContent = JSON.stringify(
+            {
+              label: 'local-ai-agent-response',
+              statusCode: 200,
+              payload,
+            },
+            null,
+            2,
+          );
+        }
+
+        setActiveSessionState(payload.session, originalText);
+        clearActiveModelState();
+        return payload;
+      }
+
+      async function loadSessionIntoForm(sessionId) {
+        output.textContent = `Carregando sessão ${sessionId}...`;
+        const response = await fetch(`/local/ai-sessions/${sessionId}`);
+        const payload = await response.json();
+
+        if (!response.ok) {
+          throw new Error(payload?.error || 'Falha ao carregar a sessão selecionada.');
+        }
+
+        renderNexaResponse(buildRenderablePayloadFromLoadedSession(payload.session));
+        if (originalTextField) {
+          originalTextField.value = payload.session?.originalText || '';
+        }
+        setActiveSessionState(payload.session, payload.session?.originalText || '');
+        clearActiveModelState();
+        output.textContent = JSON.stringify(payload, null, 2);
+      }
+
+      async function prepareSessionSwitch(targetSessionId) {
+        if (hasDirtyLoadedSession()) {
+          const shouldUpdate = window.confirm(
+            `Este orçamento carregado foi alterado.\n\nDeseja atualizá-lo antes de continuar?\nCliente atual: ${activeSessionId}\nCriado em: ${activeSessionCreatedAt || 'data não informada'}`,
+          );
+
+          if (shouldUpdate) {
+            await submitAiAgentResponse({
+              originalText: getOriginalTextValue(),
+              sessionId: activeSessionId,
+              renderResponse: false,
+            });
+          } else {
+            clearActiveSessionState();
+            clearActiveModelState();
+            output.textContent =
+              'Alterações locais ignoradas. O orçamento salvo anteriormente foi mantido sem atualização.';
+          }
+
+          return true;
+        }
+
+        if (hasUnsavedNewBudget()) {
+          const shouldSave = window.confirm(
+            'Já existe um novo orçamento preenchido na caixa de texto.\n\nDeseja guardá-lo antes de continuar?\n\nOK = Guardar\nCancelar = Ver opções sem salvar',
+          );
+
+          if (shouldSave) {
+            await submitAiAgentResponse({
+              originalText: getOriginalTextValue(),
+              renderResponse: false,
+            });
+            return true;
+          }
+
+          const shouldIgnore = window.confirm(
+            'Deseja ignorar o texto atual e continuar sem salvá-lo?\n\nOK = Ignorar\nCancelar = Cancelar troca de sessão',
+          );
+
+          if (shouldIgnore) {
+            clearActiveSessionState();
+            clearActiveModelState();
+            return true;
+          }
+
+          output.textContent = 'Troca de sessão cancelada.';
+          return false;
+        }
+
+        if (
+          activeSessionId &&
+          activeSessionId !== targetSessionId &&
+          getOriginalTextValue() === activeSessionOriginalText.trim()
+        ) {
+          clearActiveSessionState();
+          clearActiveModelState();
+        }
+
+        return true;
+      }
+
+      async function startSessionFromModel(modelId, mode) {
+        output.textContent =
+          mode === 'edit'
+            ? `Carregando modelo ${modelId} para editar proposta existente...`
+            : `Carregando modelo ${modelId} para nova proposta...`;
+        const response = await fetch(`/local/ai-models/${modelId}/start`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            mode,
+          }),
+        });
+        const payload = await response.json();
+
+        if (!response.ok) {
+          throw new Error(payload?.error || 'Falha ao iniciar sessão a partir do modelo.');
+        }
+
+        renderNexaResponse(buildRenderablePayloadFromLoadedSession(payload.session));
+        if (originalTextField) {
+          originalTextField.value = payload.session?.originalText || '';
+        }
+        setActiveSessionState(payload.session, payload.session?.originalText || '');
+        setActiveModelState(modelId, mode);
+        output.textContent = JSON.stringify(payload, null, 2);
+      }
+
+      async function loadRecentSessions() {
+        sessionList.innerHTML = '<p class="muted">Carregando sessões...</p>';
+
+        try {
+          const response = await fetch('/local/ai-sessions');
+          const payload = await response.json();
+          const sessions = payload.sessions || [];
+
+          if (sessions.length === 0) {
+            sessionList.innerHTML = '<p class="muted">Nenhuma sessão salva até o momento.</p>';
+            return;
+          }
+
+          sessionList.innerHTML = sessions
+            .map(
+              (session) => {
+                const actionState = getSessionActionState(
+                  session.status || 'Aguardando aprovacao',
+                );
+
+                return `
+                <article
+                  class="session-item ${(session.status || 'Aguardando aprovacao') === 'Finalizada' ? 'session-item--ready' : ''}"
+                  data-session-id="${escapeHtml(session.id)}"
+                  data-session-created-at="${escapeHtml(session.createdAt || '')}"
+                >
+                  <div class="session-item-preview">
+                    <strong>${escapeHtml(buildSessionCardTitle(session))}</strong>
+                    <small>${escapeHtml(session.updatedAt || '')}</small>
+                    <small>${escapeHtml(buildCustomerLabel(session.customerQuery || ''))}</small>
+                    <div class="session-status-badge session-item-status ${actionState.badgeClass}">
+                      ${escapeHtml(session.status || 'Aguardando aprovacao')}
+                    </div>
+                    <small>${escapeHtml(truncateText(session.originalText || '', 96))}</small>
+                  </div>
+                  <div class="session-item-actions">
+                    ${
+                      (session.status || 'Aguardando aprovacao') === 'Finalizada'
+                        ? `<button type="button" class="button-secondary" data-session-action="save-model" data-session-id="${escapeHtml(session.id)}">+ Modelo</button>`
+                        : `<button type="button" class="button-secondary" data-session-action="continue" data-session-id="${escapeHtml(session.id)}">Continuar</button>`
+                    }
+                    <button type="button" class="button-danger" data-session-action="delete" data-session-id="${escapeHtml(session.id)}">Apagar</button>
+                  </div>
+                </article>
+              `;
+              },
+            )
+            .join('');
+
+          sessionList.querySelectorAll('[data-session-action]').forEach((button) => {
+            button.addEventListener('click', async () => {
+              const sessionId = button.getAttribute('data-session-id');
+              const action = button.getAttribute('data-session-action');
+              if (!sessionId || !action) {
+                return;
+              }
+
+              if (action === 'continue') {
+                const shouldContinue = await prepareSessionSwitch(sessionId);
+                if (!shouldContinue) {
+                  return;
+                }
+
+                await loadSessionIntoForm(sessionId);
+                return;
+              }
+
+              if (action === 'save-model') {
+                const confirmed = window.confirm(
+                  'Salvar esta sessão finalizada como modelo?\n\nApós o salvamento correto, ela sairá da lista de sessões e ficará disponível na aba Modelos.',
+                );
+
+                if (!confirmed) {
+                  output.textContent = 'Criação do modelo cancelada.';
+                  return;
+                }
+
+                output.textContent = `Salvando sessão ${sessionId} como modelo...`;
+                const response = await fetch(`/local/ai-sessions/${sessionId}/save-as-model`, {
+                  method: 'POST',
+                });
+                const payload = await response.json();
+
+                if (!response.ok) {
+                  throw new Error(payload?.error || 'Falha ao salvar a sessão como modelo.');
+                }
+
+                if (activeSessionId === sessionId) {
+                  clearActiveSessionState();
+                  if (originalTextField) {
+                    originalTextField.value = '';
+                  }
+                }
+
+                await loadRecentSessions();
+                await loadRecentModels();
+                setSidebarTab('models');
+                output.textContent = JSON.stringify(payload, null, 2);
+                return;
+              }
+
+              if (action === 'delete') {
+                const sessionCard = button.closest('.session-item');
+                const customerName =
+                  sessionCard?.querySelector('strong')?.textContent?.trim() ||
+                  'Cliente não identificado';
+                const sessionCreatedAt = responseDateFromSessionCard(sessionCard);
+                const sessionSummary =
+                  sessionCard?.querySelectorAll('small')?.[1]?.textContent?.trim() ||
+                  'Sem resumo disponível.';
+
+                const firstConfirmation = window.confirm(
+                  `Confirma a exclusão desta sessão?\n\nCliente: ${customerName}\nResumo: ${sessionSummary}`,
+                );
+
+                if (!firstConfirmation) {
+                  output.textContent = 'Exclusão cancelada.';
+                  return;
+                }
+
+                const secondConfirmation = window.confirm(
+                  `Excluir sessão criada em ${sessionCreatedAt}? Esta ação não pode ser desfeita.`,
+                );
+
+                if (!secondConfirmation) {
+                  output.textContent = 'Exclusão cancelada.';
+                  return;
+                }
+
+                output.textContent = `Apagando sessão ${sessionId}...`;
+                const response = await fetch(`/local/ai-sessions/${sessionId}`, {
+                  method: 'DELETE',
+                });
+                const payload = await response.json();
+                await loadRecentSessions();
+                output.textContent = JSON.stringify(payload, null, 2);
+              }
+            });
+          });
+        } catch (error) {
+          sessionList.innerHTML =
+            `<p class="muted">Falha ao carregar sessões: ${escapeHtml(String(error))}</p>`;
+        }
+      }
+
+      async function loadRecentModels() {
+        modelList.innerHTML = '<p class="muted">Carregando modelos...</p>';
+
+        try {
+          const response = await fetch('/local/ai-models');
+          const payload = await response.json();
+          const models = payload.models || [];
+
+          if (models.length === 0) {
+            modelList.innerHTML = '<p class="muted">Nenhum modelo salvo até o momento.</p>';
+            return;
+          }
+
+          modelList.innerHTML = models
+            .map(
+              (model) => `
+                <article class="session-item session-item--ready" data-model-id="${escapeHtml(model.id)}">
+                  <div class="session-item-preview">
+                    <strong>${escapeHtml(model.title || 'Modelo sem título')}</strong>
+                    <small>${escapeHtml(model.updatedAt || '')}</small>
+                    <small>${escapeHtml(buildCustomerLabel(model.customerQuery || ''))}</small>
+                    ${
+                      model.blingQuoteNumber
+                        ? `<small>Proposta Bling #${escapeHtml(String(model.blingQuoteNumber))}</small>`
+                        : ''
+                    }
+                    <small>${escapeHtml(truncateText(model.previewText || '', 120))}</small>
+                  </div>
+                  <div class="session-item-actions">
+                    <button type="button" class="button-secondary" data-model-action="use" data-model-id="${escapeHtml(model.id)}">Usar modelo</button>
+                    <button type="button" class="button-secondary" data-model-action="edit" data-model-id="${escapeHtml(model.id)}" ${model.blingQuoteId ? '' : 'disabled'}>Editar</button>
+                    <button type="button" class="button-danger" data-model-action="delete" data-model-id="${escapeHtml(model.id)}">Apagar</button>
+                  </div>
+                </article>
+              `,
+            )
+            .join('');
+
+          modelList.querySelectorAll('[data-model-action]').forEach((button) => {
+            button.addEventListener('click', async () => {
+              const modelId = button.getAttribute('data-model-id');
+              const action = button.getAttribute('data-model-action');
+
+              if (!modelId || !action) {
+                return;
+              }
+
+              if (action === 'use') {
+                const shouldContinue = await prepareSessionSwitch('');
+                if (!shouldContinue) {
+                  return;
+                }
+
+                await startSessionFromModel(modelId, 'use');
+                return;
+              }
+
+              if (action === 'edit') {
+                const shouldContinue = await prepareSessionSwitch('');
+                if (!shouldContinue) {
+                  return;
+                }
+
+                await startSessionFromModel(modelId, 'edit');
+                return;
+              }
+
+              if (action === 'delete') {
+                const confirmed = window.confirm(
+                  'Deseja apagar este modelo salvo? Esta ação não pode ser desfeita.',
+                );
+
+                if (!confirmed) {
+                  output.textContent = 'Exclusão do modelo cancelada.';
+                  return;
+                }
+
+                output.textContent = `Apagando modelo ${modelId}...`;
+                const response = await fetch(`/local/ai-models/${modelId}`, {
+                  method: 'DELETE',
+                });
+                const payload = await response.json();
+
+                if (!response.ok) {
+                  throw new Error(payload?.error || 'Falha ao apagar o modelo.');
+                }
+
+                await loadRecentModels();
+                output.textContent = JSON.stringify(payload, null, 2);
+              }
+            });
+          });
+        } catch (error) {
+          modelList.innerHTML =
+            `<p class="muted">Falha ao carregar modelos: ${escapeHtml(String(error))}</p>`;
+        }
+      }
+
+      async function loadBlingTokenStatus() {
+        try {
+          const response = await fetch('/local/settings/bling-token');
+          const payload = await response.json();
+
+          if (!response.ok) {
+            throw new Error(payload?.error || 'Falha ao carregar status do token Bling.');
+          }
+
+          const tokenStatus = payload.tokenStatus || {};
+          const statusLabels = {
+            valid: 'Válido',
+            expiring_soon: 'Próximo do vencimento',
+            expired: 'Vencido',
+            unknown: 'Validade não registrada',
+            unconfigured: 'Não configurado',
+          };
+
+          if (blingTokenStatus) {
+            blingTokenStatus.textContent =
+              statusLabels[tokenStatus.status] || 'Desconhecido';
+          }
+
+          if (blingTokenExpiry) {
+            if (tokenStatus.expiresAt) {
+              const suffix =
+                typeof tokenStatus.expiresInMinutes === 'number'
+                  ? ` (${tokenStatus.expiresInMinutes} min)`
+                  : '';
+              blingTokenExpiry.textContent = `${tokenStatus.expiresAt}${suffix}`;
+            } else {
+              blingTokenExpiry.textContent = 'Não disponível';
+            }
+          }
+        } catch (error) {
+          if (blingTokenStatus) {
+            blingTokenStatus.textContent = 'Falha ao carregar';
+          }
+
+          if (blingTokenExpiry) {
+            blingTokenExpiry.textContent = String(error);
+          }
+        }
+      }
+
+      function setupSpeechInput() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+          speechStatus.textContent =
+            'Reconhecimento de voz não suportado neste navegador.';
+          speechButton.disabled = true;
+          return;
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'pt-BR';
+        recognition.interimResults = true;
+        recognition.continuous = true;
+
+        const form = document.getElementById('ai-agent-response-form');
+        const textArea = form.querySelector('textarea[name="originalText"]');
+        let finalTranscript = '';
+        let shouldKeepListening = false;
+        let manuallyStopping = false;
+        let recognitionActive = false;
+
+        function renderSpeechButton() {
+          speechButton.classList.toggle('microphone-button--idle', !shouldKeepListening);
+          speechButton.classList.toggle('microphone-button--listening', shouldKeepListening);
+          speechButton.setAttribute(
+            'aria-label',
+            shouldKeepListening ? 'Terminar captura de voz' : 'Iniciar captura de voz',
+          );
+          speechButton.title = shouldKeepListening
+            ? 'Clique para terminar a captura'
+            : 'Clique para começar a falar';
+        }
+
+        recognition.onstart = () => {
+          recognitionActive = true;
+          speechStatus.textContent = 'Ouvindo... clique novamente no microfone para terminar.';
+        };
+
+        recognition.onresult = (event) => {
+          let interimTranscript = '';
+
+          for (let index = event.resultIndex; index < event.results.length; index += 1) {
+            const transcript = event.results[index][0].transcript;
+            if (event.results[index].isFinal) {
+              finalTranscript += `${transcript} `;
+            } else {
+              interimTranscript += transcript;
+            }
+          }
+
+          textArea.value = `${finalTranscript}${interimTranscript}`.trim();
+        };
+
+        recognition.onerror = (event) => {
+          shouldKeepListening = false;
+          recognitionActive = false;
+          manuallyStopping = false;
+          renderSpeechButton();
+          speechStatus.textContent = `Falha no reconhecimento de voz: ${event.error}.`;
+        };
+
+        recognition.onend = () => {
+          recognitionActive = false;
+
+          if (shouldKeepListening && !manuallyStopping) {
+            speechStatus.textContent = 'A escuta foi retomada automaticamente. Continue falando.';
+            setTimeout(() => {
+              if (shouldKeepListening && !recognitionActive) {
+                recognition.start();
+              }
+            }, 120);
+            return;
+          }
+
+          manuallyStopping = false;
+          shouldKeepListening = false;
+          renderSpeechButton();
+          speechStatus.textContent = textArea.value.trim()
+            ? 'Captura encerrada. Revise o texto antes de enviar ao NEXA.'
+            : 'Voz inativa. Clique no microfone para começar.';
+        };
+
+        speechButton.addEventListener('click', () => {
+          if (shouldKeepListening) {
+            manuallyStopping = true;
+            shouldKeepListening = false;
+            renderSpeechButton();
+            speechStatus.textContent = 'Encerrando captura de voz...';
+            recognition.stop();
+            return;
+          }
+
+          finalTranscript = textArea.value.trim() ? `${textArea.value.trim()} ` : '';
+          manuallyStopping = false;
+          shouldKeepListening = true;
+          renderSpeechButton();
+          recognition.start();
+        });
+
+        renderSpeechButton();
+      }
+
+      function responseDateFromSessionCard(sessionCard) {
+        return (
+          sessionCard?.getAttribute('data-session-created-at')?.trim() ||
+          'data não informada'
+        );
+      }
+
+      aiAgentResponseForm
+        .addEventListener('submit', async (event) => {
+          event.preventDefault();
+          const form = new FormData(event.currentTarget);
+          const originalText = String(form.get('originalText') || '').trim();
+          const wordCount = countMeaningfulWords(originalText);
+
+          if (!budgetFinishedCheckbox?.checked) {
+            output.textContent =
+              'Marque a caixa "Terminado" antes de enviar o orçamento ao NEXA.';
+            return;
+          }
+
+          if (wordCount < 30) {
+            output.textContent =
+              `O texto precisa ter pelo menos 30 palavras antes do envio. Atualmente: ${wordCount}.`;
+            return;
+          }
+
+          await submitAiAgentResponse({
+            originalText,
+            ...(activeSessionId ? { sessionId: activeSessionId } : {}),
+          });
+        });
+
+      budgetFinishedCheckbox?.addEventListener('change', updateSubmitButtonState);
+      defaultAiModelSelector?.addEventListener('change', (event) => {
+        const selectedModel =
+          event.currentTarget instanceof HTMLSelectElement
+            ? event.currentTarget.value
+            : DEFAULT_AI_MODEL;
+        saveDefaultAiModel(selectedModel);
+        output.textContent =
+          `Modelo padrão do NEXA atualizado para ${normalizeAiModelSelection(selectedModel)}.`;
+      });
+      originalTextField?.addEventListener('input', () => {
+        if (!budgetFinishedCheckbox?.checked) {
+          updateSubmitButtonState();
+        }
+      });
+      updateSubmitButtonState();
+
+      refreshSessionsButton.addEventListener('click', async () => {
+        await loadRecentSessions();
+        await loadRecentModels();
+      });
+
+      cancelAiAgentButton?.addEventListener('click', () => {
+        const hasContext =
+          Boolean(getOriginalTextValue()) || Boolean(activeSessionId) || Boolean(activeModelId);
+
+        if (hasContext) {
+          const confirmed = window.confirm(
+            'Deseja limpar a tela atual e preparar o NEXA para um novo orçamento?',
+          );
+
+          if (!confirmed) {
+            output.textContent = 'Limpeza da tela cancelada.';
+            return;
+          }
+        }
+
+        resetWorkspaceForNewBudget('Tela limpa. O NEXA está pronto para um novo orçamento.');
+      });
+
+      refreshBlingTokenButton?.addEventListener('click', async () => {
+        try {
+          output.textContent = 'Renovando token do Bling...';
+          const response = await fetch('/local/settings/bling-token/refresh', {
+            method: 'POST',
+          });
+          const payload = await response.json();
+
+          if (!response.ok) {
+            throw new Error(payload?.error || 'Falha ao renovar token do Bling.');
+          }
+
+          await loadBlingTokenStatus();
+          output.textContent = JSON.stringify(payload, null, 2);
+        } catch (error) {
+          output.textContent =
+            error instanceof Error ? error.message : 'Falha ao renovar token do Bling.';
+        }
+      });
+
+      sessionTabButton?.addEventListener('click', () => {
+        setSidebarTab('sessions');
+      });
+
+      modelTabButton?.addEventListener('click', () => {
+        setSidebarTab('models');
+      });
+
+      setupSpeechInput();
+      loadDefaultAiModel();
+      setSidebarTab('sessions');
+      loadRecentSessions();
+      loadRecentModels();
+      loadBlingTokenStatus();
+    </script>
+  </body>
+</html>
