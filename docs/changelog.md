@@ -35,6 +35,14 @@ Consultar este arquivo ao:
 - [docs/architecture/system-walkthrough.md](/home/usuario/workspace/Antigravity/2026/NeXa/docs/architecture/system-walkthrough.md)
 - [docs/README.md](/home/usuario/workspace/Antigravity/2026/NeXa/docs/README.md)
 
+### 2026-04-01 13:20:00 -03
+- __Painel de Configurações foi reorganizado visualmente em lista vertical com ajuda contextual por clique__ ✓
+- O bloco `Configurações` da Web App deixou a grade simples de labels e passou para um formato de lista vertical com grupos compactos, nomes curtos (`Log`, `Modelo`, `Tema`, `Revisão`, `Foco`) e um indicador `i` que abre ajuda contextual por clique.
+- Nesta etapa a mudança foi apenas visual e estrutural: os grupos e popovers já existem, mas os checkboxes continuam desabilitados e as opções ainda não ganharam comportamento real.
+- O seletor `Modelo de IA` continua visível dentro do grupo `Modelo`, mantendo o estado anterior do sistema.
+- Arquivo impactado:
+- [app.html](/home/usuario/workspace/Antigravity/2026/NeXa/public/app.html)
+
 ### 2026-03-31 20:45:00 -03
 - __Seletor visível de modelo foi reposicionado para a etapa de revisão do rascunho__ ✓
 - O seletor operacional de `Modelo de IA` deixou a tela inicial de envio ao NEXA e passou para o bloco do rascunho comercial, logo acima do botão `Mandar pra revisão`.

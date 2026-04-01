@@ -490,11 +490,14 @@
 
       .settings-panel p {
         margin-top: 10px;
+        font-size: 12px;
+        line-height: 1.55;
+        color: var(--muted);
       }
 
       .settings-grid {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: minmax(0, 1fr);
         gap: 12px;
         margin-top: 10px;
       }
@@ -503,28 +506,179 @@
         margin: 0;
       }
 
+      .setting-group {
+        display: grid;
+        gap: 12px;
+        padding: 13px 14px;
+        border-radius: 18px;
+        border: 1px solid rgba(117, 86, 48, 0.12);
+        background: linear-gradient(180deg, rgba(255, 252, 246, 0.96), rgba(250, 242, 230, 0.78));
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.78),
+          0 10px 18px rgba(117, 86, 48, 0.06);
+      }
+
+      .setting-group-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--ink);
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+      }
+
+      .setting-group-toggle > label {
+        display: inline-flex;
+        align-items: center;
+        min-width: 0;
+      }
+
+      .setting-group-controls {
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        flex: 0 0 auto;
+        margin-left: auto;
+      }
+
+      .setting-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .setting-info-wrap {
+        position: relative;
+        display: inline-flex;
+        align-items: flex-start;
+      }
+
+      .setting-info-trigger {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 12px;
+        height: 12px;
+        padding: 0;
+        border: 0;
+        border-radius: 999px;
+        background: transparent;
+        color: rgba(23, 18, 13, 0.58);
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1;
+        cursor: pointer;
+        transform: translateY(-4px);
+        transition:
+          background 160ms ease,
+          color 160ms ease,
+          transform 160ms ease;
+        box-shadow: none;
+      }
+
+      .setting-info-trigger:hover,
+      .setting-info-trigger:focus-visible {
+        background: rgba(246, 221, 148, 0.48);
+        color: rgba(122, 88, 31, 0.94);
+        transform: translateY(-4px) scale(1.04);
+      }
+
+      .setting-info-popover {
+        position: absolute;
+        left: 50%;
+        bottom: calc(100% + 10px);
+        transform: translateX(-50%) translateY(4px);
+        width: min(360px, 42vw);
+        min-width: 280px;
+        max-width: 380px;
+        padding: 12px 14px;
+        border-radius: 14px;
+        border: 1px solid rgba(117, 86, 48, 0.16);
+        background: linear-gradient(180deg, rgba(59, 44, 26, 0.98), rgba(43, 31, 17, 0.98));
+        box-shadow:
+          0 18px 32px rgba(45, 32, 16, 0.24),
+          inset 0 1px 0 rgba(255, 245, 227, 0.08);
+        color: rgba(255, 247, 235, 0.96);
+        font-size: 11px;
+        font-weight: 500;
+        line-height: 1.55;
+        letter-spacing: 0;
+        text-transform: none;
+        white-space: normal;
+        text-wrap: pretty;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 180ms ease, visibility 180ms ease, transform 180ms ease;
+        z-index: 4;
+      }
+
+      .setting-info-popover::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 100%;
+        width: 10px;
+        height: 10px;
+        border-right: 1px solid rgba(117, 86, 48, 0.16);
+        border-bottom: 1px solid rgba(117, 86, 48, 0.16);
+        background: rgba(43, 31, 17, 0.98);
+        transform: translateX(-50%) rotate(45deg);
+      }
+
+      .setting-info-wrap.is-open .setting-info-popover {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: translateX(-50%) translateY(0);
+      }
+
+      .setting-group-toggle input {
+        width: 18px;
+        height: 18px;
+        margin: 0;
+      }
+
+      .setting-group-options {
+        display: grid;
+        gap: 10px;
+        padding: 12px 12px 0 18px;
+        border-top: 1px dashed rgba(117, 86, 48, 0.14);
+        border-left: 2px solid rgba(181, 134, 58, 0.18);
+      }
+
       .settings-info {
         display: grid;
         gap: 6px;
-        margin-top: 10px;
-        padding: 12px;
+        margin-top: 14px;
+        padding: 13px 14px;
         border: 1px solid var(--line);
-        border-radius: 12px;
-        background: rgba(255, 250, 241, 0.94);
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82);
+        border-radius: 16px;
+        background: linear-gradient(180deg, rgba(255, 252, 246, 0.96), rgba(251, 245, 236, 0.9));
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.82),
+          0 10px 18px rgba(117, 86, 48, 0.05);
       }
 
       .settings-info strong {
         display: inline-block;
-        min-width: 132px;
-        font-size: 12px;
-        letter-spacing: 0.05em;
+        min-width: 108px;
+        font-size: 11px;
+        letter-spacing: 0.06em;
         text-transform: uppercase;
       }
 
       .settings-grid input,
       .settings-grid select {
         margin-top: 6px;
+      }
+
+      .settings-grid select {
+        background: rgba(255, 252, 247, 0.96);
       }
 
       .button-row > button:not(.session-item) {
@@ -1572,46 +1726,161 @@
               evolução do MVP.
             </p>
             <div class="settings-grid">
-              <label>
-                Nível de log
-                <select disabled>
-                  <option>Completo durante testes</option>
-                  <option>Avisos + erros</option>
-                  <option>Somente erros</option>
-                </select>
-              </label>
-              <label>
-                Modelo de IA
-                <select id="default-ai-model-selector">
-                  <option>gpt-5-nano</option>
-                  <option>gpt-5.4-mini</option>
-                  <option>gpt-5.4</option>
-                </select>
-              </label>
-              <label>
-                Tema visual
-                <select disabled>
-                  <option>Clássico NEXA</option>
-                  <option>Compacto operacional</option>
-                  <option>Contraste alto</option>
-                </select>
-              </label>
-              <label>
-                Comportamento de revisão
-                <select disabled>
-                  <option>Manual com aprovação</option>
-                  <option>Manual com dupla conferência</option>
-                  <option>Somente sugestão assistida</option>
-                </select>
-              </label>
-              <label>
-                <input type="checkbox" disabled />
-                Abrir sessões com foco automático no texto
-              </label>
-              <label>
-                <input type="checkbox" disabled />
-                Mostrar logs detalhados na interface
-              </label>
+              <div class="setting-group">
+                <div class="setting-group-toggle">
+                  <label for="show-logs-toggle">
+                    <span class="setting-label">Log</span>
+                  </label>
+                  <span class="setting-group-controls">
+                    <span class="setting-info-wrap">
+                      <button
+                        type="button"
+                        class="setting-info-trigger"
+                        aria-label="Detalhes da opção Log"
+                        aria-expanded="false"
+                      >
+                        i
+                      </button>
+                      <span class="setting-info-popover">
+                        Exibe o console lateral e libera o filtro de verbosidade para acompanhar o fluxo local.
+                      </span>
+                    </span>
+                    <input type="checkbox" id="show-logs-toggle" disabled />
+                  </span>
+                </div>
+                <div class="setting-group-options">
+                  <label>
+                    Nível de log
+                    <select disabled>
+                      <option>Completo durante testes</option>
+                      <option>Avisos + erros</option>
+                      <option>Somente erros</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+              <div class="setting-group">
+                <div class="setting-group-toggle">
+                  <label for="enable-default-model-toggle">
+                    <span class="setting-label">Modelo</span>
+                  </label>
+                  <span class="setting-group-controls">
+                    <span class="setting-info-wrap">
+                      <button
+                        type="button"
+                        class="setting-info-trigger"
+                        aria-label="Detalhes da opção Modelo"
+                        aria-expanded="false"
+                      >
+                        i
+                      </button>
+                      <span class="setting-info-popover">
+                        Define qual modelo o NEXA usa no processamento principal do orçamento.
+                      </span>
+                    </span>
+                    <input type="checkbox" id="enable-default-model-toggle" disabled />
+                  </span>
+                </div>
+                <div class="setting-group-options">
+                  <label>
+                    Modelo de IA
+                    <select id="default-ai-model-selector">
+                      <option>gpt-5-nano</option>
+                      <option>gpt-5.4-mini</option>
+                      <option>gpt-5.4</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+              <div class="setting-group">
+                <div class="setting-group-toggle">
+                  <label for="enable-theme-toggle">
+                    <span class="setting-label">Tema</span>
+                  </label>
+                  <span class="setting-group-controls">
+                    <span class="setting-info-wrap">
+                      <button
+                        type="button"
+                        class="setting-info-trigger"
+                        aria-label="Detalhes da opção Tema"
+                        aria-expanded="false"
+                      >
+                        i
+                      </button>
+                      <span class="setting-info-popover">
+                        Alterna entre o visual clássico, compacto e contraste alto da interface.
+                      </span>
+                    </span>
+                    <input type="checkbox" id="enable-theme-toggle" disabled />
+                  </span>
+                </div>
+                <div class="setting-group-options">
+                  <label>
+                    Tema visual
+                    <select disabled>
+                      <option>Clássico NEXA</option>
+                      <option>Compacto operacional</option>
+                      <option>Contraste alto</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+              <div class="setting-group">
+                <div class="setting-group-toggle">
+                  <label for="enable-review-behavior-toggle">
+                    <span class="setting-label">Revisão</span>
+                  </label>
+                  <span class="setting-group-controls">
+                    <span class="setting-info-wrap">
+                      <button
+                        type="button"
+                        class="setting-info-trigger"
+                        aria-label="Detalhes da opção Revisão"
+                        aria-expanded="false"
+                      >
+                        i
+                      </button>
+                      <span class="setting-info-popover">
+                        Controla o estilo de condução da revisão comercial antes do envio ao Bling.
+                      </span>
+                    </span>
+                    <input type="checkbox" id="enable-review-behavior-toggle" disabled />
+                  </span>
+                </div>
+                <div class="setting-group-options">
+                  <label>
+                    Comportamento de revisão
+                    <select disabled>
+                      <option>Manual com aprovação</option>
+                      <option>Manual com dupla conferência</option>
+                      <option>Somente sugestão assistida</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+              <div class="setting-group">
+                <div class="setting-group-toggle">
+                  <label for="focus-text-toggle">
+                    <span class="setting-label">Foco</span>
+                  </label>
+                  <span class="setting-group-controls">
+                    <span class="setting-info-wrap">
+                      <button
+                        type="button"
+                        class="setting-info-trigger"
+                        aria-label="Detalhes da opção Foco"
+                        aria-expanded="false"
+                      >
+                        i
+                      </button>
+                      <span class="setting-info-popover">
+                        Ao abrir uma sessão ou modelo, leva o cursor direto para a caixa de edição.
+                      </span>
+                    </span>
+                    <input type="checkbox" id="focus-text-toggle" disabled />
+                  </span>
+                </div>
+              </div>
             </div>
             <div class="settings-info">
               <div><strong>Token Bling:</strong> <span id="bling-token-status">Carregando...</span></div>
@@ -1657,6 +1926,7 @@
       const cancelAiAgentButton = document.getElementById('cancel-ai-agent-button');
       const budgetFinishedCheckbox = document.getElementById('budget-finished-checkbox');
       const defaultAiModelSelector = document.getElementById('default-ai-model-selector');
+      const settingInfoWraps = Array.from(document.querySelectorAll('.setting-info-wrap'));
       let activeSessionId = null;
       let activeSessionOriginalText = '';
       let activeSessionCreatedAt = '';
@@ -1758,6 +2028,40 @@
           defaultAiModelSelector.value = storedModel;
         }
       }
+
+      function closeSettingInfoPopovers(activeWrap = null) {
+        settingInfoWraps.forEach((wrap) => {
+          const shouldOpen = wrap === activeWrap ? !wrap.classList.contains('is-open') : false;
+          wrap.classList.toggle('is-open', shouldOpen);
+          const trigger = wrap.querySelector('.setting-info-trigger');
+
+          if (trigger instanceof HTMLButtonElement) {
+            trigger.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+          }
+        });
+      }
+
+      settingInfoWraps.forEach((wrap) => {
+        const trigger = wrap.querySelector('.setting-info-trigger');
+
+        if (!(trigger instanceof HTMLButtonElement)) {
+          return;
+        }
+
+        trigger.addEventListener('click', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          closeSettingInfoPopovers(wrap);
+        });
+      });
+
+      document.addEventListener('click', (event) => {
+        if (event.target instanceof Element && event.target.closest('.setting-info-wrap')) {
+          return;
+        }
+
+        closeSettingInfoPopovers();
+      });
 
       function updateSubmitButtonState() {
         if (!submitAiAgentButton) {

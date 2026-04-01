@@ -549,6 +549,30 @@ Na prática, o operador usa o sistema assim:
 11. confirma o envio ao Bling;
 12. opcionalmente salva o resultado como modelo.
 
+## PAINEL DE CONFIGURAÇÕES NA WEB APP
+
+O painel `Configurações`, servido pela própria [app.html](/home/usuario/workspace/Antigravity/2026/NeXa/public/app.html), agora está organizado como uma lista vertical de grupos compactos:
+- `Log`
+- `Modelo`
+- `Tema`
+- `Revisão`
+- `Foco`
+
+Cada grupo possui:
+- um nome curto;
+- um checkbox visual no lado direito;
+- um indicador `i` que abre ajuda contextual por clique;
+- uma subárea visual para os controles associados.
+
+Comportamento real nesta etapa:
+- a mudança é visual e estrutural;
+- os checkboxes dos grupos ainda estão desabilitados;
+- o seletor de `Modelo de IA` segue visível dentro do grupo `Modelo`;
+- o bloco de status do token do Bling continua ativo abaixo da lista.
+
+Objetivo desta organização:
+- preparar o painel para a próxima etapa funcional sem misturar redesign com lógica de comportamento.
+
 ## REGRA DE MANUTENÇÃO DESTE DOCUMENTO
 Toda mudança validada que altere:
 - fluxo;
