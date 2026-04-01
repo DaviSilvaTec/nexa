@@ -8,6 +8,7 @@ interface ReviewAiBudgetProposalDraftInput {
   sessionId: string;
   reviewedAt?: Date;
   reviewModel?: string | null;
+  reviewBehavior?: 'manual' | 'double-check' | 'suggestion-only' | null;
 }
 
 interface ReviewAiBudgetProposalDraftDependencies {
@@ -47,6 +48,7 @@ export async function reviewAiBudgetProposalDraft(
     originalText: session.originalText,
     proposalDraft: asString(proposalDraft.commercialBody),
     modelOverride: normalizeReviewModel(input.reviewModel),
+    reviewBehavior: normalizeReviewBehavior(input.reviewBehavior),
     customerName:
       asString(asRecord(payload.resolvedCustomer).name) || session.customerQuery,
     budgetDescription: asString(interpretation.budgetDescription),
@@ -82,6 +84,16 @@ function normalizeReviewModel(value: string | null | undefined): string | null {
   const normalized = typeof value === 'string' ? value.trim() : '';
 
   return normalized.length > 0 ? normalized : null;
+}
+
+function normalizeReviewBehavior(
+  value: 'manual' | 'double-check' | 'suggestion-only' | null | undefined,
+): 'manual' | 'double-check' | 'suggestion-only' {
+  if (value === 'double-check' || value === 'suggestion-only') {
+    return value;
+  }
+
+  return 'manual';
 }
 
 function asRecord(value: unknown): Record<string, unknown> {

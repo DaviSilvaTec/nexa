@@ -66,6 +66,7 @@ export class InMemoryOpenAIBudgetAssistantGateway
   async reviewProposalDraft(input: {
     proposalDraft: string;
     modelOverride?: string | null;
+    reviewBehavior?: 'manual' | 'double-check' | 'suggestion-only';
   }) {
     return {
       type: 'proposal_draft_reviewed' as const,
@@ -77,6 +78,9 @@ export class InMemoryOpenAIBudgetAssistantGateway
           'Gateway em memória ativo para testes locais.',
           ...(input.modelOverride
             ? [`Modelo solicitado para revisão: ${input.modelOverride}.`]
+            : []),
+          ...(input.reviewBehavior && input.reviewBehavior !== 'manual'
+            ? [`Modo de revisão ativo: ${input.reviewBehavior}.`]
             : []),
           'Configurar OPENAI_API_KEY para receber revisão assistida real do rascunho.',
         ],

@@ -262,6 +262,7 @@ export class OpenAIHttpBudgetAssistantGateway
     originalText: string;
     proposalDraft: string;
     modelOverride?: string | null;
+    reviewBehavior?: 'manual' | 'double-check' | 'suggestion-only';
     customerName: string | null;
     budgetDescription: string;
     workDescription: string;
@@ -309,6 +310,7 @@ export class OpenAIHttpBudgetAssistantGateway
         'Inclua no corpo sugerido somas, subtotais ou totais aproximados por agrupamento sempre que isso ajudar na conferência manual posterior, deixando claro que esses valores ainda podem ser ajustados antes do envio final.',
         'Quando houver soma consolidada de mão de obra, escreva uma linha explícita e padronizada com o nome exato "Soma mínima da mão de obra:" seguida do valor em reais, usando a soma dos menores valores estimados dos serviços, pois o NEXA usará essa linha como referência operacional no envio ao Bling.',
         'Formate o texto de forma elegante para o padrão visual de trabalho do orçamento no Bling, com espaçamentos entre agrupamentos e sem blocos densos.',
+        buildReviewBehaviorInstruction(input.reviewBehavior),
         'Não invente materiais ou serviços fora do contexto.',
         'Retorne um parecer curto, uma sugestão de texto comercial ajustado e notas de ajuste.',
         'Retorne somente JSON válido no schema solicitado.',
@@ -764,6 +766,20 @@ function buildWeakLaborEstimate(context: {
     estimatedHours: `${minHours} a ${maxHours} horas`,
     basis: 'estimativa local fraca derivada do contexto operacional',
   };
+}
+
+function buildReviewBehaviorInstruction(
+  reviewBehavior?: 'manual' | 'double-check' | 'suggestion-only',
+): string {
+  if (reviewBehavior === 'double-check') {
+    return 'Modo de revisão ativo: dupla conferência. Seja mais conservador, destaque inconsistências, confirme coerência entre blocos e evite aceitar ambiguidades sem apontá-las explicitamente.';
+  }
+
+  if (reviewBehavior === 'suggestion-only') {
+    return 'Modo de revisão ativo: somente sugestão assistida. Preserve ao máximo a estrutura atual do rascunho e proponha ajustes mínimos e objetivos, sem reescrever tudo desnecessariamente.';
+  }
+
+  return 'Modo de revisão ativo: manual com aprovação. Faça a revisão comercial padrão do NEXA, com liberdade para reorganizar o texto quando isso melhorar clareza e conferência.';
 }
 
 function extractOutputText(

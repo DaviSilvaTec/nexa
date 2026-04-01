@@ -26,6 +26,23 @@ Consultar este arquivo ao:
 
 ## ENTRADAS
 
+### 2026-04-01 14:05:00 -03
+- __Painel de Configurações passou a ter comportamento real e persistido na Web App__ ✓
+- O grupo `Log` agora controla de fato a visibilidade do console lateral local e revela o seletor `Nível de log`, que filtra a saída por severidade entre `debug`, `warn` e `error`.
+- O grupo `Modelo` passou a controlar a escolha persistida do modelo padrão do NEXA no navegador. Quando habilitado, esse modelo segue para a análise inicial do orçamento e também é usado como valor inicial do seletor visível na etapa de revisão do rascunho.
+- O grupo `Tema` passou a alternar entre três variações reais da interface (`Clássico NEXA`, `Compacto operacional` e `Contraste alto`) usando `data-theme` no `body` e persistência em `localStorage`.
+- O grupo `Revisão` agora controla um modo persistido de comportamento da revisão (`manual`, `double-check` ou `suggestion-only`), enviado do front para o backend e incorporado ao prompt de revisão da OpenAI.
+- O grupo `Foco` passou a decidir se a `textarea` principal recebe foco automaticamente ao carregar uma sessão ou iniciar uma sessão a partir de modelo.
+- Toda a configuração funcional dessa etapa passou a ser persistida no navegador via `localStorage`.
+- Arquivos impactados:
+- [app.html](/home/usuario/workspace/Antigravity/2026/NeXa/public/app.html)
+- [create-app.ts](/home/usuario/workspace/Antigravity/2026/NeXa/src/app/create-app.ts)
+- [openai-budget-assistant-gateway.ts](/home/usuario/workspace/Antigravity/2026/NeXa/src/application/gateways/openai-budget-assistant-gateway.ts)
+- [review-ai-budget-proposal-draft.ts](/home/usuario/workspace/Antigravity/2026/NeXa/src/application/use-cases/review-ai-budget-proposal-draft.ts)
+- [in-memory-openai-budget-assistant-gateway.ts](/home/usuario/workspace/Antigravity/2026/NeXa/src/infrastructure/integrations/openai/in-memory-openai-budget-assistant-gateway.ts)
+- [openai-http-budget-assistant-gateway.ts](/home/usuario/workspace/Antigravity/2026/NeXa/src/infrastructure/integrations/openai/openai-http-budget-assistant-gateway.ts)
+- [review-ai-budget-proposal-draft.use-case.test.ts](/home/usuario/workspace/Antigravity/2026/NeXa/test/review-ai-budget-proposal-draft.use-case.test.ts)
+
 ### 2026-04-01 12:55:00 -03
 - __Walkthrough detalhado do sistema foi recriado como base documental da nova rodada de implementação__ ✓
 - O arquivo `docs/architecture/system-walkthrough.md` foi recriado para documentar o funcionamento atual do NEXA ponta a ponta com base no código real, cobrindo bootstrap, configuração, camadas, rotas, fluxo assistido, proposta comercial, envio ao Bling, modelos e funções centrais.

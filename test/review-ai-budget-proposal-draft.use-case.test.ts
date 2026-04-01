@@ -7,6 +7,11 @@ import { InMemoryAiBudgetSessionRepository } from '../src/infrastructure/persist
 
 class FakeOpenAIBudgetAssistantGateway implements OpenAIBudgetAssistantGateway {
   public lastReviewModelOverride: string | null = null;
+  public lastReviewBehavior:
+    | 'manual'
+    | 'double-check'
+    | 'suggestion-only'
+    | null = null;
 
   async extractBudgetIntake() {
     return {
@@ -50,8 +55,10 @@ class FakeOpenAIBudgetAssistantGateway implements OpenAIBudgetAssistantGateway {
   async reviewProposalDraft(input: {
     proposalDraft: string;
     modelOverride?: string | null;
+    reviewBehavior?: 'manual' | 'double-check' | 'suggestion-only';
   }) {
     this.lastReviewModelOverride = input.modelOverride ?? null;
+    this.lastReviewBehavior = input.reviewBehavior ?? null;
 
     return {
       type: 'proposal_draft_reviewed' as const,
@@ -185,4 +192,46 @@ test('forwards the selected review model only to proposal draft review', async (
   );
 
   assert.equal(gateway.lastReviewModelOverride, 'gpt-5.4-mini');
+});
+
+test('forwards the selected review behavior to proposal draft review', async () => {
+  const repository = new InMemoryAiBudgetSessionRepository();
+  const gateway = new FakeOpenAIBudgetAssistantGateway();
+
+  await repository.save({
+    id: 'session-3',
+    createdAt: '2026-03-31T10:00:00.000Z',
+    updatedAt: '2026-03-31T10:00:00.000Z',
+    originalText: 'Texto original',
+    customerQuery: 'Cliente Exemplo',
+    confidence: 'medio',
+    status: 'Proposta comercial pronta',
+    payload: {
+      aiResponse: {
+        interpretation: {
+          budgetDescription: 'Descrição principal.',
+          workDescription: 'Escopo técnico.',
+          materialItems: [],
+          serviceItems: [],
+          pointsOfAttention: [],
+        },
+      },
+      proposalDraft: {
+        commercialBody: 'Rascunho comercial atual.',
+      },
+    },
+  });
+
+  await reviewAiBudgetProposalDraft(
+    {
+      sessionId: 'session-3',
+      reviewBehavior: 'double-check',
+    },
+    {
+      aiBudgetSessionRepository: repository,
+      openAIBudgetAssistantGateway: gateway,
+    },
+  );
+
+  assert.equal(gateway.lastReviewBehavior, 'double-check');
 });

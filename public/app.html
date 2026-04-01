@@ -52,6 +52,107 @@
         background-size: 28px 28px;
       }
 
+      body[data-theme="compact"] {
+        --panel: rgba(255, 249, 238, 0.94);
+        --panel-strong: #fff8ed;
+        --panel-support: rgba(246, 236, 219, 0.9);
+        --line: rgba(104, 76, 37, 0.24);
+        --line-strong: rgba(104, 76, 37, 0.5);
+        --shadow: 0 18px 44px rgba(70, 51, 26, 0.1);
+        --shadow-soft: 0 10px 22px rgba(70, 51, 26, 0.08);
+      }
+
+      body[data-theme="compact"] .shell {
+        padding: 22px 18px 52px;
+      }
+
+      body[data-theme="compact"] .hero {
+        margin-bottom: 18px;
+      }
+
+      body[data-theme="compact"] .hero-grid,
+      body[data-theme="compact"] .grid {
+        gap: 14px;
+      }
+
+      body[data-theme="compact"] .panel,
+      body[data-theme="compact"] .hero-copy,
+      body[data-theme="compact"] .hero-note {
+        border-radius: 20px;
+      }
+
+      body[data-theme="compact"] .panel {
+        padding: 16px;
+      }
+
+      body[data-theme="compact"] .hero-copy,
+      body[data-theme="compact"] .hero-note {
+        padding: 18px;
+      }
+
+      body[data-theme="compact"] h1 {
+        font-size: clamp(38px, 5vw, 60px);
+      }
+
+      body[data-theme="compact"] .hero p,
+      body[data-theme="compact"] .muted,
+      body[data-theme="compact"] .proposal-draft-editor,
+      body[data-theme="compact"] .review-draft-editor,
+      body[data-theme="compact"] textarea,
+      body[data-theme="compact"] input,
+      body[data-theme="compact"] select,
+      body[data-theme="compact"] button {
+        font-size: 14px;
+      }
+
+      body[data-theme="compact"] .panel-title,
+      body[data-theme="compact"] h2,
+      body[data-theme="compact"] h3 {
+        letter-spacing: -0.02em;
+      }
+
+      body[data-theme="high-contrast"] {
+        --bg: #e8dcc5;
+        --bg-deep: #b8a178;
+        --panel: rgba(255, 253, 248, 0.98);
+        --panel-strong: #fffdf8;
+        --panel-support: rgba(246, 237, 221, 0.96);
+        --line: rgba(40, 26, 9, 0.3);
+        --line-strong: rgba(40, 26, 9, 0.64);
+        --ink: #120c07;
+        --muted: #483827;
+        --accent: #9a3f00;
+        --accent-strong: #6e2d00;
+        --accent-soft: rgba(154, 63, 0, 0.16);
+        --shadow: 0 28px 68px rgba(34, 20, 5, 0.18);
+        --shadow-soft: 0 14px 34px rgba(34, 20, 5, 0.14);
+      }
+
+      body[data-theme="high-contrast"] {
+        background:
+          radial-gradient(circle at top left, rgba(154, 63, 0, 0.18), transparent 28%),
+          radial-gradient(circle at 80% 0%, rgba(70, 48, 16, 0.12), transparent 22%),
+          linear-gradient(180deg, #f6eee1 0%, var(--bg) 56%, #deccb0 100%);
+      }
+
+      body[data-theme="high-contrast"] .panel,
+      body[data-theme="high-contrast"] .hero-copy,
+      body[data-theme="high-contrast"] .hero-note,
+      body[data-theme="high-contrast"] textarea,
+      body[data-theme="high-contrast"] input,
+      body[data-theme="high-contrast"] select,
+      body[data-theme="high-contrast"] button {
+        border-color: var(--line-strong);
+      }
+
+      body[data-theme="high-contrast"] .session-status-badge,
+      body[data-theme="high-contrast"] .hero-note-grid span,
+      body[data-theme="high-contrast"] .setting-group-option,
+      body[data-theme="high-contrast"] .financial-summary-card,
+      body[data-theme="high-contrast"] .response-card {
+        box-shadow: inset 0 0 0 1px rgba(20, 10, 2, 0.06);
+      }
+
       .shell {
         position: relative;
         max-width: 1420px;
@@ -649,6 +750,10 @@
         padding: 12px 12px 0 18px;
         border-top: 1px dashed rgba(117, 86, 48, 0.14);
         border-left: 2px solid rgba(181, 134, 58, 0.18);
+      }
+
+      .setting-group-options.is-hidden {
+        display: none;
       }
 
       .settings-info {
@@ -1745,16 +1850,16 @@
                         Exibe o console lateral e libera o filtro de verbosidade para acompanhar o fluxo local.
                       </span>
                     </span>
-                    <input type="checkbox" id="show-logs-toggle" disabled />
+                    <input type="checkbox" id="show-logs-toggle" />
                   </span>
                 </div>
-                <div class="setting-group-options">
+                <div class="setting-group-options is-hidden" id="show-logs-options">
                   <label>
                     Nível de log
-                    <select disabled>
-                      <option>Completo durante testes</option>
-                      <option>Avisos + erros</option>
-                      <option>Somente erros</option>
+                    <select id="log-level-selector">
+                      <option value="debug">Completo durante testes</option>
+                      <option value="warn">Avisos + erros</option>
+                      <option value="error">Somente erros</option>
                     </select>
                   </label>
                 </div>
@@ -1778,10 +1883,10 @@
                         Define qual modelo o NEXA usa no processamento principal do orçamento.
                       </span>
                     </span>
-                    <input type="checkbox" id="enable-default-model-toggle" disabled />
+                    <input type="checkbox" id="enable-default-model-toggle" />
                   </span>
                 </div>
-                <div class="setting-group-options">
+                <div class="setting-group-options is-hidden" id="enable-default-model-options">
                   <label>
                     Modelo de IA
                     <select id="default-ai-model-selector">
@@ -1811,16 +1916,16 @@
                         Alterna entre o visual clássico, compacto e contraste alto da interface.
                       </span>
                     </span>
-                    <input type="checkbox" id="enable-theme-toggle" disabled />
+                    <input type="checkbox" id="enable-theme-toggle" />
                   </span>
                 </div>
-                <div class="setting-group-options">
+                <div class="setting-group-options is-hidden" id="enable-theme-options">
                   <label>
                     Tema visual
-                    <select disabled>
-                      <option>Clássico NEXA</option>
-                      <option>Compacto operacional</option>
-                      <option>Contraste alto</option>
+                    <select id="theme-selector">
+                      <option value="classic">Clássico NEXA</option>
+                      <option value="compact">Compacto operacional</option>
+                      <option value="high-contrast">Contraste alto</option>
                     </select>
                   </label>
                 </div>
@@ -1844,16 +1949,16 @@
                         Controla o estilo de condução da revisão comercial antes do envio ao Bling.
                       </span>
                     </span>
-                    <input type="checkbox" id="enable-review-behavior-toggle" disabled />
+                    <input type="checkbox" id="enable-review-behavior-toggle" />
                   </span>
                 </div>
-                <div class="setting-group-options">
+                <div class="setting-group-options is-hidden" id="enable-review-behavior-options">
                   <label>
                     Comportamento de revisão
-                    <select disabled>
-                      <option>Manual com aprovação</option>
-                      <option>Manual com dupla conferência</option>
-                      <option>Somente sugestão assistida</option>
+                    <select id="review-behavior-selector">
+                      <option value="manual">Manual com aprovação</option>
+                      <option value="double-check">Manual com dupla conferência</option>
+                      <option value="suggestion-only">Somente sugestão assistida</option>
                     </select>
                   </label>
                 </div>
@@ -1877,7 +1982,7 @@
                         Ao abrir uma sessão ou modelo, leva o cursor direto para a caixa de edição.
                       </span>
                     </span>
-                    <input type="checkbox" id="focus-text-toggle" disabled />
+                    <input type="checkbox" id="focus-text-toggle" />
                   </span>
                 </div>
               </div>
@@ -1925,7 +2030,19 @@
       const submitAiAgentButton = document.getElementById('submit-ai-agent-button');
       const cancelAiAgentButton = document.getElementById('cancel-ai-agent-button');
       const budgetFinishedCheckbox = document.getElementById('budget-finished-checkbox');
+      const showLogsToggle = document.getElementById('show-logs-toggle');
+      const showLogsOptions = document.getElementById('show-logs-options');
+      const logLevelSelector = document.getElementById('log-level-selector');
+      const enableDefaultModelToggle = document.getElementById('enable-default-model-toggle');
+      const enableDefaultModelOptions = document.getElementById('enable-default-model-options');
       const defaultAiModelSelector = document.getElementById('default-ai-model-selector');
+      const enableThemeToggle = document.getElementById('enable-theme-toggle');
+      const enableThemeOptions = document.getElementById('enable-theme-options');
+      const themeSelector = document.getElementById('theme-selector');
+      const enableReviewBehaviorToggle = document.getElementById('enable-review-behavior-toggle');
+      const enableReviewBehaviorOptions = document.getElementById('enable-review-behavior-options');
+      const reviewBehaviorSelector = document.getElementById('review-behavior-selector');
+      const focusTextToggle = document.getElementById('focus-text-toggle');
       const settingInfoWraps = Array.from(document.querySelectorAll('.setting-info-wrap'));
       let activeSessionId = null;
       let activeSessionOriginalText = '';
@@ -1938,7 +2055,24 @@
       const OPERATION_POLL_INTERVAL_SECONDS = 5;
       const DEFAULT_AI_MODEL = 'gpt-5-nano';
       const AI_MODEL_STORAGE_KEY = 'nexa.defaultAiModel';
+      const SETTINGS_STORAGE_KEYS = {
+        showLogs: 'nexa.showLogs',
+        logLevel: 'nexa.logLevel',
+        useDefaultModelSelection: 'nexa.useDefaultModelSelection',
+        themeEnabled: 'nexa.themeEnabled',
+        theme: 'nexa.theme',
+        reviewBehaviorEnabled: 'nexa.reviewBehaviorEnabled',
+        reviewBehavior: 'nexa.reviewBehavior',
+        focusText: 'nexa.focusText',
+      };
       const SUPPORTED_AI_MODELS = ['gpt-5-nano', 'gpt-5.4-mini', 'gpt-5.4'];
+      const SUPPORTED_THEMES = ['classic', 'compact', 'high-contrast'];
+      const SUPPORTED_LOG_LEVELS = ['debug', 'warn', 'error'];
+      const SUPPORTED_REVIEW_BEHAVIORS = [
+        'manual',
+        'double-check',
+        'suggestion-only',
+      ];
 
       function renderList(items) {
         if (!items || items.length === 0) {
@@ -1998,12 +2132,157 @@
         return SUPPORTED_AI_MODELS.includes(value) ? value : DEFAULT_AI_MODEL;
       }
 
+      function readStoredSetting(key, fallback = null) {
+        try {
+          const value = window.localStorage.getItem(key);
+          return value === null ? fallback : value;
+        } catch {
+          return fallback;
+        }
+      }
+
+      function writeStoredSetting(key, value) {
+        try {
+          window.localStorage.setItem(key, value);
+        } catch {}
+      }
+
+      function readStoredBoolean(key, fallback = false) {
+        return readStoredSetting(key, fallback ? 'true' : 'false') === 'true';
+      }
+
+      function normalizeThemeSelection(value) {
+        return SUPPORTED_THEMES.includes(value) ? value : 'classic';
+      }
+
+      function normalizeLogLevelSelection(value) {
+        return SUPPORTED_LOG_LEVELS.includes(value) ? value : 'debug';
+      }
+
+      function normalizeReviewBehaviorSelection(value) {
+        return SUPPORTED_REVIEW_BEHAVIORS.includes(value) ? value : 'manual';
+      }
+
+      function toggleSettingsOptions(container, enabled) {
+        if (!(container instanceof HTMLElement)) {
+          return;
+        }
+
+        container.classList.toggle('is-hidden', !enabled);
+      }
+
+      function applyThemeSelection(theme, enabled) {
+        document.body.dataset.theme = enabled ? normalizeThemeSelection(theme) : 'classic';
+      }
+
+      function applyLogVisibility(enabled) {
+        if (!(output instanceof HTMLElement)) {
+          return;
+        }
+
+        output.hidden = !enabled;
+      }
+
+      function getSelectedLogLevel() {
+        if (logLevelSelector instanceof HTMLSelectElement) {
+          return normalizeLogLevelSelection(logLevelSelector.value);
+        }
+
+        return 'debug';
+      }
+
+      function shouldRenderLog(level = 'debug') {
+        const priorities = {
+          debug: 0,
+          warn: 1,
+          error: 2,
+        };
+
+        return priorities[level] >= priorities[getSelectedLogLevel()];
+      }
+
+      const outputTextContentDescriptor = Object.getOwnPropertyDescriptor(
+        Node.prototype,
+        'textContent',
+      );
+
+      function writeOutputContent(value, level = 'debug') {
+        if (!(outputTextContentDescriptor?.set && output instanceof HTMLElement)) {
+          return;
+        }
+
+        if (!shouldRenderLog(level)) {
+          return;
+        }
+
+        outputTextContentDescriptor.set.call(output, String(value ?? ''));
+      }
+
+      function setOutputMessage(message, level = 'debug') {
+        writeOutputContent(message, level);
+      }
+
+      function setOutputPayload(payload, meta = {}, level = 'debug') {
+        writeOutputContent(
+          JSON.stringify(
+            {
+              ...meta,
+              payload,
+            },
+            null,
+            2,
+          ),
+          level,
+        );
+      }
+
+      if (outputTextContentDescriptor?.get && outputTextContentDescriptor?.set && output instanceof HTMLElement) {
+        Object.defineProperty(output, 'textContent', {
+          configurable: true,
+          enumerable: true,
+          get() {
+            return outputTextContentDescriptor.get.call(output);
+          },
+          set(value) {
+            writeOutputContent(value, 'debug');
+          },
+        });
+      }
+
       function getDefaultAiModel() {
+        if (
+          enableDefaultModelToggle instanceof HTMLInputElement &&
+          !enableDefaultModelToggle.checked
+        ) {
+          return DEFAULT_AI_MODEL;
+        }
+
         if (defaultAiModelSelector instanceof HTMLSelectElement) {
           return normalizeAiModelSelection(defaultAiModelSelector.value);
         }
 
         return DEFAULT_AI_MODEL;
+      }
+
+      function getSelectedReviewBehavior() {
+        if (
+          enableReviewBehaviorToggle instanceof HTMLInputElement &&
+          !enableReviewBehaviorToggle.checked
+        ) {
+          return 'manual';
+        }
+
+        if (reviewBehaviorSelector instanceof HTMLSelectElement) {
+          return normalizeReviewBehaviorSelection(reviewBehaviorSelector.value);
+        }
+
+        return 'manual';
+      }
+
+      function shouldAutoFocusTextField() {
+        return focusTextToggle instanceof HTMLInputElement
+          ? focusTextToggle.checked
+          : false;
       }
 
       function saveDefaultAiModel(model) {
@@ -2026,6 +2305,140 @@
 
         if (defaultAiModelSelector instanceof HTMLSelectElement) {
           defaultAiModelSelector.value = storedModel;
+        }
+      }
+
+      function initializeSettingsPanel() {
+        const showLogs = readStoredBoolean(SETTINGS_STORAGE_KEYS.showLogs, true);
+        const logLevel = normalizeLogLevelSelection(
+          readStoredSetting(SETTINGS_STORAGE_KEYS.logLevel, 'debug'),
+        );
+        const useDefaultModelSelection = readStoredBoolean(
+          SETTINGS_STORAGE_KEYS.useDefaultModelSelection,
+          true,
+        );
+        const themeEnabled = readStoredBoolean(SETTINGS_STORAGE_KEYS.themeEnabled, false);
+        const theme = normalizeThemeSelection(
+          readStoredSetting(SETTINGS_STORAGE_KEYS.theme, 'classic'),
+        );
+        const reviewBehaviorEnabled = readStoredBoolean(
+          SETTINGS_STORAGE_KEYS.reviewBehaviorEnabled,
+          false,
+        );
+        const reviewBehavior = normalizeReviewBehaviorSelection(
+          readStoredSetting(SETTINGS_STORAGE_KEYS.reviewBehavior, 'manual'),
+        );
+        const focusText = readStoredBoolean(SETTINGS_STORAGE_KEYS.focusText, true);
+
+        if (showLogsToggle instanceof HTMLInputElement) {
+          showLogsToggle.checked = showLogs;
+          showLogsToggle.addEventListener('change', () => {
+            writeStoredSetting(
+              SETTINGS_STORAGE_KEYS.showLogs,
+              showLogsToggle.checked ? 'true' : 'false',
+            );
+            toggleSettingsOptions(showLogsOptions, showLogsToggle.checked);
+            applyLogVisibility(showLogsToggle.checked);
+          });
+        }
+        toggleSettingsOptions(showLogsOptions, showLogs);
+        applyLogVisibility(showLogs);
+
+        if (logLevelSelector instanceof HTMLSelectElement) {
+          logLevelSelector.value = logLevel;
+          logLevelSelector.addEventListener('change', () => {
+            writeStoredSetting(
+              SETTINGS_STORAGE_KEYS.logLevel,
+              normalizeLogLevelSelection(logLevelSelector.value),
+            );
+          });
+        }
+
+        if (enableDefaultModelToggle instanceof HTMLInputElement) {
+          enableDefaultModelToggle.checked = useDefaultModelSelection;
+          enableDefaultModelToggle.addEventListener('change', () => {
+            writeStoredSetting(
+              SETTINGS_STORAGE_KEYS.useDefaultModelSelection,
+              enableDefaultModelToggle.checked ? 'true' : 'false',
+            );
+            toggleSettingsOptions(
+              enableDefaultModelOptions,
+              enableDefaultModelToggle.checked,
+            );
+          });
+        }
+        toggleSettingsOptions(enableDefaultModelOptions, useDefaultModelSelection);
+
+        if (defaultAiModelSelector instanceof HTMLSelectElement) {
+          defaultAiModelSelector.value = normalizeAiModelSelection(
+            readStoredSetting(AI_MODEL_STORAGE_KEY, DEFAULT_AI_MODEL),
+          );
+        }
+
+        if (enableThemeToggle instanceof HTMLInputElement) {
+          enableThemeToggle.checked = themeEnabled;
+          enableThemeToggle.addEventListener('change', () => {
+            writeStoredSetting(
+              SETTINGS_STORAGE_KEYS.themeEnabled,
+              enableThemeToggle.checked ? 'true' : 'false',
+            );
+            toggleSettingsOptions(enableThemeOptions, enableThemeToggle.checked);
+            applyThemeSelection(
+              themeSelector instanceof HTMLSelectElement ? themeSelector.value : theme,
+              enableThemeToggle.checked,
+            );
+          });
+        }
+        toggleSettingsOptions(enableThemeOptions, themeEnabled);
+
+        if (themeSelector instanceof HTMLSelectElement) {
+          themeSelector.value = theme;
+          themeSelector.addEventListener('change', () => {
+            const normalizedTheme = normalizeThemeSelection(themeSelector.value);
+            writeStoredSetting(SETTINGS_STORAGE_KEYS.theme, normalizedTheme);
+            applyThemeSelection(
+              normalizedTheme,
+              enableThemeToggle instanceof HTMLInputElement
+                ? enableThemeToggle.checked
+                : false,
+            );
+          });
+        }
+        applyThemeSelection(theme, themeEnabled);
+
+        if (enableReviewBehaviorToggle instanceof HTMLInputElement) {
+          enableReviewBehaviorToggle.checked = reviewBehaviorEnabled;
+          enableReviewBehaviorToggle.addEventListener('change', () => {
+            writeStoredSetting(
+              SETTINGS_STORAGE_KEYS.reviewBehaviorEnabled,
+              enableReviewBehaviorToggle.checked ? 'true' : 'false',
+            );
+            toggleSettingsOptions(
+              enableReviewBehaviorOptions,
+              enableReviewBehaviorToggle.checked,
+            );
+          });
+        }
+        toggleSettingsOptions(enableReviewBehaviorOptions, reviewBehaviorEnabled);
+
+        if (reviewBehaviorSelector instanceof HTMLSelectElement) {
+          reviewBehaviorSelector.value = reviewBehavior;
+          reviewBehaviorSelector.addEventListener('change', () => {
+            writeStoredSetting(
+              SETTINGS_STORAGE_KEYS.reviewBehavior,
+              normalizeReviewBehaviorSelection(reviewBehaviorSelector.value),
+            );
+          });
+        }
+
+        if (focusTextToggle instanceof HTMLInputElement) {
+          focusTextToggle.checked = focusText;
+          focusTextToggle.addEventListener('change', () => {
+            writeStoredSetting(
+              SETTINGS_STORAGE_KEYS.focusText,
+              focusTextToggle.checked ? 'true' : 'false',
+            );
+          });
         }
       }
 
@@ -2508,7 +2921,7 @@
                     sessionStatus === 'Proposta comercial pronta' ||
                     sessionStatus === 'Cancelado'
                   ) {
-                    output.textContent = `Reabrindo sessão ${sessionId} para revisão...`;
+                    setOutputMessage(`Reabrindo sessão ${sessionId} para revisão...`);
                     const response = await fetch(`/local/ai-sessions/${sessionId}/review`, {
                       method: 'POST',
                     });
@@ -2520,11 +2933,12 @@
                   }
 
                   await loadSessionIntoForm(sessionId);
-                  if (originalTextField) {
+                  if (originalTextField && shouldAutoFocusTextField()) {
                     originalTextField.focus();
                   }
-                  output.textContent =
-                    'Sessão preparada para revisão. Ajuste o texto e envie novamente quando necessário.';
+                  setOutputMessage(
+                    'Sessão preparada para revisão. Ajuste o texto e envie novamente quando necessário.',
+                  );
                   return;
                 }
 
@@ -2577,7 +2991,8 @@
                     reviewModelSelector instanceof HTMLSelectElement
                       ? reviewModelSelector.value
                       : 'gpt-5-nano';
-                  output.textContent = `Enviando rascunho da sessão ${sessionId} para revisão...`;
+                  const reviewBehavior = getSelectedReviewBehavior();
+                  setOutputMessage(`Enviando rascunho da sessão ${sessionId} para revisão...`);
                   let reviewWaitingState = {
                     stepIndex: 0,
                     secondsUntilRefresh: OPERATION_POLL_INTERVAL_SECONDS,
@@ -2614,6 +3029,7 @@
                       },
                       body: JSON.stringify({
                         reviewModel,
+                        reviewBehavior,
                       }),
                     },
                   );
@@ -2759,7 +3175,7 @@
                   );
 
                   if (!confirmed) {
-                    output.textContent = 'Cancelamento da sessão interrompido.';
+                    setOutputMessage('Cancelamento da sessão interrompido.', 'warn');
                     return;
                   }
 
@@ -2779,10 +3195,12 @@
                   await loadRecentModels();
                 }
               } catch (error) {
-                output.textContent =
+                setOutputMessage(
                   error instanceof Error
                     ? error.message
-                    : 'Falha ao executar a ação da sessão.';
+                    : 'Falha ao executar a ação da sessão.',
+                  'error',
+                );
               }
             });
           });
@@ -3194,10 +3612,13 @@
         renderNexaResponse(buildRenderablePayloadFromLoadedSession(payload.session));
         if (originalTextField) {
           originalTextField.value = payload.session?.originalText || '';
+          if (shouldAutoFocusTextField()) {
+            originalTextField.focus();
+          }
         }
         setActiveSessionState(payload.session, payload.session?.originalText || '');
         clearActiveModelState();
-        output.textContent = JSON.stringify(payload, null, 2);
+        setOutputPayload(payload);
       }
 
       async function prepareSessionSwitch(targetSessionId) {
@@ -3284,10 +3705,13 @@
         renderNexaResponse(buildRenderablePayloadFromLoadedSession(payload.session));
         if (originalTextField) {
           originalTextField.value = payload.session?.originalText || '';
+          if (shouldAutoFocusTextField()) {
+            originalTextField.focus();
+          }
         }
         setActiveSessionState(payload.session, payload.session?.originalText || '');
         setActiveModelState(modelId, mode);
-        output.textContent = JSON.stringify(payload, null, 2);
+        setOutputPayload(payload);
       }
 
       async function loadRecentSessions() {
@@ -3725,8 +4149,9 @@
             ? event.currentTarget.value
             : DEFAULT_AI_MODEL;
         saveDefaultAiModel(selectedModel);
-        output.textContent =
-          `Modelo padrão do NEXA atualizado para ${normalizeAiModelSelection(selectedModel)}.`;
+        setOutputMessage(
+          `Modelo padrão do NEXA atualizado para ${normalizeAiModelSelection(selectedModel)}.`,
+        );
       });
       originalTextField?.addEventListener('input', () => {
         if (!budgetFinishedCheckbox?.checked) {
@@ -3750,7 +4175,7 @@
           );
 
           if (!confirmed) {
-            output.textContent = 'Limpeza da tela cancelada.';
+            setOutputMessage('Limpeza da tela cancelada.', 'warn');
             return;
           }
         }
@@ -3773,8 +4198,10 @@
           await loadBlingTokenStatus();
           output.textContent = JSON.stringify(payload, null, 2);
         } catch (error) {
-          output.textContent =
-            error instanceof Error ? error.message : 'Falha ao renovar token do Bling.';
+          setOutputMessage(
+            error instanceof Error ? error.message : 'Falha ao renovar token do Bling.',
+            'error',
+          );
         }
       });
 
@@ -3788,6 +4215,7 @@
 
       setupSpeechInput();
       loadDefaultAiModel();
+      initializeSettingsPanel();
       setSidebarTab('sessions');
       loadRecentSessions();
       loadRecentModels();

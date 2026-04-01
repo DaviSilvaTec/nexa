@@ -440,10 +440,19 @@ Função atual:
   - materiais;
   - serviços;
   - pontos de atenção;
-  - override opcional de modelo.
+  - override opcional de modelo;
+  - `reviewBehavior`, quando esse modo estiver habilitado na interface.
 
 Objetivo:
 - gerar uma segunda versão do texto antes do aceite.
+
+Comportamento real do `reviewBehavior`:
+- `manual`
+  mantém a revisão padrão do sistema;
+- `double-check`
+  pede uma passada mais conservadora, com dupla checagem do texto e menos confiança automática em inferências;
+- `suggestion-only`
+  pede mudanças mais leves, preservando a estrutura do rascunho sempre que possível.
 
 ### 4. Aceite da revisão
 Caso de uso:
@@ -564,14 +573,47 @@ Cada grupo possui:
 - um indicador `i` que abre ajuda contextual por clique;
 - uma subárea visual para os controles associados.
 
-Comportamento real nesta etapa:
-- a mudança é visual e estrutural;
-- os checkboxes dos grupos ainda estão desabilitados;
-- o seletor de `Modelo de IA` segue visível dentro do grupo `Modelo`;
-- o bloco de status do token do Bling continua ativo abaixo da lista.
+Comportamento real atual:
+- `Log`
+  - mostra ou oculta o console lateral local;
+  - quando habilitado, revela `Nível de log`;
+  - o filtro atual compara severidade em três níveis:
+    - `debug`
+    - `warn`
+    - `error`
+  - escritas diretas em `output.textContent` entram como `debug`, enquanto alguns pontos do fluxo usam níveis explícitos com `setOutputMessage(...)`.
+- `Modelo`
+  - habilita ou desabilita a escolha persistida do modelo padrão da interface;
+  - quando desabilitado, o front volta a usar `gpt-5-nano` como padrão fixo;
+  - quando habilitado, o valor selecionado é salvo em `localStorage` e segue para `submitAiAgentResponse(...)` como `defaultAiModel`;
+  - esse mesmo valor também preenche o seletor visível de revisão do rascunho quando a proposta é aberta.
+- `Tema`
+  - revela o seletor de tema e aplica a opção atual no `body` com `data-theme`;
+  - os temas implementados hoje são:
+    - `classic`
+    - `compact`
+    - `high-contrast`
+  - a interface persiste tanto o estado de ativação quanto o tema escolhido.
+- `Revisão`
+  - revela o seletor de comportamento da revisão;
+  - persiste a escolha do operador;
+  - envia esse modo para a rota `POST /local/ai-sessions/:sessionId/proposal-draft/review`;
+  - o backend repassa isso ao gateway OpenAI para alterar a instrução de revisão.
+- `Foco`
+  - controla se a `textarea` principal recebe foco automático ao carregar sessão ou modelo;
+  - o comportamento é consultado em `loadSessionIntoForm(...)` e `startSessionFromModel(...)`.
 
-Objetivo desta organização:
-- preparar o painel para a próxima etapa funcional sem misturar redesign com lógica de comportamento.
+Persistência:
+- o painel usa `localStorage` com chaves específicas para:
+  - visibilidade de logs;
+  - nível de log;
+  - uso do modelo padrão persistido;
+  - ativação e valor do tema;
+  - ativação e valor do comportamento de revisão;
+  - foco automático no texto.
+
+Observação importante:
+- o bloco de status do token do Bling permanece funcional abaixo da lista e não é controlado por esses toggles.
 
 ## REGRA DE MANUTENÇÃO DESTE DOCUMENTO
 Toda mudança validada que altere:

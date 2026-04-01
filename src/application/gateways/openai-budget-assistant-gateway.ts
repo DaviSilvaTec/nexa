@@ -117,6 +117,7 @@ export interface OpenAIBudgetAssistantGateway {
     originalText: string;
     proposalDraft: string;
     modelOverride?: string | null;
+    reviewBehavior?: 'manual' | 'double-check' | 'suggestion-only';
     customerName: string | null;
     budgetDescription: string;
     workDescription: string;

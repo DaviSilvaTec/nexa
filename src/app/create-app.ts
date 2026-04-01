@@ -700,13 +700,17 @@ export function createApp(dependencies?: Partial<AppDependencies>): FastifyInsta
 
   app.post('/local/ai-sessions/:sessionId/proposal-draft/review', async (request, reply) => {
     const params = request.params as { sessionId: string };
-    const body = request.body as { reviewModel?: string } | undefined;
+    const body = request.body as {
+      reviewModel?: string;
+      reviewBehavior?: 'manual' | 'double-check' | 'suggestion-only';
+    } | undefined;
 
     try {
       return await reviewAiBudgetProposalDraft(
         {
           sessionId: params.sessionId,
           reviewModel: body?.reviewModel ?? null,
+          reviewBehavior: body?.reviewBehavior ?? 'manual',
         },
         {
           aiBudgetSessionRepository: appDependencies.aiBudgetSessionRepository,
