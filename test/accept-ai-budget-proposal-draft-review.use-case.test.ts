@@ -70,6 +70,8 @@ class FakeOpenAIBudgetAssistantGateway implements OpenAIBudgetAssistantGateway {
       review: {
         summary: 'Resumo',
         suggestedCommercialBody: '',
+        resolvedCustomer: null,
+        resolvedMaterialItems: [],
         adjustmentNotes: [],
         confidence: 'baixo' as const,
       },

@@ -129,6 +129,21 @@ class FakeOpenAIBudgetAssistantGateway implements OpenAIBudgetAssistantGateway {
       review: {
         summary: 'Parecer assistido de teste.',
         suggestedCommercialBody: `${input.proposalDraft}\n\n[Ajustado]`,
+        resolvedCustomer: {
+          id: '999',
+          name: 'Cliente Exemplo Ltda',
+          code: 'CLI001',
+          documentNumber: '12345678000199',
+        },
+        resolvedMaterialItems: [
+          {
+            description: 'Material do catalogo',
+            quantityText: '1 unidade',
+            sourceQuery: 'material sugerido',
+            catalogItemId: '1',
+            catalogItemName: 'Material do catalogo',
+          },
+        ],
         adjustmentNotes: ['Ajustar clareza comercial.'],
         confidence: 'medio' as const,
       },

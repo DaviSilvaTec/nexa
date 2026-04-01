@@ -160,6 +160,21 @@ export interface OpenAIBudgetAssistantGateway {
     review: {
       summary: string;
       suggestedCommercialBody: string;
+      resolvedCustomer:
+        | {
+            id: string;
+            name: string;
+            code: string | null;
+            documentNumber: string | null;
+          }
+        | null;
+      resolvedMaterialItems: Array<{
+        description: string;
+        quantityText: string;
+        sourceQuery: string | null;
+        catalogItemId: string | null;
+        catalogItemName: string | null;
+      }>;
       adjustmentNotes: string[];
       confidence: 'alto' | 'medio' | 'baixo';
     };

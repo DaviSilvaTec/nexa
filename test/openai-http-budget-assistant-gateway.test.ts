@@ -470,6 +470,8 @@ test('uses a model override only for proposal draft review when requested', asyn
           output_text: JSON.stringify({
             summary: 'Parecer',
             suggestedCommercialBody: 'Texto revisado',
+            resolvedCustomer: null,
+            resolvedMaterialItems: [],
             adjustmentNotes: [],
             confidence: 'medio',
           }),
@@ -517,6 +519,8 @@ test('asks proposal draft review to include approximate sums and subtotals', asy
           output_text: JSON.stringify({
             summary: 'Parecer',
             suggestedCommercialBody: 'Texto revisado',
+            resolvedCustomer: null,
+            resolvedMaterialItems: [],
             adjustmentNotes: [],
             confidence: 'medio',
           }),
@@ -566,6 +570,8 @@ test('falls back to standard review guidance when there are no extra review inst
           output_text: JSON.stringify({
             summary: 'Parecer',
             suggestedCommercialBody: 'Texto revisado',
+            resolvedCustomer: null,
+            resolvedMaterialItems: [],
             adjustmentNotes: [],
             confidence: 'medio',
           }),
@@ -619,6 +625,21 @@ test('retries proposal draft review once when OpenAI cancels the request transie
           output_text: JSON.stringify({
             summary: 'Parecer',
             suggestedCommercialBody: 'Texto revisado',
+            resolvedCustomer: {
+              id: '999',
+              name: 'Cliente Exemplo Ltda',
+              code: 'CLI001',
+              documentNumber: '12345678000199',
+            },
+            resolvedMaterialItems: [
+              {
+                description: 'Cabo PP 3x1,5mm',
+                quantityText: '10 metros',
+                sourceQuery: 'cabo pp',
+                catalogItemId: '1',
+                catalogItemName: 'Cabo PP 3x1,5mm',
+              },
+            ],
             adjustmentNotes: [],
             confidence: 'medio',
           }),
@@ -649,6 +670,8 @@ test('retries proposal draft review once when OpenAI cancels the request transie
 
   assert.equal(attempts, 2);
   assert.equal(result.review.summary, 'Parecer');
+  assert.equal(result.review.resolvedCustomer?.id, '999');
+  assert.equal(result.review.resolvedMaterialItems[0]?.catalogItemId, '1');
 });
 
 test('reconciles proposal materials using shortlist candidates', async () => {

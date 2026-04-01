@@ -87,6 +87,21 @@ class FakeOpenAIBudgetAssistantGateway implements OpenAIBudgetAssistantGateway {
       review: {
         summary: 'Rascunho revisado com pequenos ajustes.',
         suggestedCommercialBody: `${input.proposalDraft}\n\nSugestão final.`,
+        resolvedCustomer: {
+          id: '999',
+          name: 'Cliente Exemplo Ltda',
+          code: 'CLI-001',
+          documentNumber: '12345678000199',
+        },
+        resolvedMaterialItems: [
+          {
+            description: 'Material A',
+            quantityText: '1 unidade',
+            sourceQuery: 'Material A',
+            catalogItemId: '1',
+            catalogItemName: 'Material A',
+          },
+        ],
         adjustmentNotes: ['Ajustar abertura comercial.'],
         confidence: 'medio' as const,
       },
@@ -213,6 +228,8 @@ test('reviews a generated proposal draft with AI and persists the result', async
   assert.equal(result.type, 'ai_budget_proposal_draft_reviewed');
   assert.equal(result.review.summary, 'Rascunho revisado com pequenos ajustes.');
   assert.match(result.review.suggestedCommercialBody, /Sugestão final\./);
+  assert.equal(result.review.resolvedCustomer?.id, '999');
+  assert.equal(result.review.resolvedMaterialItems[0]?.catalogItemId, '1');
   assert.equal(gateway.lastReviewModelOverride, null);
   assert.equal(
     gateway.lastReviewInstructions,
@@ -227,6 +244,11 @@ test('reviews a generated proposal draft with AI and persists the result', async
     (persisted.payload as Record<string, unknown>).proposalDraftReview &&
       typeof (persisted.payload as Record<string, unknown>).proposalDraftReview === 'object',
     true,
+  );
+  assert.equal(
+    (persisted.payload as { proposalDraftReview?: { resolvedCustomer?: { id?: string } } })
+      .proposalDraftReview?.resolvedCustomer?.id,
+    '999',
   );
   assert.equal(
     (

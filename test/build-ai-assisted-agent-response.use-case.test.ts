@@ -200,6 +200,8 @@ class FakeOpenAIBudgetAssistantGateway implements OpenAIBudgetAssistantGateway {
       review: {
         summary: 'Parecer de teste.',
         suggestedCommercialBody: input.proposalDraft,
+        resolvedCustomer: null,
+        resolvedMaterialItems: [],
         adjustmentNotes: [],
         confidence: 'medio' as const,
       },
@@ -358,6 +360,8 @@ test('sanitizes AI extraction before querying local context', async () => {
         review: {
           summary: 'Parecer de teste.',
           suggestedCommercialBody: input.proposalDraft,
+          resolvedCustomer: null,
+          resolvedMaterialItems: [],
           adjustmentNotes: [],
           confidence: 'medio' as const,
         },
@@ -511,6 +515,8 @@ test('merges standalone brand tokens into compatible material queries', async ()
         review: {
           summary: 'Parecer de teste.',
           suggestedCommercialBody: input.proposalDraft,
+          resolvedCustomer: null,
+          resolvedMaterialItems: [],
           adjustmentNotes: [],
           confidence: 'medio' as const,
         },

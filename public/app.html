@@ -2964,6 +2964,7 @@
       function buildBlingPreviewData({
         session,
         proposalDraft,
+        proposalDraftReview,
         proposalConfirmation,
         blingQuoteReference,
         blingQuote,
@@ -2972,23 +2973,54 @@
         aiInterpretation,
         displayMaterialItems,
         displayFinancialSummary,
+        expandedMaterialCandidates,
       }) {
         const serviceItems = aiInterpretation?.serviceItems || [];
         const laborTotal = parseMinimumLaborValue(proposalDraft, serviceItems);
-        const materialRows = (displayMaterialItems || []).map((item, index) => ({
-          kind: 'material',
-          line: index + 1,
-          description: item.catalogItemName || item.description || 'Material sem descrição',
-          supportText: item.catalogItemName
-            ? item.description && item.description !== item.catalogItemName
-              ? item.description
-              : item.sourceQuery || ''
-            : item.sourceQuery || '',
-          quantityText: item.quantityText || 'Quantidade a validar',
-          unitValue: Number(item?.unitPrice || item?.price || 0),
-          totalValue: Number(item?.lineTotal || item?.price || 0),
-          source: item.catalogItemName ? 'Catálogo local vinculado' : 'Estimativa do rascunho',
-        }));
+        const candidateById = new Map();
+        (expandedMaterialCandidates || []).forEach((group) => {
+          (group?.candidates || []).forEach((candidate) => {
+            if (candidate?.id) {
+              candidateById.set(String(candidate.id), candidate);
+            }
+          });
+        });
+        const reviewedMaterialItems =
+          proposalDraftReview?.resolvedMaterialItems?.length
+            ? proposalDraftReview.resolvedMaterialItems
+            : [];
+        const previewMaterialItems = reviewedMaterialItems.length
+          ? reviewedMaterialItems
+          : displayMaterialItems || [];
+        const materialRows = previewMaterialItems.map((item, index) => {
+          const linkedCandidate = item?.catalogItemId
+            ? candidateById.get(String(item.catalogItemId))
+            : null;
+          const unitValue =
+            Number(item?.unitPrice || item?.price || linkedCandidate?.price || 0);
+          const totalValue = Number(item?.lineTotal || item?.price || 0) || unitValue;
+
+          return {
+            kind: 'material',
+            line: index + 1,
+            description: item.catalogItemName || item.description || 'Material sem descrição',
+            supportText: item.catalogItemName
+              ? item.description && item.description !== item.catalogItemName
+                ? item.description
+                : item.sourceQuery || ''
+              : item.sourceQuery || '',
+            quantityText: item.quantityText || 'Quantidade a validar',
+            unitValue,
+            totalValue,
+            source: item.catalogItemId
+              ? 'Revisão final com vínculo ao catálogo'
+              : reviewedMaterialItems.length
+                ? 'Revisão final sem vínculo confirmado'
+                : item.catalogItemName
+                  ? 'Catálogo local vinculado'
+                  : 'Estimativa do rascunho',
+          };
+        });
         const rows = [...materialRows];
 
         if (laborTotal > 0) {
@@ -3017,6 +3049,7 @@
             aiInterpretation?.budgetDescription ||
             'Sem corpo comercial disponível.',
           customerName:
+            proposalDraftReview?.resolvedCustomer?.name ||
             resolvedCustomer?.name ||
             proposalDraft?.customerQuery ||
             session?.customerQuery ||
@@ -3156,7 +3189,9 @@
                 </div>
                 <p class="bling-preview-note">
                   Esta é uma prévia operacional. Ela usa os materiais consolidados do rascunho e a linha
-                  de <strong>Soma mínima da mão de obra</strong> quando disponível. O objetivo é permitir
+                  de <strong>Soma mínima da mão de obra</strong> quando disponível. Quando existir uma
+                  revisão estruturada, a prévia prioriza os materiais e o cliente sugeridos nessa revisão.
+                  O objetivo é permitir
                   conferência visual antes do envio final ao Bling.
                 </p>
               </div>
@@ -3219,10 +3254,15 @@
           : 'Lista de Materiais';
         const displayFinancialSummary =
           proposalDraft?.financialSummary || localResponse?.financialSummary || {};
+        const expandedMaterialCandidates =
+          payload?.materialCandidatesExpanded ||
+          payload?.session?.payload?.materialCandidatesExpanded ||
+          [];
         const blingPreviewEnabled = shouldShowBlingPreview();
         const blingPreview = buildBlingPreviewData({
           session,
           proposalDraft,
+          proposalDraftReview,
           proposalConfirmation,
           blingQuoteReference,
           blingQuote,
@@ -3231,6 +3271,7 @@
           aiInterpretation,
           displayMaterialItems,
           displayFinancialSummary,
+          expandedMaterialCandidates,
         });
         const hasBlingPreview = Boolean(proposalDraft);
 
@@ -3614,9 +3655,36 @@
                         <span class="review-meta-label">Confiança</span>
                         <div class="review-meta-value">${escapeHtml(proposalDraftReview.confidence || 'baixo')}</div>
                       </div>
+                      <div class="review-meta-card">
+                        <span class="review-meta-label">Cliente sugerido</span>
+                        <div class="review-meta-value">${
+                          proposalDraftReview.resolvedCustomer?.id
+                            ? `${escapeHtml(proposalDraftReview.resolvedCustomer.name || 'Cliente sugerido')} <span class="muted">(#${escapeHtml(String(proposalDraftReview.resolvedCustomer.id || ''))})</span>`
+                            : '<span class="muted">Nenhum cliente consolidado nesta revisão.</span>'
+                        }</div>
+                      </div>
                       <div class="review-meta-card" style="grid-column: 1 / -1;">
                         <span class="review-meta-label">Notas de ajuste</span>
                         <div class="review-meta-value">${renderList(proposalDraftReview.adjustmentNotes || [])}</div>
+                      </div>
+                      <div class="review-meta-card" style="grid-column: 1 / -1;">
+                        <span class="review-meta-label">Materiais sugeridos para envio</span>
+                        <div class="review-meta-value">${
+                          proposalDraftReview.resolvedMaterialItems?.length
+                            ? `<ul>${proposalDraftReview.resolvedMaterialItems
+                                .map(
+                                  (item) =>
+                                    `<li>${escapeHtml(item.description || 'Material sem descrição')}${
+                                      item.quantityText ? ` - ${escapeHtml(item.quantityText)}` : ''
+                                    }${
+                                      item.catalogItemName
+                                        ? ` <span class="muted">(catálogo: ${escapeHtml(item.catalogItemName)})</span>`
+                                        : ' <span class="muted">(sem vínculo fechado no catálogo)</span>'
+                                    }</li>`,
+                                )
+                                .join('')}</ul>`
+                            : '<span class="muted">Nenhum material estruturado retornado nesta revisão.</span>'
+                        }</div>
                       </div>
                     </div>
                     <div class="review-editor-wrap">

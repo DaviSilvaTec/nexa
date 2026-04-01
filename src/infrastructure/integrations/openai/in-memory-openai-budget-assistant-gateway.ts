@@ -96,12 +96,32 @@ export class InMemoryOpenAIBudgetAssistantGateway
     }>;
     pointsOfAttention: string[];
   }) {
+    const firstCustomerCandidate = input.customerCandidates[0] ?? null;
+
     return {
       type: 'proposal_draft_reviewed' as const,
       review: {
         summary:
           'Revisão em memória ativa. Validar clareza comercial, cliente e escopo antes do envio.',
         suggestedCommercialBody: input.proposalDraft,
+        resolvedCustomer: firstCustomerCandidate
+          ? {
+              id: firstCustomerCandidate.id,
+              name: firstCustomerCandidate.name,
+              code: null,
+              documentNumber: null,
+            }
+          : null,
+        resolvedMaterialItems: input.materialCandidates.map((group) => ({
+          description: group.candidates[0]?.name || group.query,
+          quantityText:
+            input.materialItems.find(
+              (item) => normalizeText(item.description) === normalizeText(group.query),
+            )?.quantityText || 'quantidade a validar',
+          sourceQuery: group.query,
+          catalogItemId: group.candidates[0]?.id || null,
+          catalogItemName: group.candidates[0]?.name || null,
+        })),
         adjustmentNotes: [
           'Gateway em memória ativo para testes locais.',
           ...(input.modelOverride

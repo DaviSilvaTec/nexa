@@ -26,6 +26,23 @@ Consultar este arquivo ao:
 
 ## ENTRADAS
 
+### 2026-04-01 21:40:00 -03
+- __Revisão obrigatória passou a devolver cliente e materiais estruturados, e a prévia do Bling passou a priorizar essa revisão__ ✓
+- O contrato de `reviewProposalDraft` foi ampliado para devolver, além do texto revisado, um `resolvedCustomer` estruturado e uma lista `resolvedMaterialItems` com descrição, quantidade textual e vínculo opcional ao catálogo local.
+- O caso de uso `reviewAiBudgetProposalDraft` passou a persistir esse retorno estruturado dentro de `proposalDraftReview`, junto do rascunho sugerido, das notas de ajuste e da confiança.
+- A interface da revisão agora exibe explicitamente o `Cliente sugerido` e a lista `Materiais sugeridos para envio`, incluindo o nome do item do catálogo quando o modelo conseguir apontar uma correspondência.
+- A aba `Prévia Bling` passou a priorizar os materiais e o cliente vindos de `proposalDraftReview` quando essa revisão existir; quando não houver revisão estruturada, ela continua caindo para os materiais consolidados do rascunho ou da interpretação inicial.
+- Comportamento ainda observado nesta etapa: após `Aceitar revisão`, a escolha de materiais e cliente já atravessa corretamente a prévia, mas a `quantityText` nem sempre aparece consolidada na tabela da prévia, mesmo quando está correta no corpo do texto comercial. Esse ajuste permanece pendente para a etapa seguinte do fluxo.
+- Arquivos impactados:
+- [openai-budget-assistant-gateway.ts](/home/usuario/workspace/Antigravity/2026/NeXa/src/application/gateways/openai-budget-assistant-gateway.ts)
+- [openai-http-budget-assistant-gateway.ts](/home/usuario/workspace/Antigravity/2026/NeXa/src/infrastructure/integrations/openai/openai-http-budget-assistant-gateway.ts)
+- [in-memory-openai-budget-assistant-gateway.ts](/home/usuario/workspace/Antigravity/2026/NeXa/src/infrastructure/integrations/openai/in-memory-openai-budget-assistant-gateway.ts)
+- [review-ai-budget-proposal-draft.ts](/home/usuario/workspace/Antigravity/2026/NeXa/src/application/use-cases/review-ai-budget-proposal-draft.ts)
+- [app.html](/home/usuario/workspace/Antigravity/2026/NeXa/public/app.html)
+- [review-ai-budget-proposal-draft.use-case.test.ts](/home/usuario/workspace/Antigravity/2026/NeXa/test/review-ai-budget-proposal-draft.use-case.test.ts)
+- [openai-http-budget-assistant-gateway.test.ts](/home/usuario/workspace/Antigravity/2026/NeXa/test/openai-http-budget-assistant-gateway.test.ts)
+- [ai-assisted-agent-response-route.test.ts](/home/usuario/workspace/Antigravity/2026/NeXa/test/ai-assisted-agent-response-route.test.ts)
+
 ### 2026-04-01 15:20:00 -03
 - __Revisão assistida passou a usar o pedido original como contexto e as instruções adicionais do operador__ ✓
 - O contrato de `reviewProposalDraft` foi ampliado para receber `reviewInstructions`, além de `originalText`, `proposalDraft`, `reviewBehavior` e `modelOverride`.

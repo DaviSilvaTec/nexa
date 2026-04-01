@@ -455,6 +455,9 @@ Função atual:
 - exige que a sessão esteja em `Proposta comercial pronta`;
 - lê o rascunho salvo;
 - grava primeiro o estado `proposal_review_requested` em `workflowState`;
+- monta e persiste apoio local para a revisão:
+  - `materialCandidatesExpanded`;
+  - `customerCandidates`;
 - envia ao gateway de revisão:
   - texto original;
   - rascunho atual;
@@ -463,14 +466,25 @@ Função atual:
   - descrição do orçamento;
   - descrição do trabalho;
   - materiais;
+  - lista expandida de candidatos de material;
+  - lista de clientes prováveis;
   - serviços;
   - pontos de atenção;
   - override opcional de modelo;
   - `reviewBehavior`, quando esse modo estiver habilitado na interface.
 - quando a resposta volta, persiste `proposalDraftReview` e avança `workflowState` para `proposal_review_completed`.
 
+Estrutura real persistida em `proposalDraftReview` nesta etapa:
+- `summary`;
+- `suggestedCommercialBody`;
+- `resolvedCustomer`;
+- `resolvedMaterialItems`;
+- `adjustmentNotes`;
+- `confidence`;
+- `reviewedAt`.
+
 Objetivo:
-- gerar uma segunda versão do texto antes do aceite.
+- gerar uma segunda versão do texto antes do aceite e já trazer uma consolidação estruturada de cliente e materiais para conferência humana.
 
 Comportamento real do `reviewBehavior`:
 - `manual`
@@ -491,6 +505,14 @@ Papel do texto original nessa revisão:
 Prioridade prática nessa etapa:
 - quando houver instruções explícitas do operador em `reviewInstructions`, o prompt manda tratá-las como orientação prioritária para a revisão do rascunho.
 
+Comportamento real da interface nessa etapa:
+- o bloco `Revisão do Rascunho` mostra:
+  - o texto revisado editável;
+  - `Cliente sugerido`;
+  - `Notas de ajuste`;
+  - `Materiais sugeridos para envio`, com o nome do item do catálogo quando a revisão conseguiu apontar um vínculo local.
+- a aba `Prévia Bling`, quando habilitada em `Configurações`, prioriza exatamente esse conteúdo estruturado da revisão para montar a visualização do orçamento antes do envio.
+
 ### 4. Aceite da revisão
 Caso de uso:
 - [accept-ai-budget-proposal-draft-review.ts](/home/usuario/workspace/Antigravity/2026/NeXa/src/application/use-cases/accept-ai-budget-proposal-draft-review.ts)
@@ -500,6 +522,10 @@ Função:
 - atualiza materiais reconciliados;
 - limpa o bloco de revisão pendente;
 - atualiza `workflowState` para `proposal_review_accepted`.
+
+Comportamento real observado nesta etapa:
+- após o aceite, a prévia do Bling já passa a refletir corretamente cliente e materiais vindos da revisão estruturada;
+- porém a quantidade textual dos itens ainda pode não atravessar o fluxo final com fidelidade total, mesmo quando o corpo comercial aceito contém a quantidade correta.
 
 ### 5. Rejeição da revisão
 Caso de uso:

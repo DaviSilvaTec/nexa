@@ -25,6 +25,8 @@ test('rejects the AI review suggestion and keeps the main proposal draft unchang
         reviewedAt: '2026-03-31T16:12:00.000Z',
         summary: 'Sugestão disponível.',
         suggestedCommercialBody: 'Versão revisada',
+        resolvedCustomer: null,
+        resolvedMaterialItems: [],
         adjustmentNotes: ['Melhorar abertura comercial.'],
         confidence: 'medio',
       },

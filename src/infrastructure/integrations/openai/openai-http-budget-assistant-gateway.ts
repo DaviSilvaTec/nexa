@@ -309,12 +309,46 @@ export class OpenAIHttpBudgetAssistantGateway
         required: [
           'summary',
           'suggestedCommercialBody',
+          'resolvedCustomer',
+          'resolvedMaterialItems',
           'adjustmentNotes',
           'confidence',
         ],
         properties: {
           summary: { type: 'string' },
           suggestedCommercialBody: { type: 'string' },
+          resolvedCustomer: {
+            type: ['object', 'null'],
+            additionalProperties: false,
+            required: ['id', 'name', 'code', 'documentNumber'],
+            properties: {
+              id: { type: 'string' },
+              name: { type: 'string' },
+              code: { type: ['string', 'null'] },
+              documentNumber: { type: ['string', 'null'] },
+            },
+          },
+          resolvedMaterialItems: {
+            type: 'array',
+            items: {
+              type: 'object',
+              additionalProperties: false,
+              required: [
+                'description',
+                'quantityText',
+                'sourceQuery',
+                'catalogItemId',
+                'catalogItemName',
+              ],
+              properties: {
+                description: { type: 'string' },
+                quantityText: { type: 'string' },
+                sourceQuery: { type: ['string', 'null'] },
+                catalogItemId: { type: ['string', 'null'] },
+                catalogItemName: { type: ['string', 'null'] },
+              },
+            },
+          },
           adjustmentNotes: {
             type: 'array',
             items: { type: 'string' },
@@ -337,6 +371,9 @@ export class OpenAIHttpBudgetAssistantGateway
         'O NEXA está enviando uma lista ampliada de materiais candidatos e uma lista de clientes prováveis para apoiar esta revisão.',
         'Use essas listas como referência contextual para comparar o pedido original com o rascunho atual e perceber escolhas mais aderentes, omissões e inconsistências.',
         'Não trate nenhum candidato isoladamente como definitivo nesta etapa apenas por aparecer na lista; use o conjunto do contexto para revisar melhor.',
+        'Além de revisar o texto comercial, identifique qual cliente da lista enviada parece mais aderente ao pedido original. Preencha resolvedCustomer com esse cliente quando houver aderência suficiente; caso contrário, retorne null.',
+        'Também identifique os materiais finais mais aderentes para o orçamento revisado. Preencha resolvedMaterialItems escolhendo explicitamente catalogItemId e catalogItemName quando houver correspondência adequada nos candidatos enviados.',
+        'Quando não houver correspondência adequada para um material necessário, mantenha catalogItemId e catalogItemName como null, mas ainda retorne o item em resolvedMaterialItems com descrição e quantidadeText úteis.',
         'Quando houver materiais lineares ou proporcionais sem metragem fechada, refine as quantidades aproximadas usando distâncias, tubulações, rotas e demais pistas do contexto técnico, mantendo explícito que se trata de estimativa.',
         'Inclua no corpo sugerido somas, subtotais ou totais aproximados por agrupamento sempre que isso ajudar na conferência manual posterior, deixando claro que esses valores ainda podem ser ajustados antes do envio final.',
         'Quando houver soma consolidada de mão de obra, escreva uma linha explícita e padronizada com o nome exato "Soma mínima da mão de obra:" seguida do valor em reais, usando a soma dos menores valores estimados dos serviços, pois o NEXA usará essa linha como referência operacional no envio ao Bling.',
@@ -355,6 +392,8 @@ export class OpenAIHttpBudgetAssistantGateway
       review: {
         summary: normalizeString(result.summary),
         suggestedCommercialBody: normalizeString(result.suggestedCommercialBody),
+        resolvedCustomer: normalizeResolvedCustomer(result.resolvedCustomer),
+        resolvedMaterialItems: normalizeMaterialItems(result.resolvedMaterialItems),
         adjustmentNotes: normalizeStringArray(result.adjustmentNotes),
         confidence: normalizeConfidence(result.confidence),
       },
@@ -762,6 +801,32 @@ function normalizeServiceItems(
           : '',
     }))
     .filter((item) => item.description.length > 0);
+}
+
+function normalizeResolvedCustomer(value: unknown): {
+  id: string;
+  name: string;
+  code: string | null;
+  documentNumber: string | null;
+} | null {
+  if (!value || typeof value !== 'object') {
+    return null;
+  }
+
+  const record = value as Record<string, unknown>;
+  const id = normalizeString(record.id);
+  const name = normalizeString(record.name);
+
+  if (id.length === 0 || name.length === 0) {
+    return null;
+  }
+
+  return {
+    id,
+    name,
+    code: normalizeNullableString(record.code),
+    documentNumber: normalizeNullableString(record.documentNumber),
+  };
 }
 
 function normalizeLaborPriceResearch(value: unknown, context: {
