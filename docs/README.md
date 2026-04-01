@@ -17,14 +17,15 @@ Consultar este arquivo ao iniciar o projeto, ao orientar o Codex, ao revisar a a
 4. `orcamento-engine.md`
 5. `architecture/backend.md`
 6. `architecture/project-structure.md`
-7. `architecture/conversation-flow.md`
-8. `architecture/approval-flow.md`
-9. `architecture/whatsapp.md`
-10. `architecture/bling.md`
-11. `integrations/bling-history.md`
-12. `learning/`
-13. `patterns/`
-14. `setup/`
+7. `architecture/system-walkthrough.md`
+8. `architecture/conversation-flow.md`
+9. `architecture/approval-flow.md`
+10. `architecture/whatsapp.md`
+11. `architecture/bling.md`
+12. `integrations/bling-history.md`
+13. `learning/`
+14. `patterns/`
+15. `setup/`
 
 ## MAPA DA DOCUMENTAÇÃO
 
@@ -55,6 +56,8 @@ Consultar este arquivo ao iniciar o projeto, ao orientar o Codex, ao revisar a a
   Visão geral do backend, tecnologias-base e responsabilidades centrais.
 - `architecture/project-structure.md`
   Estrutura recomendada de pastas, módulos e camadas.
+- `architecture/system-walkthrough.md`
+  Explica o funcionamento atual do sistema ponta a ponta, os principais casos de uso, as rotas HTTP, o bootstrap do runtime e a relação entre as funções centrais do NEXA.
 - `architecture/conversation-flow.md`
   Fluxo da conversa entre usuário, agente, aprovação e execução.
 - `architecture/approval-flow.md`

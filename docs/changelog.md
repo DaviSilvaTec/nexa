@@ -26,6 +26,15 @@ Consultar este arquivo ao:
 
 ## ENTRADAS
 
+### 2026-04-01 12:55:00 -03
+- __Walkthrough detalhado do sistema foi recriado como base documental da nova rodada de implementação__ ✓
+- O arquivo `docs/architecture/system-walkthrough.md` foi recriado para documentar o funcionamento atual do NEXA ponta a ponta com base no código real, cobrindo bootstrap, configuração, camadas, rotas, fluxo assistido, proposta comercial, envio ao Bling, modelos e funções centrais.
+- O índice principal em `docs/README.md` passou a apontar explicitamente para esse walkthrough como leitura recomendada após backend e estrutura de projeto.
+- A regra operacional desta fase ficou reforçada: cada etapa validada deve continuar sendo registrada tanto no `changelog` quanto no walkthrough detalhado.
+- Arquivos impactados:
+- [docs/architecture/system-walkthrough.md](/home/usuario/workspace/Antigravity/2026/NeXa/docs/architecture/system-walkthrough.md)
+- [docs/README.md](/home/usuario/workspace/Antigravity/2026/NeXa/docs/README.md)
+
 ### 2026-03-31 20:45:00 -03
 - __Seletor visível de modelo foi reposicionado para a etapa de revisão do rascunho__ ✓
 - O seletor operacional de `Modelo de IA` deixou a tela inicial de envio ao NEXA e passou para o bloco do rascunho comercial, logo acima do botão `Mandar pra revisão`.
