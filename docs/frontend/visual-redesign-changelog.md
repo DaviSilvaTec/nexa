@@ -35,3 +35,9 @@ Consultar ao revisar a evolução do redesign, identificar o que mudou na interf
 - Etapa 6 iniciada com foco no modo de conferência: proposta comercial e revisão passaram a ter estrutura mais editorial, com cabeçalho próprio, metadados em grade e corpo de documento mais claramente separado das ações.
 - o rascunho principal agora se apresenta como documento operacional em edição ou consolidado, reforçando a ideia de conferência antes do envio ao Bling.
 - a revisão do rascunho ganhou atmosfera visual temporária e deliberativa, com resumo, notas de ajuste e editor sugerido organizados como uma segunda camada de decisão, não apenas como mais um bloco de texto.
+- Etapa 7 iniciada com refinamento das esperas: os estados de processamento do orçamento e da revisão passaram a usar um painel próprio de acompanhamento, com etapa atual, temporizador e trilha visual simples de progresso.
+- os carregamentos deixaram de parecer apenas mensagens soltas e passaram a transmitir melhor que a operação está ativa, acompanhada e em andamento.
+- o feedback de espera ficou mais coerente com a nova identidade editorial-operacional do NEXA, sem alterar o polling nem a lógica já existente.
+- Etapa 8 iniciada com lapidação final: painel de configurações, terminal de saída, badges, listas laterais e responsividade receberam ajustes finos de ritmo visual e consistência.
+- o conjunto ficou mais equilibrado em telas menores, com melhor acomodação de cabeçalhos, blocos internos e áreas de saída sem alterar o fluxo operacional.
+- a frente visual foi fechada com foco em acabamento, coerência e leitura de produto, preservando o comportamento funcional já consolidado.
