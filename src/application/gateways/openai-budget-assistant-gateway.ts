@@ -116,6 +116,7 @@ export interface OpenAIBudgetAssistantGateway {
   reviewProposalDraft(input: {
     originalText: string;
     proposalDraft: string;
+    reviewInstructions: string;
     modelOverride?: string | null;
     reviewBehavior?: 'manual' | 'double-check' | 'suggestion-only';
     customerName: string | null;
@@ -124,6 +125,29 @@ export interface OpenAIBudgetAssistantGateway {
     materialItems: Array<{
       description: string;
       quantityText: string;
+    }>;
+    materialCandidates: Array<{
+      query: string;
+      totalMatches: number;
+      candidates: Array<{
+        id: string;
+        name: string;
+        code: string | null;
+        price: number | null;
+        costPrice: number | null;
+        stockQuantity: number | null;
+        type: string | null;
+        status: string | null;
+      }>;
+    }>;
+    customerCandidates: Array<{
+      id: string;
+      name: string;
+      code: string | null;
+      documentNumber: string | null;
+      phone: string | null;
+      mobilePhone: string | null;
+      score: number;
     }>;
     serviceItems: Array<{
       description: string;

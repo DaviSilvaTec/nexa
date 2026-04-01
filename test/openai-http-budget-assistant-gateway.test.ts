@@ -487,11 +487,14 @@ test('uses a model override only for proposal draft review when requested', asyn
   await gateway.reviewProposalDraft({
     originalText: 'Texto original',
     proposalDraft: 'Rascunho',
+    reviewInstructions: '',
     modelOverride: 'gpt-5.4',
     customerName: 'Cliente',
     budgetDescription: 'Descrição',
     workDescription: 'Escopo',
     materialItems: [],
+    materialCandidates: [],
+    customerCandidates: [],
     serviceItems: [],
     pointsOfAttention: [],
   });
@@ -531,10 +534,13 @@ test('asks proposal draft review to include approximate sums and subtotals', asy
   await gateway.reviewProposalDraft({
     originalText: 'Texto original',
     proposalDraft: 'Rascunho',
+    reviewInstructions: 'Remover um item duplicado e reorganizar os blocos.',
     customerName: 'Cliente',
     budgetDescription: 'Descrição',
     workDescription: 'Escopo',
     materialItems: [],
+    materialCandidates: [],
+    customerCandidates: [],
     serviceItems: [],
     pointsOfAttention: [],
   });
@@ -542,6 +548,107 @@ test('asks proposal draft review to include approximate sums and subtotals', asy
   const body = JSON.parse(String(capturedInit?.body)) as { input: string };
   assert.match(body.input, /somas|subtotais|totais aproximados/i);
   assert.match(body.input, /dist[aâ]ncias|tubula[cç][õo]es|rotas/i);
+  assert.match(body.input, /pedido inicial.*contexto de refer[eê]ncia/i);
+  assert.match(body.input, /instru[cç][õo]es adicionais do operador/i);
+});
+
+test('falls back to standard review guidance when there are no extra review instructions', async () => {
+  let capturedInit: RequestInit | undefined;
+
+  const gateway = new OpenAIHttpBudgetAssistantGateway({
+    apiKey: 'openai-key-1',
+    model: 'gpt-5-nano',
+    fetchImpl: async (_url: string | URL | Request, init?: RequestInit) => {
+      capturedInit = init;
+
+      return new Response(
+        JSON.stringify({
+          output_text: JSON.stringify({
+            summary: 'Parecer',
+            suggestedCommercialBody: 'Texto revisado',
+            adjustmentNotes: [],
+            confidence: 'medio',
+          }),
+        }),
+        {
+          status: 200,
+          headers: {
+            'content-type': 'application/json',
+          },
+        },
+      );
+    },
+  });
+
+  await gateway.reviewProposalDraft({
+    originalText: 'Texto original',
+    proposalDraft: 'Rascunho',
+    reviewInstructions: '',
+    customerName: 'Cliente',
+    budgetDescription: 'Descrição',
+    workDescription: 'Escopo',
+    materialItems: [],
+    materialCandidates: [],
+    customerCandidates: [],
+    serviceItems: [],
+    pointsOfAttention: [],
+  });
+
+  const body = JSON.parse(String(capturedInit?.body)) as { input: string };
+  assert.match(body.input, /não há instruções adicionais do operador/i);
+  assert.match(body.input, /faça somente a revisão padrão do orçamento/i);
+});
+
+test('retries proposal draft review once when OpenAI cancels the request transiently', async () => {
+  let attempts = 0;
+
+  const gateway = new OpenAIHttpBudgetAssistantGateway({
+    apiKey: 'openai-key-1',
+    model: 'gpt-5.4-mini',
+    fetchImpl: async () => {
+      attempts += 1;
+
+      if (attempts === 1) {
+        throw new Error(
+          'OpenAI budget assistant request was cancelled during proposal_draft_review.',
+        );
+      }
+
+      return new Response(
+        JSON.stringify({
+          output_text: JSON.stringify({
+            summary: 'Parecer',
+            suggestedCommercialBody: 'Texto revisado',
+            adjustmentNotes: [],
+            confidence: 'medio',
+          }),
+        }),
+        {
+          status: 200,
+          headers: {
+            'content-type': 'application/json',
+          },
+        },
+      );
+    },
+  });
+
+  const result = await gateway.reviewProposalDraft({
+    originalText: 'Texto original',
+    proposalDraft: 'Rascunho',
+    reviewInstructions: '',
+    customerName: 'Cliente',
+    budgetDescription: 'Descrição',
+    workDescription: 'Escopo',
+    materialItems: [],
+    materialCandidates: [],
+    customerCandidates: [],
+    serviceItems: [],
+    pointsOfAttention: [],
+  });
+
+  assert.equal(attempts, 2);
+  assert.equal(result.review.summary, 'Parecer');
 });
 
 test('reconciles proposal materials using shortlist candidates', async () => {

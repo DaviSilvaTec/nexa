@@ -176,7 +176,25 @@ class FakeOpenAIBudgetAssistantGateway implements OpenAIBudgetAssistantGateway {
     };
   }
 
-  async reviewProposalDraft(input: { proposalDraft: string }) {
+  async reviewProposalDraft(input: {
+    proposalDraft: string;
+    originalText: string;
+    reviewInstructions: string;
+    customerName: string | null;
+    budgetDescription: string;
+    workDescription: string;
+    materialItems: Array<{ description: string; quantityText: string }>;
+    materialCandidates: Array<{ query: string }>;
+    customerCandidates: Array<{ id: string }>;
+    serviceItems: Array<{
+      description: string;
+      quantityText: string;
+      estimatedValueText: string;
+    }>;
+    pointsOfAttention: string[];
+    modelOverride?: string | null;
+    reviewBehavior?: 'manual' | 'double-check' | 'suggestion-only';
+  }) {
     return {
       type: 'proposal_draft_reviewed' as const,
       review: {
@@ -316,7 +334,25 @@ test('sanitizes AI extraction before querying local context', async () => {
       };
     }
 
-    async reviewProposalDraft(input: { proposalDraft: string }) {
+    async reviewProposalDraft(input: {
+      proposalDraft: string;
+      originalText: string;
+      reviewInstructions: string;
+      customerName: string | null;
+      budgetDescription: string;
+      workDescription: string;
+      materialItems: Array<{ description: string; quantityText: string }>;
+      materialCandidates: Array<{ query: string }>;
+      customerCandidates: Array<{ id: string }>;
+      serviceItems: Array<{
+        description: string;
+        quantityText: string;
+        estimatedValueText: string;
+      }>;
+      pointsOfAttention: string[];
+      modelOverride?: string | null;
+      reviewBehavior?: 'manual' | 'double-check' | 'suggestion-only';
+    }) {
       return {
         type: 'proposal_draft_reviewed' as const,
         review: {
@@ -451,7 +487,25 @@ test('merges standalone brand tokens into compatible material queries', async ()
       };
     }
 
-    async reviewProposalDraft(input: { proposalDraft: string }) {
+    async reviewProposalDraft(input: {
+      proposalDraft: string;
+      originalText: string;
+      reviewInstructions: string;
+      customerName: string | null;
+      budgetDescription: string;
+      workDescription: string;
+      materialItems: Array<{ description: string; quantityText: string }>;
+      materialCandidates: Array<{ query: string }>;
+      customerCandidates: Array<{ id: string }>;
+      serviceItems: Array<{
+        description: string;
+        quantityText: string;
+        estimatedValueText: string;
+      }>;
+      pointsOfAttention: string[];
+      modelOverride?: string | null;
+      reviewBehavior?: 'manual' | 'double-check' | 'suggestion-only';
+    }) {
       return {
         type: 'proposal_draft_reviewed' as const,
         review: {

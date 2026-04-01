@@ -717,6 +717,8 @@ export function createApp(dependencies?: Partial<AppDependencies>): FastifyInsta
         {
           aiBudgetSessionRepository: appDependencies.aiBudgetSessionRepository,
           openAIBudgetAssistantGateway: appDependencies.openAIBudgetAssistantGateway,
+          contactCatalogCache: appDependencies.contactCatalogCache,
+          productCatalogCache: appDependencies.productCatalogCache,
         },
       );
     } catch (error) {
@@ -729,7 +731,11 @@ export function createApp(dependencies?: Partial<AppDependencies>): FastifyInsta
         message,
       )
         ? 409
-        : 404;
+        : /OpenAI budget assistant request|response could not be parsed|did not include output_text/i.test(
+              message,
+            )
+          ? 502
+          : 404;
       return reply.code(statusCode).send({ error: message });
     }
   });

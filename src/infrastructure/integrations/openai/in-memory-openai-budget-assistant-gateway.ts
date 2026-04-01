@@ -64,9 +64,37 @@ export class InMemoryOpenAIBudgetAssistantGateway
   }
 
   async reviewProposalDraft(input: {
+    originalText: string;
     proposalDraft: string;
+    reviewInstructions: string;
     modelOverride?: string | null;
     reviewBehavior?: 'manual' | 'double-check' | 'suggestion-only';
+    customerName: string | null;
+    budgetDescription: string;
+    workDescription: string;
+    materialItems: Array<{
+      description: string;
+      quantityText: string;
+    }>;
+    materialCandidates: Array<{
+      query: string;
+      totalMatches: number;
+      candidates: Array<{
+        id: string;
+        name: string;
+      }>;
+    }>;
+    customerCandidates: Array<{
+      id: string;
+      name: string;
+      score: number;
+    }>;
+    serviceItems: Array<{
+      description: string;
+      quantityText: string;
+      estimatedValueText: string;
+    }>;
+    pointsOfAttention: string[];
   }) {
     return {
       type: 'proposal_draft_reviewed' as const,
@@ -81,6 +109,15 @@ export class InMemoryOpenAIBudgetAssistantGateway
             : []),
           ...(input.reviewBehavior && input.reviewBehavior !== 'manual'
             ? [`Modo de revisão ativo: ${input.reviewBehavior}.`]
+            : []),
+          ...(input.reviewInstructions
+            ? [`Instruções adicionais do operador: ${input.reviewInstructions}`]
+            : []),
+          ...(input.customerCandidates.length > 0
+            ? [`Clientes prováveis enviados: ${input.customerCandidates.length}.`]
+            : []),
+          ...(input.materialCandidates.length > 0
+            ? [`Grupos ampliados de materiais enviados: ${input.materialCandidates.length}.`]
             : []),
           'Configurar OPENAI_API_KEY para receber revisão assistida real do rascunho.',
         ],

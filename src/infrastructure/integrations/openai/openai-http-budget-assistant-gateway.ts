@@ -261,6 +261,7 @@ export class OpenAIHttpBudgetAssistantGateway
   async reviewProposalDraft(input: {
     originalText: string;
     proposalDraft: string;
+    reviewInstructions: string;
     modelOverride?: string | null;
     reviewBehavior?: 'manual' | 'double-check' | 'suggestion-only';
     customerName: string | null;
@@ -269,6 +270,29 @@ export class OpenAIHttpBudgetAssistantGateway
     materialItems: Array<{
       description: string;
       quantityText: string;
+    }>;
+    materialCandidates: Array<{
+      query: string;
+      totalMatches: number;
+      candidates: Array<{
+        id: string;
+        name: string;
+        code: string | null;
+        price: number | null;
+        costPrice: number | null;
+        stockQuantity: number | null;
+        type: string | null;
+        status: string | null;
+      }>;
+    }>;
+    customerCandidates: Array<{
+      id: string;
+      name: string;
+      code: string | null;
+      documentNumber: string | null;
+      phone: string | null;
+      mobilePhone: string | null;
+      score: number;
     }>;
     serviceItems: Array<{
       description: string;
@@ -303,9 +327,16 @@ export class OpenAIHttpBudgetAssistantGateway
       },
       prompt: [
         'Você está revisando um rascunho comercial do NEXA antes do envio ao Bling.',
+        'O texto original transcrito representa apenas o pedido inicial do cliente e deve ser usado como contexto de referência, nunca como texto final a ser copiado automaticamente.',
+        'Compare o pedido original com o rascunho atual e com as instruções adicionais do operador para entender o que foi mantido, o que mudou e o que ainda precisa ser corrigido.',
+        'As instruções adicionais do operador devem ter prioridade prática sobre a formulação inicial do rascunho quando houver conflito explícito.',
+        buildReviewInstructionsInstruction(input.reviewInstructions),
         'Analise clareza, objetividade, tom comercial e coerência técnica.',
         'Revise também os valores estimados dos serviços e da mão de obra para aproximá-los do que costuma ser praticado no mercado local, sem tratá-los como definitivos.',
         'Se houver necessidade, proponha redação mais clara para os serviços e seus valores aproximados.',
+        'O NEXA está enviando uma lista ampliada de materiais candidatos e uma lista de clientes prováveis para apoiar esta revisão.',
+        'Use essas listas como referência contextual para comparar o pedido original com o rascunho atual e perceber escolhas mais aderentes, omissões e inconsistências.',
+        'Não trate nenhum candidato isoladamente como definitivo nesta etapa apenas por aparecer na lista; use o conjunto do contexto para revisar melhor.',
         'Quando houver materiais lineares ou proporcionais sem metragem fechada, refine as quantidades aproximadas usando distâncias, tubulações, rotas e demais pistas do contexto técnico, mantendo explícito que se trata de estimativa.',
         'Inclua no corpo sugerido somas, subtotais ou totais aproximados por agrupamento sempre que isso ajudar na conferência manual posterior, deixando claro que esses valores ainda podem ser ajustados antes do envio final.',
         'Quando houver soma consolidada de mão de obra, escreva uma linha explícita e padronizada com o nome exato "Soma mínima da mão de obra:" seguida do valor em reais, usando a soma dos menores valores estimados dos serviços, pois o NEXA usará essa linha como referência operacional no envio ao Bling.',
@@ -428,104 +459,180 @@ export class OpenAIHttpBudgetAssistantGateway
     modelOverride?: string;
   }): Promise<Record<string, unknown>> {
     const model = input.modelOverride ?? this.model;
+    const maxAttempts = input.schemaName === 'proposal_draft_review' ? 2 : 1;
+    let lastError: unknown;
 
-    await appendAppLog({
-      source: 'openai',
-      event: 'requisicao_iniciada',
-      schemaName: input.schemaName,
-      model,
-    }).catch(() => {});
+    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+      await appendAppLog({
+        source: 'openai',
+        event: 'requisicao_iniciada',
+        schemaName: input.schemaName,
+        model,
+        attempt,
+      }).catch(() => {});
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
-    let response: Response;
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
 
-    try {
-      response = await this.fetchImpl(`${this.baseUrl}/responses`, {
-        method: 'POST',
-        headers: new Headers({
-          Authorization: `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
-        }),
-        body: JSON.stringify({
-          model,
-          input: input.prompt,
-          text: {
-            format: {
-              type: 'json_schema',
-              name: input.schemaName,
-              strict: true,
-              schema: input.schema,
+      try {
+        const response = await this.fetchImpl(`${this.baseUrl}/responses`, {
+          method: 'POST',
+          headers: new Headers({
+            Authorization: `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json',
+          }),
+          body: JSON.stringify({
+            model,
+            input: input.prompt,
+            text: {
+              format: {
+                type: 'json_schema',
+                name: input.schemaName,
+                strict: true,
+                schema: input.schema,
+              },
             },
-          },
-        }),
-        signal: controller.signal,
-      });
-    } catch (error) {
-      clearTimeout(timeout);
+          }),
+          signal: controller.signal,
+        });
 
-      if (isAbortError(error)) {
+        if (!response.ok) {
+          const errorBody = await response.text();
+          await appendAppLog({
+            source: 'openai',
+            event: 'requisicao_falhou',
+            schemaName: input.schemaName,
+            statusCode: response.status,
+            errorBody,
+            attempt,
+          }).catch(() => {});
+
+          const failure = new Error(
+            `OpenAI budget assistant request failed with status ${response.status}: ${errorBody}`,
+          );
+
+          if (
+            attempt < maxAttempts &&
+            shouldRetryCancelledReviewError(failure, input.schemaName)
+          ) {
+            lastError = failure;
+            continue;
+          }
+
+          throw failure;
+        }
+
+        const body = (await response.json()) as {
+          output_text?: string;
+          output?: Array<{
+            content?: Array<{
+              type?: string;
+              text?: string;
+            }>;
+          }>;
+        };
+
+        const outputText = body.output_text ?? extractOutputText(body.output);
+
+        if (!outputText) {
+          const failure = new Error(
+            'OpenAI budget assistant response did not include output_text.',
+          );
+          await appendAppLog({
+            source: 'openai',
+            event: 'requisicao_falhou',
+            schemaName: input.schemaName,
+            errorBody: failure.message,
+            attempt,
+          }).catch(() => {});
+
+          if (
+            attempt < maxAttempts &&
+            shouldRetryCancelledReviewError(failure, input.schemaName)
+          ) {
+            lastError = failure;
+            continue;
+          }
+
+          throw failure;
+        }
+
+        let parsed: Record<string, unknown>;
+
+        try {
+          parsed = JSON.parse(outputText) as Record<string, unknown>;
+        } catch (error) {
+          const message =
+            error instanceof Error
+              ? error.message
+              : 'OpenAI budget assistant response could not be parsed as JSON.';
+          await appendAppLog({
+            source: 'openai',
+            event: 'requisicao_falhou',
+            schemaName: input.schemaName,
+            errorBody: `invalid_json: ${message}`,
+            attempt,
+          }).catch(() => {});
+          throw new Error(
+            `OpenAI budget assistant response could not be parsed as JSON during ${input.schemaName}.`,
+          );
+        }
+
         await appendAppLog({
           source: 'openai',
-          event: 'requisicao_expirada',
+          event: 'requisicao_concluida',
           schemaName: input.schemaName,
-          model,
-          timeoutMs: this.timeoutMs,
+          statusCode: response.status,
+          attempt,
         }).catch(() => {});
-        throw new Error(
-          `OpenAI budget assistant request timed out after ${this.timeoutMs}ms during ${input.schemaName}.`,
-        );
+
+        return parsed;
+      } catch (error) {
+        lastError = error;
+
+        if (isAbortError(error)) {
+          await appendAppLog({
+            source: 'openai',
+            event: 'requisicao_expirada',
+            schemaName: input.schemaName,
+            model,
+            timeoutMs: this.timeoutMs,
+            attempt,
+          }).catch(() => {});
+          throw new Error(
+            `OpenAI budget assistant request timed out after ${this.timeoutMs}ms during ${input.schemaName}.`,
+          );
+        }
+
+        const errorMessage =
+          error instanceof Error ? error.message : 'unknown error';
+
+        await appendAppLog({
+          source: 'openai',
+          event: 'requisicao_falhou',
+          schemaName: input.schemaName,
+          errorBody: errorMessage,
+          attempt,
+        }).catch(() => {});
+
+        if (
+          attempt < maxAttempts &&
+          shouldRetryCancelledReviewError(error, input.schemaName)
+        ) {
+          continue;
+        }
+
+        throw error;
+      } finally {
+        clearTimeout(timeout);
       }
-
-      await appendAppLog({
-        source: 'openai',
-        event: 'requisicao_falhou',
-        schemaName: input.schemaName,
-        errorBody: error instanceof Error ? error.message : 'unknown error',
-      }).catch(() => {});
-      throw error;
-    } finally {
-      clearTimeout(timeout);
     }
 
-    if (!response.ok) {
-      const errorBody = await response.text();
-      await appendAppLog({
-        source: 'openai',
-        event: 'requisicao_falhou',
-        schemaName: input.schemaName,
-        statusCode: response.status,
-        errorBody,
-      }).catch(() => {});
-      throw new Error(
-        `OpenAI budget assistant request failed with status ${response.status}: ${errorBody}`,
-      );
-    }
-
-    const body = (await response.json()) as {
-      output_text?: string;
-      output?: Array<{
-        content?: Array<{
-          type?: string;
-          text?: string;
-        }>;
-      }>;
-    };
-
-    const outputText = body.output_text ?? extractOutputText(body.output);
-
-    if (!outputText) {
-      throw new Error('OpenAI budget assistant response did not include output_text.');
-    }
-
-    await appendAppLog({
-      source: 'openai',
-      event: 'requisicao_concluida',
-      schemaName: input.schemaName,
-      statusCode: response.status,
-    }).catch(() => {});
-
-    return JSON.parse(outputText) as Record<string, unknown>;
+    throw lastError instanceof Error
+      ? lastError
+      : new Error(
+          `OpenAI budget assistant request failed during ${input.schemaName}.`,
+        );
   }
 }
 
@@ -534,6 +641,21 @@ function isAbortError(error: unknown): boolean {
     error instanceof Error &&
     (error.name === 'AbortError' || /abort/i.test(error.message))
   );
+}
+
+function shouldRetryCancelledReviewError(
+  error: unknown,
+  schemaName: string,
+): boolean {
+  if (schemaName !== 'proposal_draft_review') {
+    return false;
+  }
+
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  return /cancelled during proposal_draft_review|cancell?ed/i.test(error.message);
 }
 
 function normalizeString(value: unknown): string {
@@ -780,6 +902,14 @@ function buildReviewBehaviorInstruction(
   }
 
   return 'Modo de revisão ativo: manual com aprovação. Faça a revisão comercial padrão do NEXA, com liberdade para reorganizar o texto quando isso melhorar clareza e conferência.';
+}
+
+function buildReviewInstructionsInstruction(reviewInstructions: string): string {
+  if (reviewInstructions.trim().length === 0) {
+    return 'Não há instruções adicionais do operador nesta revisão. Portanto, faça somente a revisão padrão do orçamento: confira coerência do texto, corrija problemas óbvios, revise valores de serviços e mão de obra, e inclua somas, subtotais e totais que ajudem na conferência manual.';
+  }
+
+  return 'Há instruções adicionais do operador nesta revisão. Use-as como orientação complementar prioritária para acrescentar, remover, corrigir ou reorganizar o rascunho conforme solicitado.';
 }
 
 function extractOutputText(

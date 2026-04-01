@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import type { BlingContactCatalogCache } from '../src/application/catalog/bling-contact-catalog-cache';
+import type { BlingProductCatalogCache } from '../src/application/catalog/bling-product-catalog-cache';
 import type { OpenAIBudgetAssistantGateway } from '../src/application/gateways/openai-budget-assistant-gateway';
 import { reviewAiBudgetProposalDraft } from '../src/application/use-cases/review-ai-budget-proposal-draft';
 import { InMemoryAiBudgetSessionRepository } from '../src/infrastructure/persistence/in-memory/in-memory-ai-budget-session-repository';
@@ -13,6 +15,8 @@ class FakeOpenAIBudgetAssistantGateway implements OpenAIBudgetAssistantGateway {
     | 'suggestion-only'
     | null = null;
   public lastReviewInstructions: string | null = null;
+  public lastCustomerCandidatesCount = 0;
+  public lastMaterialCandidatesCount = 0;
 
   async extractBudgetIntake() {
     return {
@@ -54,14 +58,29 @@ class FakeOpenAIBudgetAssistantGateway implements OpenAIBudgetAssistantGateway {
   }
 
   async reviewProposalDraft(input: {
+    originalText: string;
     proposalDraft: string;
     reviewInstructions: string;
     modelOverride?: string | null;
     reviewBehavior?: 'manual' | 'double-check' | 'suggestion-only';
+    customerName: string | null;
+    budgetDescription: string;
+    workDescription: string;
+    materialItems: Array<{ description: string; quantityText: string }>;
+    customerCandidates: Array<{ id: string }>;
+    materialCandidates: Array<{ query: string }>;
+    serviceItems: Array<{
+      description: string;
+      quantityText: string;
+      estimatedValueText: string;
+    }>;
+    pointsOfAttention: string[];
   }) {
     this.lastReviewModelOverride = input.modelOverride ?? null;
     this.lastReviewBehavior = input.reviewBehavior ?? null;
     this.lastReviewInstructions = input.reviewInstructions ?? null;
+    this.lastCustomerCandidatesCount = input.customerCandidates.length;
+    this.lastMaterialCandidatesCount = input.materialCandidates.length;
 
     return {
       type: 'proposal_draft_reviewed' as const,
@@ -84,6 +103,53 @@ class FakeOpenAIBudgetAssistantGateway implements OpenAIBudgetAssistantGateway {
         confidence: 'baixo' as const,
       },
     };
+  }
+}
+
+class InMemoryContactCatalogCache implements BlingContactCatalogCache {
+  async read() {
+    return {
+      syncedAt: '2026-03-31T09:00:00.000Z',
+      items: [
+        {
+          id: '999',
+          name: 'Cliente Exemplo Ltda',
+          code: 'CLI-001',
+          status: 'A',
+          documentNumber: '12345678000199',
+          phone: '(16) 3000-0000',
+          mobilePhone: '(16) 99999-0000',
+        },
+      ],
+    };
+  }
+
+  async write() {
+    throw new Error('not used');
+  }
+}
+
+class InMemoryProductCatalogCache implements BlingProductCatalogCache {
+  async read() {
+    return {
+      syncedAt: '2026-03-31T09:00:00.000Z',
+      items: [
+        {
+          id: '1',
+          name: 'Material A',
+          code: 'MAT-A',
+          price: 10,
+          costPrice: 6,
+          stockQuantity: 8,
+          type: 'P',
+          status: 'A',
+        },
+      ],
+    };
+  }
+
+  async write() {
+    throw new Error('not used');
   }
 }
 
@@ -139,6 +205,8 @@ test('reviews a generated proposal draft with AI and persists the result', async
     {
       aiBudgetSessionRepository: repository,
       openAIBudgetAssistantGateway: gateway,
+      contactCatalogCache: new InMemoryContactCatalogCache(),
+      productCatalogCache: new InMemoryProductCatalogCache(),
     },
   );
 
@@ -150,6 +218,8 @@ test('reviews a generated proposal draft with AI and persists the result', async
     gateway.lastReviewInstructions,
     'Retirar um item condicional e melhorar a abertura.',
   );
+  assert.equal(gateway.lastCustomerCandidatesCount, 1);
+  assert.equal(gateway.lastMaterialCandidatesCount, 1);
 
   const persisted = await repository.findById('session-1');
   assert.ok(persisted);
@@ -216,6 +286,8 @@ test('forwards the selected review model only to proposal draft review', async (
     {
       aiBudgetSessionRepository: repository,
       openAIBudgetAssistantGateway: gateway,
+      contactCatalogCache: new InMemoryContactCatalogCache(),
+      productCatalogCache: new InMemoryProductCatalogCache(),
     },
   );
 
@@ -259,6 +331,8 @@ test('forwards the selected review behavior to proposal draft review', async () 
     {
       aiBudgetSessionRepository: repository,
       openAIBudgetAssistantGateway: gateway,
+      contactCatalogCache: new InMemoryContactCatalogCache(),
+      productCatalogCache: new InMemoryProductCatalogCache(),
     },
   );
 

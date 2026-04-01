@@ -104,8 +104,23 @@ class FakeOpenAIBudgetAssistantGateway implements OpenAIBudgetAssistantGateway {
   }
 
   async reviewProposalDraft(input: {
+    originalText: string;
     proposalDraft: string;
     modelOverride?: string | null;
+    reviewInstructions: string;
+    customerName: string | null;
+    budgetDescription: string;
+    workDescription: string;
+    materialItems: Array<{ description: string; quantityText: string }>;
+    materialCandidates: Array<{ query: string }>;
+    customerCandidates: Array<{ id: string }>;
+    serviceItems: Array<{
+      description: string;
+      quantityText: string;
+      estimatedValueText: string;
+    }>;
+    pointsOfAttention: string[];
+    reviewBehavior?: 'manual' | 'double-check' | 'suggestion-only';
   }) {
     this.lastReviewModelOverride = input.modelOverride ?? null;
 
@@ -138,6 +153,34 @@ class FakeOpenAIBudgetAssistantGateway implements OpenAIBudgetAssistantGateway {
         confidence: 'medio' as const,
       },
     };
+  }
+}
+
+class FailingReviewOpenAIBudgetAssistantGateway extends FakeOpenAIBudgetAssistantGateway {
+  override reviewProposalDraft(_input: {
+    originalText: string;
+    proposalDraft: string;
+    modelOverride?: string | null;
+    reviewInstructions: string;
+    customerName: string | null;
+    budgetDescription: string;
+    workDescription: string;
+    materialItems: Array<{ description: string; quantityText: string }>;
+    materialCandidates: Array<{ query: string }>;
+    customerCandidates: Array<{ id: string }>;
+    serviceItems: Array<{
+      description: string;
+      quantityText: string;
+      estimatedValueText: string;
+    }>;
+    pointsOfAttention: string[];
+    reviewBehavior?: 'manual' | 'double-check' | 'suggestion-only';
+  }) {
+    return Promise.reject(
+      new Error(
+        'OpenAI budget assistant request was cancelled during proposal_draft_review.',
+      ),
+    );
   }
 }
 
@@ -783,6 +826,56 @@ test('accepts an AI-reviewed proposal draft through the HTTP API', async () => {
     ['Material sugerido'],
   );
   assert.equal('proposalDraftReview' in accepted.json().session.payload, false);
+
+  await app.close();
+});
+
+test('returns 502 when proposal draft review fails due to OpenAI integration error', async () => {
+  const repository = new InMemoryAiBudgetSessionRepository();
+  const app = createApp({
+    authorizedChannels: new Set(['whatsapp:+5511999999999']),
+    conversationRepository: new InMemoryConversationRepository(),
+    suspendedAnalysisRepository: new InMemorySuspendedAnalysisRepository(),
+    aiBudgetSessionRepository: repository,
+    blingQuoteGateway: new InMemoryBlingQuoteGateway(),
+    blingProductGateway: new FakeBlingProductGateway(),
+    openAIBudgetAssistantGateway: new FailingReviewOpenAIBudgetAssistantGateway(),
+    contactCatalogCache: new InMemoryContactCatalogCache(),
+    productCatalogCache: new InMemoryProductCatalogCache(),
+    quoteHistoryCache: new InMemoryQuoteHistoryCache(),
+    serviceNoteHistoryCache: new InMemoryServiceNoteHistoryCache(),
+  });
+
+  const created = await app.inject({
+    method: 'POST',
+    url: '/local/ai-agent-response',
+    payload: {
+      originalText: 'Texto inicial',
+    },
+  });
+
+  const sessionId = created.json().session.id as string;
+
+  await app.inject({
+    method: 'POST',
+    url: `/local/ai-sessions/${sessionId}/approve`,
+  });
+
+  await app.inject({
+    method: 'POST',
+    url: `/local/ai-sessions/${sessionId}/proposal-draft`,
+  });
+
+  const reviewed = await app.inject({
+    method: 'POST',
+    url: `/local/ai-sessions/${sessionId}/proposal-draft/review`,
+  });
+
+  assert.equal(reviewed.statusCode, 502);
+  assert.match(
+    reviewed.json().error,
+    /cancelled during proposal_draft_review/i,
+  );
 
   await app.close();
 });
