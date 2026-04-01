@@ -12,6 +12,7 @@ class FakeOpenAIBudgetAssistantGateway implements OpenAIBudgetAssistantGateway {
     | 'double-check'
     | 'suggestion-only'
     | null = null;
+  public lastReviewInstructions: string | null = null;
 
   async extractBudgetIntake() {
     return {
@@ -54,11 +55,13 @@ class FakeOpenAIBudgetAssistantGateway implements OpenAIBudgetAssistantGateway {
 
   async reviewProposalDraft(input: {
     proposalDraft: string;
+    reviewInstructions: string;
     modelOverride?: string | null;
     reviewBehavior?: 'manual' | 'double-check' | 'suggestion-only';
   }) {
     this.lastReviewModelOverride = input.modelOverride ?? null;
     this.lastReviewBehavior = input.reviewBehavior ?? null;
+    this.lastReviewInstructions = input.reviewInstructions ?? null;
 
     return {
       type: 'proposal_draft_reviewed' as const,
@@ -123,6 +126,7 @@ test('reviews a generated proposal draft with AI and persists the result', async
       },
       proposalDraft: {
         commercialBody: 'Rascunho comercial atual.',
+        reviewInstructions: 'Retirar um item condicional e melhorar a abertura.',
       },
     },
   });
@@ -142,12 +146,35 @@ test('reviews a generated proposal draft with AI and persists the result', async
   assert.equal(result.review.summary, 'Rascunho revisado com pequenos ajustes.');
   assert.match(result.review.suggestedCommercialBody, /Sugestão final\./);
   assert.equal(gateway.lastReviewModelOverride, null);
+  assert.equal(
+    gateway.lastReviewInstructions,
+    'Retirar um item condicional e melhorar a abertura.',
+  );
 
   const persisted = await repository.findById('session-1');
   assert.ok(persisted);
   assert.equal(
     (persisted.payload as Record<string, unknown>).proposalDraftReview &&
       typeof (persisted.payload as Record<string, unknown>).proposalDraftReview === 'object',
+    true,
+  );
+  assert.equal(
+    (
+      persisted.payload as {
+        workflowState?: {
+          currentStage?: string;
+          hasReviewResult?: boolean;
+        };
+      }
+    ).workflowState?.currentStage,
+    'proposal_review_completed',
+  );
+  assert.equal(
+    (
+      persisted.payload as {
+        workflowState?: { hasReviewResult?: boolean };
+      }
+    ).workflowState?.hasReviewResult,
     true,
   );
 });
@@ -176,6 +203,7 @@ test('forwards the selected review model only to proposal draft review', async (
       },
       proposalDraft: {
         commercialBody: 'Rascunho comercial atual.',
+        reviewInstructions: '',
       },
     },
   });
@@ -218,6 +246,7 @@ test('forwards the selected review behavior to proposal draft review', async () 
       },
       proposalDraft: {
         commercialBody: 'Rascunho comercial atual.',
+        reviewInstructions: 'Conferir se o cliente aparece corretamente no início.',
       },
     },
   });
@@ -234,4 +263,8 @@ test('forwards the selected review behavior to proposal draft review', async () 
   );
 
   assert.equal(gateway.lastReviewBehavior, 'double-check');
+  assert.equal(
+    gateway.lastReviewInstructions,
+    'Conferir se o cliente aparece corretamente no início.',
+  );
 });

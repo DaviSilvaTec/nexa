@@ -3,6 +3,7 @@ import type {
   AiBudgetSessionRecord,
   AiBudgetSessionRepository,
 } from '../repositories/ai-budget-session-repository';
+import { updateAiBudgetWorkflowState } from './update-ai-budget-workflow-state';
 
 interface ReviewAiBudgetProposalDraftInput {
   sessionId: string;
@@ -44,9 +45,32 @@ export async function reviewAiBudgetProposalDraft(
   }
 
   const interpretation = asRecord(asRecord(payload.aiResponse).interpretation);
+  const reviewRequestedAt = (input.reviewedAt ?? new Date()).toISOString();
+  const requestedSession: AiBudgetSessionRecord = {
+    ...session,
+    updatedAt: reviewRequestedAt,
+    payload: updateAiBudgetWorkflowState(
+      payload,
+      reviewRequestedAt,
+      {
+        currentStage: 'proposal_review_requested',
+        currentStageLabel: 'Revisão do rascunho solicitada',
+        reviewRequestedAt,
+        availableData: {
+          hasProposalDraft: true,
+          hasReviewInstructions:
+            asString(proposalDraft.reviewInstructions).trim().length > 0,
+        },
+      },
+    ),
+  };
+
+  await dependencies.aiBudgetSessionRepository.save(requestedSession);
+
   const review = await dependencies.openAIBudgetAssistantGateway.reviewProposalDraft({
     originalText: session.originalText,
     proposalDraft: asString(proposalDraft.commercialBody),
+    reviewInstructions: asString(proposalDraft.reviewInstructions),
     modelOverride: normalizeReviewModel(input.reviewModel),
     reviewBehavior: normalizeReviewBehavior(input.reviewBehavior),
     customerName:
@@ -58,17 +82,29 @@ export async function reviewAiBudgetProposalDraft(
     pointsOfAttention: asStringList(interpretation.pointsOfAttention),
   });
 
-  const reviewedAt = (input.reviewedAt ?? new Date()).toISOString();
+  const reviewedAt = reviewRequestedAt;
   const updatedSession: AiBudgetSessionRecord = {
-    ...session,
+    ...requestedSession,
     updatedAt: reviewedAt,
-    payload: {
-      ...payload,
+    payload: updateAiBudgetWorkflowState({
+      ...asRecord(requestedSession.payload),
       proposalDraftReview: {
         ...review.review,
         reviewedAt,
       },
     },
+    reviewedAt,
+    {
+      currentStage: 'proposal_review_completed',
+      currentStageLabel: 'Revisão do rascunho concluída',
+      reviewRequestedAt: reviewedAt,
+      reviewCompletedAt: reviewedAt,
+      availableData: {
+        hasProposalDraft: true,
+        hasReviewInstructions: asString(proposalDraft.reviewInstructions).trim().length > 0,
+        hasReviewResult: true,
+      },
+    }),
   };
 
   await dependencies.aiBudgetSessionRepository.save(updatedSession);

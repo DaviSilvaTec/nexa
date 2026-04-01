@@ -134,6 +134,30 @@ test('generates a proposal draft from an approved AI budget session', async () =
     (stored?.payload as { proposalDraft?: { generatedAt?: string } }).proposalDraft?.generatedAt,
     '2026-03-30T18:15:00.000Z',
   );
+  assert.equal(
+    (
+      stored?.payload as {
+        workflowState?: { currentStage?: string; hasProposalDraft?: boolean };
+      }
+    ).workflowState?.currentStage,
+    'proposal_draft_generated',
+  );
+  assert.equal(
+    (
+      stored?.payload as {
+        workflowState?: { hasProposalDraft?: boolean; hasFinalResolvedMaterials?: boolean };
+      }
+    ).workflowState?.hasProposalDraft,
+    true,
+  );
+  assert.equal(
+    (
+      stored?.payload as {
+        workflowState?: { hasFinalResolvedMaterials?: boolean };
+      }
+    ).workflowState?.hasFinalResolvedMaterials,
+    true,
+  );
 });
 
 test('rejects proposal draft generation when the session is not approved yet', async () => {

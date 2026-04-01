@@ -203,6 +203,46 @@ test('creates and persists an AI budget session from the assisted flow', async (
       mobilePhone: '(16) 99999-0000',
     },
   );
+  assert.deepEqual(
+    (
+      stored?.payload as {
+        workflowState?: {
+          currentStage?: string;
+          hasOriginalText?: boolean;
+          hasInitialInterpretation?: boolean;
+          hasExpandedMaterialCandidates?: boolean;
+        };
+      }
+    ).workflowState,
+    {
+      currentStage: 'initial_interpretation_completed',
+      currentStageLabel: 'Interpretação inicial concluída',
+      lastPersistedAt: '2026-03-30T13:45:00.000Z',
+      originalTextCapturedAt: '2026-03-30T13:45:00.000Z',
+      firstInterpretationCompletedAt: '2026-03-30T13:45:00.000Z',
+      proposalDraftGeneratedAt: null,
+      proposalDraftEditedAt: null,
+      reviewInstructionsUpdatedAt: null,
+      reviewRequestedAt: null,
+      reviewCompletedAt: null,
+      reviewAcceptedAt: null,
+      reviewRejectedAt: null,
+      finalSelectionsUpdatedAt: null,
+      confirmationCompletedAt: null,
+      loadedFromModelAt: null,
+      loadedFromModelMode: null,
+      hasOriginalText: true,
+      hasInitialInterpretation: true,
+      hasProposalDraft: false,
+      hasReviewInstructions: false,
+      hasReviewResult: false,
+      hasExpandedMaterialCandidates: true,
+      hasCustomerCandidates: true,
+      hasFinalResolvedCustomer: false,
+      hasFinalResolvedMaterials: false,
+      hasConfirmation: false,
+    },
+  );
 });
 
 test('updates an existing AI budget session when sessionId is provided', async () => {

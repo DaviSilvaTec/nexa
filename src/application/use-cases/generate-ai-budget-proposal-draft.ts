@@ -4,6 +4,7 @@ import type {
 } from '../repositories/ai-budget-session-repository';
 import type { BlingProductCatalogCache } from '../catalog/bling-product-catalog-cache';
 import { calculateMaterialFinancialSummary } from './calculate-material-financial-summary';
+import { updateAiBudgetWorkflowState } from './update-ai-budget-workflow-state';
 
 interface GenerateAiBudgetProposalDraftInput {
   sessionId: string;
@@ -77,11 +78,25 @@ export async function generateAiBudgetProposalDraft(
     ...session,
     updatedAt: generatedAt,
     status: 'Proposta comercial pronta',
-    payload: {
+    payload: updateAiBudgetWorkflowState({
       ...asRecord(session.payload),
       proposalDraft,
       localResponse: updateLocalResponseStatus(session.payload, 'Proposta comercial pronta'),
     },
+    generatedAt,
+    {
+      currentStage: 'proposal_draft_generated',
+      currentStageLabel: 'Rascunho comercial gerado',
+      proposalDraftGeneratedAt: generatedAt,
+      finalSelectionsUpdatedAt: generatedAt,
+      availableData: {
+        hasProposalDraft: true,
+        hasReviewInstructions: false,
+        hasFinalResolvedMaterials: proposalDraft.materialItems.length > 0,
+        hasFinalResolvedCustomer:
+          Boolean(proposalDraft.resolvedCustomer?.id) || Boolean(proposalDraft.customerQuery),
+      },
+    }),
   };
 
   await dependencies.aiBudgetSessionRepository.save(updatedSession);

@@ -8,6 +8,7 @@ import { calculateMaterialFinancialSummary } from './calculate-material-financia
 import { extractCustomerFromCommercialBody } from './extract-customer-from-commercial-body';
 import { extractMaterialItemsFromCommercialBody } from './extract-material-items-from-commercial-body';
 import { updateCommercialBodyMaterialSection } from './update-commercial-body-material-section';
+import { updateAiBudgetWorkflowState } from './update-ai-budget-workflow-state';
 
 interface AcceptAiBudgetProposalDraftReviewInput {
   sessionId: string;
@@ -93,7 +94,7 @@ export async function acceptAiBudgetProposalDraftReview(
     ...session,
     ...(extractedCustomerQuery ? { customerQuery: extractedCustomerQuery } : {}),
     updatedAt: acceptedAt,
-    payload: {
+    payload: updateAiBudgetWorkflowState({
       ...restPayload,
       aiResponse: {
         ...aiResponse,
@@ -122,6 +123,22 @@ export async function acceptAiBudgetProposalDraftReview(
         reviewAcceptedAt: acceptedAt,
       },
     },
+    acceptedAt,
+    {
+      currentStage: 'proposal_review_accepted',
+      currentStageLabel: 'Revisão aceita',
+      reviewAcceptedAt: acceptedAt,
+      finalSelectionsUpdatedAt: acceptedAt,
+      availableData: {
+        hasProposalDraft: true,
+        hasReviewResult: false,
+        hasFinalResolvedMaterials: reconciledMaterialItems.length > 0,
+        hasFinalResolvedCustomer:
+          Boolean(extractedCustomerQuery) ||
+          Boolean(asString(asRecord(payload.resolvedCustomer).name)) ||
+          Boolean(session.customerQuery),
+      },
+    }),
   };
 
   await dependencies.aiBudgetSessionRepository.save(updatedSession);

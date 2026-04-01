@@ -236,6 +236,22 @@ test('confirms a generated proposal and stores confirmation metadata', async () 
       ?.confirmedAt,
     '2026-03-30T18:20:00.000Z',
   );
+  assert.equal(
+    (
+      result.session.payload as {
+        workflowState?: { currentStage?: string; hasConfirmation?: boolean };
+      }
+    ).workflowState?.currentStage,
+    'proposal_confirmed',
+  );
+  assert.equal(
+    (
+      result.session.payload as {
+        workflowState?: { hasConfirmation?: boolean };
+      }
+    ).workflowState?.hasConfirmation,
+    true,
+  );
   assert.deepEqual(blingQuoteGateway.lastPayload?.items, [
     {
       productId: 'product-1',

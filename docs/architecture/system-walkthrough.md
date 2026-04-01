@@ -304,7 +304,11 @@ Função:
 - reaproveita sessão existente se vier um `sessionId`;
 - chama `buildAiAssistedAgentResponse`;
 - extrai cliente resolvido se ele vier do contexto;
-- persiste tudo no repositório de sessões.
+- persiste tudo no repositório de sessões;
+- inicializa `workflowState` no payload com:
+  - etapa atual;
+  - datas de captura do texto e da interpretação inicial;
+  - flags indicando se já existem candidatos locais de material e cliente.
 
 Objetivo:
 - transformar o texto livre em uma sessão navegável e reaproveitável.
@@ -413,7 +417,8 @@ Função:
 - monta o corpo comercial;
 - consolida materiais e serviços exibidos no orçamento;
 - inicializa `reviewInstructions` como string vazia;
-- registra o rascunho na sessão.
+- registra o rascunho na sessão;
+- atualiza `workflowState` para `proposal_draft_generated`.
 
 ### 2. Edição manual
 Caso de uso:
@@ -424,7 +429,8 @@ Função:
 - salva também `proposalDraft.reviewInstructions`;
 - relê seções relevantes do texto;
 - atualiza materiais reconciliados;
-- ajusta partes do payload derivadas do texto salvo.
+- ajusta partes do payload derivadas do texto salvo;
+- atualiza `workflowState` para `proposal_draft_updated`.
 
 Comportamento real da Web App nessa etapa:
 - enquanto a sessão está em `Proposta comercial pronta`, o bloco do rascunho mostra:
@@ -438,7 +444,8 @@ Comportamento real da Web App nessa etapa:
   - `reviewInstructions`
 
 Observação importante:
-- nesta etapa o campo já é persistido no `proposalDraft`, mas ainda não entra no payload enviado para `reviewProposalDraft`; isso fica para a próxima etapa do plano.
+- o campo `reviewInstructions` já entra no payload enviado para `reviewProposalDraft`;
+- ele continua salvo dentro de `proposalDraft`, sem criar uma estrutura paralela de persistência.
 
 ### 3. Revisão assistida
 Caso de uso:
@@ -447,9 +454,11 @@ Caso de uso:
 Função atual:
 - exige que a sessão esteja em `Proposta comercial pronta`;
 - lê o rascunho salvo;
+- grava primeiro o estado `proposal_review_requested` em `workflowState`;
 - envia ao gateway de revisão:
   - texto original;
   - rascunho atual;
+  - `reviewInstructions` persistidas no `proposalDraft`;
   - cliente;
   - descrição do orçamento;
   - descrição do trabalho;
@@ -458,6 +467,7 @@ Função atual:
   - pontos de atenção;
   - override opcional de modelo;
   - `reviewBehavior`, quando esse modo estiver habilitado na interface.
+- quando a resposta volta, persiste `proposalDraftReview` e avança `workflowState` para `proposal_review_completed`.
 
 Objetivo:
 - gerar uma segunda versão do texto antes do aceite.
@@ -470,6 +480,17 @@ Comportamento real do `reviewBehavior`:
 - `suggestion-only`
   pede mudanças mais leves, preservando a estrutura do rascunho sempre que possível.
 
+Papel do texto original nessa revisão:
+- `originalText` segue para o gateway apenas como referência de contexto do pedido inicial;
+- o prompt orienta explicitamente o modelo a não copiar esse texto cru como se fosse a versão final;
+- o modelo deve comparar:
+  - pedido original;
+  - rascunho atual;
+  - instruções adicionais do operador.
+
+Prioridade prática nessa etapa:
+- quando houver instruções explícitas do operador em `reviewInstructions`, o prompt manda tratá-las como orientação prioritária para a revisão do rascunho.
+
 ### 4. Aceite da revisão
 Caso de uso:
 - [accept-ai-budget-proposal-draft-review.ts](/home/usuario/workspace/Antigravity/2026/NeXa/src/application/use-cases/accept-ai-budget-proposal-draft-review.ts)
@@ -477,7 +498,8 @@ Caso de uso:
 Função:
 - substitui o rascunho principal pela sugestão aceita;
 - atualiza materiais reconciliados;
-- limpa o bloco de revisão pendente.
+- limpa o bloco de revisão pendente;
+- atualiza `workflowState` para `proposal_review_accepted`.
 
 ### 5. Rejeição da revisão
 Caso de uso:
@@ -485,7 +507,8 @@ Caso de uso:
 
 Função:
 - remove a revisão pendente;
-- preserva o rascunho principal.
+- preserva o rascunho principal;
+- atualiza `workflowState` para `proposal_review_rejected`.
 
 ### Funções auxiliares importantes do rascunho
 - [extract-material-items-from-commercial-body.ts](/home/usuario/workspace/Antigravity/2026/NeXa/src/application/use-cases/extract-material-items-from-commercial-body.ts)
@@ -507,7 +530,53 @@ Função:
 - monta payload da proposta;
 - cria ou atualiza a proposta no Bling;
 - salva a confirmação na sessão;
-- marca a sessão como finalizada.
+- marca a sessão como finalizada;
+- atualiza `workflowState` para `proposal_confirmed`.
+
+## CONTINUIDADE E RETOMADA
+
+### WorkflowState persistido
+Além do `status` textual da sessão, o payload agora mantém um bloco `workflowState`.
+
+Papel desse bloco:
+- registrar a etapa operacional atual do orçamento;
+- registrar quais partes do orçamento já foram persistidas;
+- permitir retomada real do fluxo sem depender apenas do estado da tela.
+
+Campos persistidos hoje:
+- `currentStage`
+- `currentStageLabel`
+- `lastPersistedAt`
+- datas de marcos como:
+  - `originalTextCapturedAt`
+  - `firstInterpretationCompletedAt`
+  - `proposalDraftGeneratedAt`
+  - `proposalDraftEditedAt`
+  - `reviewInstructionsUpdatedAt`
+  - `reviewRequestedAt`
+  - `reviewCompletedAt`
+  - `reviewAcceptedAt`
+  - `reviewRejectedAt`
+  - `finalSelectionsUpdatedAt`
+  - `confirmationCompletedAt`
+  - `loadedFromModelAt`
+- flags booleanas como:
+  - `hasOriginalText`
+  - `hasInitialInterpretation`
+  - `hasProposalDraft`
+  - `hasReviewInstructions`
+  - `hasReviewResult`
+  - `hasExpandedMaterialCandidates`
+  - `hasCustomerCandidates`
+  - `hasFinalResolvedCustomer`
+  - `hasFinalResolvedMaterials`
+  - `hasConfirmation`
+
+### Como isso funciona hoje
+- o orçamento já era salvo como sessão completa no repositório;
+- agora essa sessão também carrega metadados explícitos de progresso;
+- isso permite identificar com mais segurança em que ponto o orçamento foi interrompido;
+- ao reabrir a sessão, o sistema já encontra não apenas os dados principais, mas também o estágio operacional mais recente salvo.
 
 ### Relações principais
 - `confirmAiBudgetProposal`

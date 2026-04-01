@@ -6,6 +6,7 @@ import type { BlingContactCatalogCache } from '../catalog/bling-contact-catalog-
 import type { BlingProductCatalogCache } from '../catalog/bling-product-catalog-cache';
 import type { BlingQuoteGateway } from '../gateways/bling-quote-gateway';
 import { extractCustomerFromCommercialBody } from './extract-customer-from-commercial-body';
+import { updateAiBudgetWorkflowState } from './update-ai-budget-workflow-state';
 
 interface ConfirmAiBudgetProposalInput {
   sessionId: string;
@@ -77,7 +78,7 @@ export async function confirmAiBudgetProposal(
     ...session,
     updatedAt: confirmedAt,
     status: 'Finalizada',
-    payload: {
+    payload: updateAiBudgetWorkflowState({
       ...payload,
       proposalDraft: {
         ...proposalDraft,
@@ -91,6 +92,19 @@ export async function confirmAiBudgetProposal(
       blingQuote: quote,
       localResponse: updateLocalResponseStatus(payload, 'Finalizada'),
     },
+    confirmedAt,
+    {
+      currentStage: 'proposal_confirmed',
+      currentStageLabel: 'Proposta enviada ao Bling',
+      confirmationCompletedAt: confirmedAt,
+      finalSelectionsUpdatedAt: confirmedAt,
+      availableData: {
+        hasProposalDraft: true,
+        hasFinalResolvedMaterials: proposalItems.length > 0,
+        hasFinalResolvedCustomer: contactId.length > 0,
+        hasConfirmation: true,
+      },
+    }),
   };
 
   await dependencies.aiBudgetSessionRepository.save(updatedSession);

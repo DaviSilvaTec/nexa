@@ -5,6 +5,7 @@ import type {
   AiBudgetSessionRecord,
   AiBudgetSessionRepository,
 } from '../repositories/ai-budget-session-repository';
+import { updateAiBudgetWorkflowState } from './update-ai-budget-workflow-state';
 
 interface StartAiBudgetSessionFromModelInput {
   modelId: string;
@@ -80,7 +81,30 @@ export async function startAiBudgetSessionFromModel(
     customerQuery: model.customerQuery,
     confidence: 'medio',
     status: 'Proposta comercial pronta',
-    payload,
+    payload: updateAiBudgetWorkflowState(payload, timestamp, {
+      currentStage: input.mode === 'edit'
+        ? 'model_edit_loaded'
+        : 'model_loaded_for_use',
+      currentStageLabel:
+        input.mode === 'edit'
+          ? 'Modelo carregado para edição'
+          : 'Modelo carregado para uso',
+      loadedFromModelAt: timestamp,
+      loadedFromModelMode: input.mode,
+      proposalDraftGeneratedAt: timestamp,
+      finalSelectionsUpdatedAt: timestamp,
+      availableData: {
+        hasProposalDraft: Object.keys(proposalDraft).length > 0,
+        hasReviewInstructions:
+          typeof proposalDraft.reviewInstructions === 'string' &&
+          proposalDraft.reviewInstructions.trim().length > 0,
+        hasReviewResult: false,
+        hasFinalResolvedCustomer: Boolean(model.customerQuery),
+        hasFinalResolvedMaterials:
+          Array.isArray(proposalDraft.materialItems) &&
+          proposalDraft.materialItems.length > 0,
+      },
+    }),
   };
 
   await dependencies.aiBudgetSessionRepository.save(session);

@@ -219,6 +219,26 @@ test('accepts the edited review text and reconciles materials from the accepted 
     ).proposalDraft?.customerQuery,
     'Posto Alonso',
   );
+  assert.equal(
+    (
+      result.session.payload as {
+        workflowState?: {
+          currentStage?: string;
+          hasReviewResult?: boolean;
+          hasFinalResolvedMaterials?: boolean;
+        };
+      }
+    ).workflowState?.currentStage,
+    'proposal_review_accepted',
+  );
+  assert.equal(
+    (
+      result.session.payload as {
+        workflowState?: { hasReviewResult?: boolean };
+      }
+    ).workflowState?.hasReviewResult,
+    false,
+  );
   assert.deepEqual(
     (
       result.session.payload as {

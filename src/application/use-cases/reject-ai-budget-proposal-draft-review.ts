@@ -2,6 +2,7 @@ import type {
   AiBudgetSessionRecord,
   AiBudgetSessionRepository,
 } from '../repositories/ai-budget-session-repository';
+import { updateAiBudgetWorkflowState } from './update-ai-budget-workflow-state';
 
 interface RejectAiBudgetProposalDraftReviewInput {
   sessionId: string;
@@ -44,9 +45,19 @@ export async function rejectAiBudgetProposalDraftReview(
   const updatedSession: AiBudgetSessionRecord = {
     ...session,
     updatedAt: rejectedAt,
-    payload: {
+    payload: updateAiBudgetWorkflowState({
       ...restPayload,
     },
+    rejectedAt,
+    {
+      currentStage: 'proposal_review_rejected',
+      currentStageLabel: 'Revisão rejeitada',
+      reviewRejectedAt: rejectedAt,
+      availableData: {
+        hasProposalDraft: true,
+        hasReviewResult: false,
+      },
+    }),
   };
 
   await dependencies.aiBudgetSessionRepository.save(updatedSession);

@@ -2,6 +2,7 @@ import type {
   AiBudgetSessionRecord,
   AiBudgetSessionRepository,
 } from '../repositories/ai-budget-session-repository';
+import { updateAiBudgetWorkflowState } from './update-ai-budget-workflow-state';
 
 interface UpdateAiBudgetSessionStatusInput {
   sessionId: string;
@@ -29,7 +30,11 @@ export async function updateAiBudgetSessionStatus(
     ...existingSession,
     updatedAt: (input.updatedAt ?? new Date()).toISOString(),
     status: input.status,
-    payload: updatePayloadStatus(existingSession.payload, input.status),
+    payload: updatePayloadStatus(
+      existingSession.payload,
+      input.status,
+      (input.updatedAt ?? new Date()).toISOString(),
+    ),
   };
 
   await dependencies.aiBudgetSessionRepository.save(updatedSession);
@@ -40,7 +45,7 @@ export async function updateAiBudgetSessionStatus(
   };
 }
 
-function updatePayloadStatus(payload: unknown, status: string): unknown {
+function updatePayloadStatus(payload: unknown, status: string, updatedAt: string): unknown {
   if (!payload || typeof payload !== 'object') {
     return payload;
   }
@@ -48,20 +53,47 @@ function updatePayloadStatus(payload: unknown, status: string): unknown {
   const record = payload as Record<string, unknown>;
   const localResponse = asRecord(record.localResponse);
   const response = asRecord(localResponse?.response);
+  const nextPayload = !localResponse || !response
+    ? record
+    : {
+        ...record,
+        localResponse: {
+          ...localResponse,
+          response: {
+            ...response,
+            status,
+          },
+        },
+      };
 
-  if (!localResponse || !response) {
-    return payload;
+  return updateAiBudgetWorkflowState(
+    nextPayload,
+    updatedAt,
+    buildWorkflowPatchForStatus(status),
+  );
+}
+
+function buildWorkflowPatchForStatus(status: string): {
+  currentStage: string;
+  currentStageLabel: string;
+} {
+  if (status === 'Aprovado para proposta') {
+    return {
+      currentStage: 'proposal_approved',
+      currentStageLabel: 'Aprovado para proposta',
+    };
+  }
+
+  if (status === 'Cancelado') {
+    return {
+      currentStage: 'budget_cancelled',
+      currentStageLabel: 'Orçamento cancelado',
+    };
   }
 
   return {
-    ...record,
-    localResponse: {
-      ...localResponse,
-      response: {
-        ...response,
-        status,
-      },
-    },
+    currentStage: 'awaiting_approval',
+    currentStageLabel: 'Aguardando aprovação',
   };
 }
 

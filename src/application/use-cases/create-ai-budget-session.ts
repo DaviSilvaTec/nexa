@@ -7,6 +7,7 @@ import type { BlingServiceNoteHistoryCache } from '../catalog/bling-service-note
 import type { OpenAIBudgetAssistantGateway } from '../gateways/openai-budget-assistant-gateway';
 import type { AiBudgetSessionRepository } from '../repositories/ai-budget-session-repository';
 import { buildAiAssistedAgentResponse } from './build-ai-assisted-agent-response';
+import { updateAiBudgetWorkflowState } from './update-ai-budget-workflow-state';
 
 interface CreateAiBudgetSessionInput {
   sessionId?: string;
@@ -83,10 +84,28 @@ export async function createAiBudgetSession(
     customerQuery: response.intakeExtraction.extraction.customerQuery,
     confidence: response.aiResponse.interpretation.confidence,
     status: response.localResponse.response.status,
-    payload: {
+    payload: updateAiBudgetWorkflowState(
+      {
       ...response,
       ...(resolvedCustomer ? { resolvedCustomer } : {}),
-    },
+      },
+      timestamp,
+      {
+        currentStage: 'initial_interpretation_completed',
+        currentStageLabel: 'Interpretação inicial concluída',
+        originalTextCapturedAt: timestamp,
+        firstInterpretationCompletedAt: timestamp,
+        availableData: {
+          hasOriginalText: input.originalText.trim().length > 0,
+          hasInitialInterpretation: true,
+          hasCustomerCandidates:
+            Boolean(response.aiContext.payload.customer) ||
+            response.intakeExtraction.extraction.customerQuery !== null,
+          hasExpandedMaterialCandidates:
+            response.aiContext.payload.materialCandidates.length > 0,
+        },
+      },
+    ),
   } as const;
 
   await dependencies.aiBudgetSessionRepository.save(session);

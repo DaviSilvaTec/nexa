@@ -8,6 +8,7 @@ import { calculateMaterialFinancialSummary } from './calculate-material-financia
 import { extractCustomerFromCommercialBody } from './extract-customer-from-commercial-body';
 import { extractMaterialItemsFromCommercialBody } from './extract-material-items-from-commercial-body';
 import { updateCommercialBodyMaterialSection } from './update-commercial-body-material-section';
+import { updateAiBudgetWorkflowState } from './update-ai-budget-workflow-state';
 
 interface UpdateAiBudgetProposalDraftInput {
   sessionId: string;
@@ -87,7 +88,7 @@ export async function updateAiBudgetProposalDraft(
     ...session,
     ...(extractedCustomerQuery ? { customerQuery: extractedCustomerQuery } : {}),
     updatedAt,
-    payload: {
+    payload: updateAiBudgetWorkflowState({
       ...payload,
       aiResponse: {
         ...aiResponse,
@@ -117,6 +118,26 @@ export async function updateAiBudgetProposalDraft(
         editedAt: updatedAt,
       },
     },
+    updatedAt,
+    {
+      currentStage: 'proposal_draft_updated',
+      currentStageLabel: 'Rascunho comercial atualizado',
+      proposalDraftEditedAt: updatedAt,
+      ...(reviewInstructions.length > 0
+        ? { reviewInstructionsUpdatedAt: updatedAt }
+        : {}),
+      finalSelectionsUpdatedAt: updatedAt,
+      availableData: {
+        hasProposalDraft: true,
+        hasReviewInstructions: reviewInstructions.length > 0,
+        hasExpandedMaterialCandidates: expandedMaterialCandidates.length > 0,
+        hasFinalResolvedMaterials: reconciledMaterialItems.length > 0,
+        hasFinalResolvedCustomer:
+          Boolean(extractedCustomerQuery) ||
+          Boolean(currentResolvedCustomerName) ||
+          Boolean(session.customerQuery),
+      },
+    }),
   };
 
   await dependencies.aiBudgetSessionRepository.save(updatedSession);

@@ -195,6 +195,26 @@ test('updates a generated proposal draft while the session is in proposal review
     ).proposalDraft?.reviewInstructions,
     'Remover uma observação duplicada e revisar a abertura.',
   );
+  assert.equal(
+    (
+      result.session.payload as {
+        workflowState?: {
+          currentStage?: string;
+          hasReviewInstructions?: boolean;
+          hasExpandedMaterialCandidates?: boolean;
+        };
+      }
+    ).workflowState?.currentStage,
+    'proposal_draft_updated',
+  );
+  assert.equal(
+    (
+      result.session.payload as {
+        workflowState?: { hasReviewInstructions?: boolean };
+      }
+    ).workflowState?.hasReviewInstructions,
+    true,
+  );
 });
 
 test('rejects draft editing when the session is no longer in proposal review', async () => {

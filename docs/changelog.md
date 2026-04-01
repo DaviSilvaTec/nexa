@@ -26,6 +26,21 @@ Consultar este arquivo ao:
 
 ## ENTRADAS
 
+### 2026-04-01 15:20:00 -03
+- __Revisão assistida passou a usar o pedido original como contexto e as instruções adicionais do operador__ ✓
+- O contrato de `reviewProposalDraft` foi ampliado para receber `reviewInstructions`, além de `originalText`, `proposalDraft`, `reviewBehavior` e `modelOverride`.
+- O caso de uso `reviewAiBudgetProposalDraft` agora lê `proposalDraft.reviewInstructions` da sessão persistida e envia esse conteúdo ao gateway de revisão.
+- O prompt HTTP da OpenAI passou a deixar explícito que o texto original transcrito é apenas referência de contexto do pedido inicial, não texto final a ser copiado automaticamente.
+- O mesmo prompt agora orienta o modelo a comparar o pedido original, o rascunho atual e as instruções adicionais do operador, priorizando essas instruções quando houver conflito explícito.
+- O gateway em memória também passou a refletir as instruções adicionais nas notas da revisão simulada, para manter o comportamento de teste coerente com o contrato real.
+- Arquivos impactados:
+- [openai-budget-assistant-gateway.ts](/home/usuario/workspace/Antigravity/2026/NeXa/src/application/gateways/openai-budget-assistant-gateway.ts)
+- [review-ai-budget-proposal-draft.ts](/home/usuario/workspace/Antigravity/2026/NeXa/src/application/use-cases/review-ai-budget-proposal-draft.ts)
+- [in-memory-openai-budget-assistant-gateway.ts](/home/usuario/workspace/Antigravity/2026/NeXa/src/infrastructure/integrations/openai/in-memory-openai-budget-assistant-gateway.ts)
+- [openai-http-budget-assistant-gateway.ts](/home/usuario/workspace/Antigravity/2026/NeXa/src/infrastructure/integrations/openai/openai-http-budget-assistant-gateway.ts)
+- [review-ai-budget-proposal-draft.use-case.test.ts](/home/usuario/workspace/Antigravity/2026/NeXa/test/review-ai-budget-proposal-draft.use-case.test.ts)
+- [openai-http-budget-assistant-gateway.test.ts](/home/usuario/workspace/Antigravity/2026/NeXa/test/openai-http-budget-assistant-gateway.test.ts)
+
 ### 2026-04-01 15:00:00 -03
 - __Rascunho comercial ganhou campo persistido de instruções para revisão com ditado próprio__ ✓
 - A área de `Proposta Comercial` agora renderiza um campo adicional `Instruções para revisão` logo abaixo do rascunho principal quando a sessão está em `Proposta comercial pronta`.
@@ -608,6 +623,13 @@ Consultar este arquivo ao:
 - 2026-03-30 14:22:33 -03
   - backlog registrado para uma camada futura de normalização canônica de materiais, com atributos técnicos e sinônimos, para melhorar o casamento entre texto livre e catálogo real.
 # 2026-03-30
+
+- 2026-04-01 15:55:00 -03
+  - o orçamento agora persiste um `workflowState` explícito dentro da sessão, registrando a etapa atual e os marcos já concluídos do fluxo.
+  - criação da sessão passou a gravar que o texto original e a interpretação inicial já foram persistidos, além de sinalizar se existem candidatos locais de cliente e material.
+  - geração do rascunho, edição manual, solicitação de revisão, revisão concluída, aceite, rejeição, confirmação final e abertura por modelo agora atualizam o mesmo `workflowState`.
+  - a revisão assistida passou a salvar primeiro o estado `proposal_review_requested` antes de chamar o gateway externo, o que melhora a retomada real quando a operação é interrompida no meio.
+  - a camada de persistência continua usando o mesmo repositório de sessões, mas agora com metadados explícitos de continuidade para reabrir o orçamento no ponto correto.
 
 - tratamento de timeout adicionado ao gateway HTTP de propostas do Bling, evitando que a confirmação da proposta fique presa indefinidamente quando a API externa travar.
 - rota `/local/ai-sessions/:sessionId/confirm-proposal` ajustada para retornar `502` em falhas de envio ao Bling, em vez de cair como erro genérico de não encontrado.

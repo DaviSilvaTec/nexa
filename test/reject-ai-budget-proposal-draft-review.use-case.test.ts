@@ -51,4 +51,20 @@ test('rejects the AI review suggestion and keeps the main proposal draft unchang
     'proposalDraftReview' in (result.session.payload as Record<string, unknown>),
     false,
   );
+  assert.equal(
+    (
+      result.session.payload as {
+        workflowState?: { currentStage?: string; hasReviewResult?: boolean };
+      }
+    ).workflowState?.currentStage,
+    'proposal_review_rejected',
+  );
+  assert.equal(
+    (
+      result.session.payload as {
+        workflowState?: { hasReviewResult?: boolean };
+      }
+    ).workflowState?.hasReviewResult,
+    false,
+  );
 });
