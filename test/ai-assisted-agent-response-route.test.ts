@@ -66,6 +66,7 @@ class FakeOpenAIBudgetAssistantGateway implements OpenAIBudgetAssistantGateway {
     return {
       type: 'budget_request_interpreted' as const,
       interpretation: {
+        customerQuery: 'cliente exemplo',
         summaryTitle: 'Resposta estruturada assistida IA',
         budgetDescription: 'Resposta estruturada assistida por IA.',
         workDescription: 'Execução prevista conforme contexto local.',
@@ -138,8 +139,7 @@ class FakeOpenAIBudgetAssistantGateway implements OpenAIBudgetAssistantGateway {
         resolvedMaterialItems: [
           {
             description: 'Material do catalogo',
-            quantityText: '1 unidade',
-            sourceQuery: 'material sugerido',
+            quantity: 1,
             catalogItemId: '1',
             catalogItemName: 'Material do catalogo',
           },
@@ -329,7 +329,7 @@ test('forwards the configured default AI model through the HTTP AI agent respons
   });
 
   assert.equal(response.statusCode, 200);
-  assert.equal(openAIGateway.lastExtractModelOverride, 'gpt-5.4-mini');
+  assert.equal(openAIGateway.lastExtractModelOverride, null);
   assert.equal(openAIGateway.lastInterpretModelOverride, 'gpt-5.4-mini');
 
   await app.close();
@@ -838,7 +838,7 @@ test('accepts an AI-reviewed proposal draft through the HTTP API', async () => {
   );
   assert.deepEqual(
     accepted.json().session.payload.proposalDraft.materialItems.map((item: { description: string }) => item.description),
-    ['Material sugerido'],
+    ['Material do catalogo'],
   );
   assert.equal('proposalDraftReview' in accepted.json().session.payload, false);
 

@@ -634,8 +634,7 @@ test('retries proposal draft review once when OpenAI cancels the request transie
             resolvedMaterialItems: [
               {
                 description: 'Cabo PP 3x1,5mm',
-                quantityText: '10 metros',
-                sourceQuery: 'cabo pp',
+                quantity: 10,
                 catalogItemId: '1',
                 catalogItemName: 'Cabo PP 3x1,5mm',
               },
@@ -672,6 +671,7 @@ test('retries proposal draft review once when OpenAI cancels the request transie
   assert.equal(result.review.summary, 'Parecer');
   assert.equal(result.review.resolvedCustomer?.id, '999');
   assert.equal(result.review.resolvedMaterialItems[0]?.catalogItemId, '1');
+  assert.equal(result.review.resolvedMaterialItems[0]?.quantity, 10);
 });
 
 test('reconciles proposal materials using shortlist candidates', async () => {

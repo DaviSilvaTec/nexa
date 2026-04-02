@@ -3,11 +3,6 @@ import type { BlingProductCatalogCache } from '../catalog/bling-product-catalog-
 import type { BlingQuoteHistoryCache } from '../catalog/bling-quote-history-cache';
 import type { BlingServiceNoteHistoryCache } from '../catalog/bling-service-note-history-cache';
 import type { OpenAIBudgetAssistantGateway } from '../gateways/openai-budget-assistant-gateway';
-import { analyzeLocalBudgetMaterials } from './analyze-local-budget-materials';
-import { buildAiBudgetAssistantContext } from './build-ai-budget-assistant-context';
-import { buildLocalAgentResponse } from './build-local-agent-response';
-import { buildLocalBudgetContext } from './build-local-budget-context';
-import { normalizeAiBudgetIntake } from './normalize-ai-budget-intake';
 
 interface BuildAiAssistedAgentResponseInput {
   originalText: string;
@@ -39,69 +34,91 @@ export async function buildAiAssistedAgentResponse(
   await dependencies.onProgress?.({
     phase: 'extracting_intake',
     userMessage:
-      'Estamos lendo sua solicitação e identificando cliente, materiais e contexto inicial.',
+      'Estamos lendo sua solicitação e organizando a primeira interpretação do orçamento.',
   });
-  const rawIntakeExtraction = await dependencies.openAIBudgetAssistantGateway
-    .extractBudgetIntake(input.originalText, {
-      modelOverride: normalizeAiModel(input.defaultAiModel),
-    });
-  const intakeExtraction = {
-    type: rawIntakeExtraction.type,
-    extraction: normalizeAiBudgetIntake({
+  const aiContext = {
+    type: 'ai_budget_assistant_context_built' as const,
+    payload: {
+      task: 'interpret_budget_request' as const,
       originalText: input.originalText,
-      ...rawIntakeExtraction.extraction,
-    }),
+      customer: null,
+      materialCandidates: [],
+      materialFinancialSummary: {
+        saleTotal: 0,
+        costTotal: 0,
+        grossProfit: 0,
+        itemsWithCompleteBase: 0,
+        alerts: [],
+      },
+      operatingRules: [
+        'A primeira interação apenas organiza o orçamento inicial e não consolida cliente nem materiais finais.',
+        'Nenhuma ação operacional deve ser executada sem aprovação explícita do usuário.',
+        'A consolidação final de cliente e materiais acontecerá apenas na revisão obrigatória.',
+      ],
+    },
   };
 
   await dependencies.onProgress?.({
     phase: 'building_context',
     userMessage:
-      'Agora estamos cruzando o texto com a base local e organizando o contexto do orçamento.',
-  });
-  const budgetContext = await buildLocalBudgetContext(
-    {
-      customerQuery: intakeExtraction.extraction.customerQuery ?? '',
-      materialQueries: intakeExtraction.extraction.materialQueries,
-      ...(input.materialLimitPerQuery !== undefined
-        ? { materialLimitPerQuery: input.materialLimitPerQuery }
-        : {}),
-      ...(input.quoteLimitPerContact !== undefined
-        ? { quoteLimitPerContact: input.quoteLimitPerContact }
-        : {}),
-    },
-    {
-      contactCatalogCache: dependencies.contactCatalogCache,
-      productCatalogCache: dependencies.productCatalogCache,
-      quoteHistoryCache: dependencies.quoteHistoryCache,
-      serviceNoteHistoryCache: dependencies.serviceNoteHistoryCache,
-    },
-  );
-
-  const materialAnalysis = await analyzeLocalBudgetMaterials({
-    materials: budgetContext.materials,
-  });
-
-  const aiContext = await buildAiBudgetAssistantContext({
-    originalText: input.originalText,
-    budgetContext,
-    materialAnalysis,
+      'Estamos preparando apenas as regras da primeira interação, sem consultar a base local nesta etapa.',
   });
 
   await dependencies.onProgress?.({
     phase: 'interpreting_request',
     userMessage:
-      'A IA está montando a interpretação final do orçamento com base no contexto encontrado.',
+      'A IA está montando a primeira versão organizada do orçamento com base no texto recebido.',
   });
   const aiResponse = await dependencies.openAIBudgetAssistantGateway
     .interpretBudgetRequest(aiContext.payload, {
       modelOverride: normalizeAiModel(input.defaultAiModel),
     });
-
-  const localResponse = await buildLocalAgentResponse({
-    originalText: input.originalText,
-    budgetContext,
-    materialAnalysis,
-  });
+  const sanitizedAiResponse = {
+    ...aiResponse,
+    interpretation: {
+      ...aiResponse.interpretation,
+      materialItems: aiResponse.interpretation.materialItems.map((item) => ({
+        ...item,
+        // A primeira interação só organiza o orçamento e não fecha item de catálogo.
+        catalogItemId: null,
+        catalogItemName: null,
+      })),
+    },
+  };
+  const intakeExtraction = {
+    type: 'budget_intake_extracted' as const,
+    extraction: {
+      customerQuery: sanitizedAiResponse.interpretation.customerQuery,
+      materialQueries: sanitizedAiResponse.interpretation.materialItems
+        .map((item) => item.description.trim())
+        .filter((item) => item.length > 0),
+      serviceHints: sanitizedAiResponse.interpretation.serviceItems
+        .map((item) => item.description.trim())
+        .filter((item) => item.length > 0),
+      ambiguities: sanitizedAiResponse.interpretation.pendingQuestions,
+    },
+  };
+  const localResponse = {
+    type: 'local_agent_response_built' as const,
+    response: {
+      receivedText: input.originalText,
+      structuredSuggestion:
+        sanitizedAiResponse.interpretation.budgetDescription ||
+        'Primeira interpretação inicial gerada.',
+      possibleMissingItems: [],
+      pointsOfAttention: sanitizedAiResponse.interpretation.pointsOfAttention,
+      suggestions: sanitizedAiResponse.interpretation.suggestions,
+      financialSummary: {
+        saleTotal: 0,
+        costTotal: 0,
+        grossProfit: 0,
+        itemsWithCompleteBase: 0,
+      },
+      baseUsed: ['texto original do usuário', 'interpretação inicial da IA'],
+      confidence: sanitizedAiResponse.interpretation.confidence,
+      status: 'Aguardando aprovacao' as const,
+    },
+  };
 
   await dependencies.onProgress?.({
     phase: 'saving_session',
@@ -114,7 +131,7 @@ export async function buildAiAssistedAgentResponse(
     intakeExtraction,
     aiContext,
     localResponse,
-    aiResponse,
+    aiResponse: sanitizedAiResponse,
   };
 }
 

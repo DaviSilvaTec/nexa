@@ -75,7 +75,6 @@ export async function createAiBudgetSession(
   );
 
   const timestamp = (input.createdAt ?? new Date()).toISOString();
-  const resolvedCustomer = extractResolvedCustomer(response);
   const session = {
     id: existingSession?.id ?? randomUUID(),
     createdAt: existingSession?.createdAt ?? timestamp,
@@ -87,7 +86,6 @@ export async function createAiBudgetSession(
     payload: updateAiBudgetWorkflowState(
       {
       ...response,
-      ...(resolvedCustomer ? { resolvedCustomer } : {}),
       },
       timestamp,
       {
@@ -120,37 +118,5 @@ export async function createAiBudgetSession(
       confidence: session.confidence,
       status: session.status,
     },
-  };
-}
-
-function extractResolvedCustomer(response: {
-  aiContext?: {
-    payload?: {
-      customer?: {
-        contact?: {
-          id?: string;
-          name?: string;
-          code?: string | null;
-          documentNumber?: string | null;
-          phone?: string | null;
-          mobilePhone?: string | null;
-        };
-      } | null;
-    };
-  };
-}) {
-  const contact = response.aiContext?.payload?.customer?.contact;
-
-  if (!contact?.id || !contact?.name) {
-    return null;
-  }
-
-  return {
-    id: contact.id,
-    name: contact.name,
-    code: contact.code ?? null,
-    documentNumber: contact.documentNumber ?? null,
-    phone: contact.phone ?? null,
-    mobilePhone: contact.mobilePhone ?? null,
   };
 }

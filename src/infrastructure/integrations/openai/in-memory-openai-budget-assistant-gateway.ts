@@ -37,6 +37,7 @@ export class InMemoryOpenAIBudgetAssistantGateway
     return {
       type: 'budget_request_interpreted' as const,
       interpretation: {
+        customerQuery: extractLikelyCustomer(payload.originalText),
         summaryTitle: buildSummaryTitle(payload.originalText),
         budgetDescription:
           'Interpretação assistida em memória. Validar cliente, materiais e pontos de atenção antes da aprovação.',
@@ -114,11 +115,11 @@ export class InMemoryOpenAIBudgetAssistantGateway
           : null,
         resolvedMaterialItems: input.materialCandidates.map((group) => ({
           description: group.candidates[0]?.name || group.query,
-          quantityText:
+          quantity: extractQuantity(
             input.materialItems.find(
               (item) => normalizeText(item.description) === normalizeText(group.query),
-            )?.quantityText || 'quantidade a validar',
-          sourceQuery: group.query,
+            )?.quantityText || '',
+          ),
           catalogItemId: group.candidates[0]?.id || null,
           catalogItemName: group.candidates[0]?.name || null,
         })),
@@ -171,6 +172,22 @@ export class InMemoryOpenAIBudgetAssistantGateway
   }
 }
 
+function extractQuantity(quantityText: string): number {
+  const normalized = quantityText.replace(',', '.');
+  const match = normalized.match(/(\d+(?:\.\d+)?)/);
+
+  if (!match) {
+    return 1;
+  }
+
+  const parsed = Number(match[1]);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return 1;
+  }
+
+  return parsed;
+}
+
 function normalizeText(value: string): string {
   return value
     .normalize('NFD')
@@ -215,4 +232,11 @@ function buildSummaryTitle(originalText: string): string {
     .slice(0, 5);
 
   return words.join(' ') || 'Proposta em revisão';
+}
+
+function extractLikelyCustomer(originalText: string): string | null {
+  const match = originalText.match(/cliente\s+([a-z0-9\s]+)/i);
+  const normalized = match?.[1]?.trim() ?? '';
+
+  return normalized.length > 0 ? normalized : null;
 }

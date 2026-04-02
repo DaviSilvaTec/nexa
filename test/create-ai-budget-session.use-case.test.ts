@@ -96,6 +96,7 @@ class FakeOpenAIBudgetAssistantGateway implements OpenAIBudgetAssistantGateway {
     return {
       type: 'budget_request_interpreted' as const,
       interpretation: {
+        customerQuery: 'posto alonso',
         summaryTitle: 'Instalação de câmeras no posto',
         budgetDescription: 'Orçamento assistido salvo.',
         workDescription: 'Fluxo salvo em sessão.',
@@ -212,16 +213,9 @@ test('creates and persists an AI budget session from the assisted flow', async (
       .aiResponse?.interpretation?.summaryTitle),
     'Instalação de câmeras no posto',
   );
-  assert.deepEqual(
-    (stored?.payload as { resolvedCustomer?: { id?: string; name?: string } }).resolvedCustomer,
-    {
-      id: 'contact-1',
-      name: 'Posto Alonso',
-      code: 'CLI001',
-      documentNumber: '12345678000199',
-      phone: '(16) 3000-0000',
-      mobilePhone: '(16) 99999-0000',
-    },
+  assert.equal(
+    (stored?.payload as { resolvedCustomer?: unknown }).resolvedCustomer,
+    undefined,
   );
   assert.deepEqual(
     (
@@ -256,7 +250,7 @@ test('creates and persists an AI budget session from the assisted flow', async (
       hasProposalDraft: false,
       hasReviewInstructions: false,
       hasReviewResult: false,
-      hasExpandedMaterialCandidates: true,
+      hasExpandedMaterialCandidates: false,
       hasCustomerCandidates: true,
       hasFinalResolvedCustomer: false,
       hasFinalResolvedMaterials: false,

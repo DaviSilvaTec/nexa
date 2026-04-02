@@ -23,6 +23,7 @@ class FakeOpenAIBudgetAssistantGateway implements OpenAIBudgetAssistantGateway {
     return {
       type: 'budget_request_interpreted' as const,
       interpretation: {
+        customerQuery: null,
         summaryTitle: 'Resumo',
         budgetDescription: '',
         workDescription: '',

@@ -2974,6 +2974,8 @@
         displayMaterialItems,
         displayFinancialSummary,
         expandedMaterialCandidates,
+        finalResolvedMaterialItems,
+        finalResolvedCustomer,
       }) {
         const serviceItems = aiInterpretation?.serviceItems || [];
         const laborTotal = parseMinimumLaborValue(proposalDraft, serviceItems);
@@ -2989,16 +2991,27 @@
           proposalDraftReview?.resolvedMaterialItems?.length
             ? proposalDraftReview.resolvedMaterialItems
             : [];
+        const acceptedResolvedMaterialItems =
+          finalResolvedMaterialItems?.length ? finalResolvedMaterialItems : [];
         const previewMaterialItems = reviewedMaterialItems.length
           ? reviewedMaterialItems
-          : displayMaterialItems || [];
+          : acceptedResolvedMaterialItems.length
+            ? acceptedResolvedMaterialItems
+            : displayMaterialItems || [];
         const materialRows = previewMaterialItems.map((item, index) => {
           const linkedCandidate = item?.catalogItemId
             ? candidateById.get(String(item.catalogItemId))
             : null;
           const unitValue =
             Number(item?.unitPrice || item?.price || linkedCandidate?.price || 0);
-          const totalValue = Number(item?.lineTotal || item?.price || 0) || unitValue;
+          const quantityValue = Number(item?.quantity || 0);
+          const quantityText =
+            quantityValue > 0
+              ? formatPreviewQuantity(quantityValue)
+              : item.quantityText || 'Quantidade a validar';
+          const totalValue =
+            Number(item?.lineTotal || item?.price || 0) ||
+            (quantityValue > 0 ? unitValue * quantityValue : unitValue);
 
           return {
             kind: 'material',
@@ -3009,13 +3022,15 @@
                 ? item.description
                 : item.sourceQuery || ''
               : item.sourceQuery || '',
-            quantityText: item.quantityText || 'Quantidade a validar',
+            quantityText,
             unitValue,
             totalValue,
             source: item.catalogItemId
               ? 'Revisão final com vínculo ao catálogo'
               : reviewedMaterialItems.length
                 ? 'Revisão final sem vínculo confirmado'
+                : acceptedResolvedMaterialItems.length
+                  ? 'Seleção final aceita'
                 : item.catalogItemName
                   ? 'Catálogo local vinculado'
                   : 'Estimativa do rascunho',
@@ -3050,6 +3065,7 @@
             'Sem corpo comercial disponível.',
           customerName:
             proposalDraftReview?.resolvedCustomer?.name ||
+            finalResolvedCustomer?.name ||
             resolvedCustomer?.name ||
             proposalDraft?.customerQuery ||
             session?.customerQuery ||
@@ -3200,6 +3216,14 @@
         `;
       }
 
+      function formatPreviewQuantity(value) {
+        if (!Number.isFinite(value) || value <= 0) {
+          return 'Quantidade a validar';
+        }
+
+        return Number.isInteger(value) ? String(value) : value.toLocaleString('pt-BR');
+      }
+
       function renderNexaResponse(payload) {
         currentRenderableResponsePayload = payload;
 
@@ -3249,6 +3273,10 @@
           proposalDraft?.materialItems?.length
             ? proposalDraft.materialItems
             : aiInterpretation?.materialItems || [];
+        const shouldShowInitialCatalogLinks = Boolean(
+          proposalDraftReview?.resolvedMaterialItems?.length ||
+          finalResolvedMaterialItems?.length,
+        );
         const materialBlockTitle = proposalDraft?.materialItems?.length
           ? 'Materiais Consolidados'
           : 'Lista de Materiais';
@@ -3258,6 +3286,14 @@
           payload?.materialCandidatesExpanded ||
           payload?.session?.payload?.materialCandidatesExpanded ||
           [];
+        const finalResolvedMaterialItems =
+          payload?.finalResolvedMaterialItems ||
+          payload?.session?.payload?.finalResolvedMaterialItems ||
+          [];
+        const finalResolvedCustomer =
+          payload?.finalResolvedCustomer ||
+          payload?.session?.payload?.finalResolvedCustomer ||
+          null;
         const blingPreviewEnabled = shouldShowBlingPreview();
         const blingPreview = buildBlingPreviewData({
           session,
@@ -3272,6 +3308,8 @@
           displayMaterialItems,
           displayFinancialSummary,
           expandedMaterialCandidates,
+          finalResolvedMaterialItems,
+          finalResolvedCustomer,
         });
         const hasBlingPreview = Boolean(proposalDraft);
 
@@ -3407,7 +3445,7 @@
                         `<li>${escapeHtml(item.description)}${
                           item.quantityText ? ` - ${escapeHtml(item.quantityText)}` : ''
                         }${
-                          item.catalogItemName
+                          shouldShowInitialCatalogLinks && item.catalogItemName
                             ? ` <span class="muted">(catálogo: ${escapeHtml(item.catalogItemName)})</span>`
                             : ''
                         }</li>`,
@@ -3675,7 +3713,11 @@
                                 .map(
                                   (item) =>
                                     `<li>${escapeHtml(item.description || 'Material sem descrição')}${
-                                      item.quantityText ? ` - ${escapeHtml(item.quantityText)}` : ''
+                                      item.quantity
+                                        ? ` - ${escapeHtml(formatPreviewQuantity(Number(item.quantity)))}`
+                                        : item.quantityText
+                                          ? ` - ${escapeHtml(item.quantityText)}`
+                                          : ''
                                     }${
                                       item.catalogItemName
                                         ? ` <span class="muted">(catálogo: ${escapeHtml(item.catalogItemName)})</span>`

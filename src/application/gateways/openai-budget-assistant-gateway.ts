@@ -81,6 +81,7 @@ export interface OpenAIBudgetAssistantGateway {
   ): Promise<{
     type: 'budget_request_interpreted';
     interpretation: {
+      customerQuery: string | null;
       summaryTitle: string;
       budgetDescription: string;
       workDescription: string;
@@ -170,8 +171,7 @@ export interface OpenAIBudgetAssistantGateway {
         | null;
       resolvedMaterialItems: Array<{
         description: string;
-        quantityText: string;
-        sourceQuery: string | null;
+        quantity: number;
         catalogItemId: string | null;
         catalogItemName: string | null;
       }>;

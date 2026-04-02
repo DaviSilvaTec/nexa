@@ -94,6 +94,7 @@ export class OpenAIHttpBudgetAssistantGateway
         type: 'object',
         additionalProperties: false,
         required: [
+          'customerQuery',
           'summaryTitle',
           'budgetDescription',
           'workDescription',
@@ -108,6 +109,7 @@ export class OpenAIHttpBudgetAssistantGateway
           'expectedUserAction',
         ],
         properties: {
+          customerQuery: { type: ['string', 'null'] },
           summaryTitle: { type: 'string' },
           budgetDescription: { type: 'string' },
           workDescription: { type: 'string' },
@@ -118,15 +120,13 @@ export class OpenAIHttpBudgetAssistantGateway
               additionalProperties: false,
               required: [
                 'description',
-                'quantityText',
-                'sourceQuery',
+                'quantity',
                 'catalogItemId',
                 'catalogItemName',
               ],
               properties: {
                 description: { type: 'string' },
-                quantityText: { type: 'string' },
-                sourceQuery: { type: ['string', 'null'] },
+                quantity: { type: 'number' },
                 catalogItemId: { type: ['string', 'null'] },
                 catalogItemName: { type: ['string', 'null'] },
               },
@@ -192,13 +192,14 @@ export class OpenAIHttpBudgetAssistantGateway
         },
       },
       prompt: [
-        'Você está auxiliando o NEXA a montar um orçamento no formato que já usamos na operação.',
-        'Receba o texto cru e a shortlist de materiais enviada pelo backend.',
+        'Você está auxiliando o NEXA a montar a primeira versão organizada de um orçamento no formato que já usamos na operação.',
+        'Nesta primeira interação, você recebe apenas o texto cru do usuário e as regras operacionais do NEXA.',
+        'Seu papel aqui é organizar, não consolidar.',
         'Monte a resposta em blocos operacionais curtos e úteis.',
         'Retorne também summaryTitle com um resumo operacional curtíssimo da proposta em no máximo 5 palavras, para ser usado como título do card da sessão.',
-        'Considere materialCandidates[].query como a referencia atual de materiais canonicos normalizados pelo backend.',
-        'Use a lista de materiais candidatos como base para a lista de materiais; não invente catálogo inteiro.',
-        'Sempre retorne uma lista de serviços em serviceItems, com descrição, quantidade e valor estimado, mesmo que aproximado.',
+        'Identifique customerQuery apenas como o cliente provável em texto livre.',
+        'Liste apenas materiais prováveis e serviços prováveis com base no texto do usuário.',
+        'Sempre retorne uma lista de serviços em serviceItems, com descrição, quantidade e valor estimado, mesmo que aproximado. Para isso, faça uma pesquisa de valores para os serviços descritos, tomando como referência a região de Franca-SP.',
         'Em serviceItems[].estimatedValueText use sempre uma faixa ou valor textual em reais brasileiros, por exemplo "R$ 350" ou "R$ 350 a R$ 500".',
         'Se a mao de obra for composta por mais de uma frente, separe em serviços distintos para facilitar revisão manual posterior.',
         'Quando faltarem metragens reais de cabos, fios, tubulações ou materiais lineares, estime as quantidades usando distancias, rotas, pontos, infraestrutura citada, tubulações e demais pistas do contexto técnico para chegar ao valor mais plausível possível.',
@@ -206,8 +207,8 @@ export class OpenAIHttpBudgetAssistantGateway
         'Quando o contexto mencionar eletrodutos, conduletes, suportes, caixas de passagem ou infraestrutura semelhante, raciocine também sobre acessórios de fixação e montagem que normalmente acompanham esses itens.',
         'Considere como heurística operacional inicial: eletrodutos costumam usar aproximadamente uma abraçadeira por metro; cada abraçadeira normalmente demanda uma bucha 6 e um parafuso; conduletes costumam usar dois parafusos; caixas de passagem costumam usar três parafusos.',
         'Use essas relações para lembrar itens auxiliares possivelmente faltantes e para estimar quantidades aproximadas, sempre deixando claro quando forem inferidas pelo contexto e dependerem de validação posterior.',
-        'Quando houver correspondência suficientemente aderente na shortlist, selecione explicitamente o item usando catalogItemId e catalogItemName.',
-        'Quando não houver correspondência suficientemente aderente, deixe catalogItemId e catalogItemName como null.',
+        'Nesta primeira interação, preencha sempre catalogItemId e catalogItemName como null.',
+        'A escolha final do item do catálogo acontecerá apenas na revisão obrigatória posterior.',
         'Na primeira interação, sempre gere laborPriceResearch com status estimado.',
         'Essa estimativa deve ser fraca, servir apenas como parametro inicial e ser baseada na descricao do trabalho e nos materiais canonicos normalizados.',
         'Sempre preencha estimatedLaborRange com uma faixa textual inicial em reais brasileiros no formato "R$ 000 a R$ 000".',
@@ -241,7 +242,8 @@ export class OpenAIHttpBudgetAssistantGateway
 
     return {
       type: 'budget_request_interpreted' as const,
-      interpretation: {
+        interpretation: {
+        customerQuery: normalizeNullableString(result.customerQuery),
         summaryTitle: normalizeSummaryTitle(result.summaryTitle),
         budgetDescription,
         workDescription,
@@ -373,8 +375,11 @@ export class OpenAIHttpBudgetAssistantGateway
         'Não trate nenhum candidato isoladamente como definitivo nesta etapa apenas por aparecer na lista; use o conjunto do contexto para revisar melhor.',
         'Além de revisar o texto comercial, identifique qual cliente da lista enviada parece mais aderente ao pedido original. Preencha resolvedCustomer com esse cliente quando houver aderência suficiente; caso contrário, retorne null.',
         'Também identifique os materiais finais mais aderentes para o orçamento revisado. Preencha resolvedMaterialItems escolhendo explicitamente catalogItemId e catalogItemName quando houver correspondência adequada nos candidatos enviados.',
-        'Quando não houver correspondência adequada para um material necessário, mantenha catalogItemId e catalogItemName como null, mas ainda retorne o item em resolvedMaterialItems com descrição e quantidadeText úteis.',
-        'Quando houver materiais lineares ou proporcionais sem metragem fechada, refine as quantidades aproximadas usando distâncias, tubulações, rotas e demais pistas do contexto técnico, mantendo explícito que se trata de estimativa.',
+        'Cada item em resolvedMaterialItems deve trazer quantity como número puro, positivo e pronto para uso operacional no Bling. Não retorne quantity como texto.',
+        'Quando não houver correspondência adequada para um material necessário, mantenha catalogItemId e catalogItemName como null, mas ainda retorne o item com descrição útil e quantity numérica coerente.',
+        'Quando houver materiais lineares ou proporcionais sem metragem fechada, refine as quantidades aproximadas usando distâncias, tubulações, rotas e demais pistas do contexto técnico, retornando essa quantidade diretamente em quantity.',
+        'O corpo comercial sugerido pode usar texto humano como "5 barras de 3 m", mas em resolvedMaterialItems.quantity você deve retornar apenas o número operacional, por exemplo 5.',
+        'Evite formatação com pontilhado ou alinhamento visual frágil no corpo comercial. Prefira listas simples e estáveis para o padrão do orçamento no Bling.',
         'Inclua no corpo sugerido somas, subtotais ou totais aproximados por agrupamento sempre que isso ajudar na conferência manual posterior, deixando claro que esses valores ainda podem ser ajustados antes do envio final.',
         'Quando houver soma consolidada de mão de obra, escreva uma linha explícita e padronizada com o nome exato "Soma mínima da mão de obra:" seguida do valor em reais, usando a soma dos menores valores estimados dos serviços, pois o NEXA usará essa linha como referência operacional no envio ao Bling.',
         'Formate o texto de forma elegante para o padrão visual de trabalho do orçamento no Bling, com espaçamentos entre agrupamentos e sem blocos densos.',
@@ -393,7 +398,9 @@ export class OpenAIHttpBudgetAssistantGateway
         summary: normalizeString(result.summary),
         suggestedCommercialBody: normalizeString(result.suggestedCommercialBody),
         resolvedCustomer: normalizeResolvedCustomer(result.resolvedCustomer),
-        resolvedMaterialItems: normalizeMaterialItems(result.resolvedMaterialItems),
+        resolvedMaterialItems: normalizeResolvedReviewMaterialItems(
+          result.resolvedMaterialItems,
+        ),
         adjustmentNotes: normalizeStringArray(result.adjustmentNotes),
         confidence: normalizeConfidence(result.confidence),
       },
@@ -772,6 +779,48 @@ function normalizeMaterialItems(
           : null,
     }))
     .filter((item) => item.description.length > 0);
+}
+
+function normalizeResolvedReviewMaterialItems(
+  value: unknown,
+): Array<{
+  description: string;
+  quantity: number;
+  catalogItemId: string | null;
+  catalogItemName: string | null;
+}> {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) => ({
+      description:
+        typeof item === 'object' && item !== null && 'description' in item
+          ? normalizeString(item.description)
+          : '',
+      quantity:
+        typeof item === 'object' && item !== null && 'quantity' in item
+          ? normalizePositiveNumber(item.quantity)
+          : 0,
+      catalogItemId:
+        typeof item === 'object' && item !== null && 'catalogItemId' in item
+          ? normalizeNullableString(item.catalogItemId)
+          : null,
+      catalogItemName:
+        typeof item === 'object' && item !== null && 'catalogItemName' in item
+          ? normalizeNullableString(item.catalogItemName)
+          : null,
+    }))
+    .filter((item) => item.description.length > 0 && item.quantity > 0);
+}
+
+function normalizePositiveNumber(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
+    return 0;
+  }
+
+  return value;
 }
 
 function normalizeServiceItems(

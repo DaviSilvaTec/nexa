@@ -129,6 +129,7 @@ class FakeOpenAIBudgetAssistantGateway implements OpenAIBudgetAssistantGateway {
     return {
       type: 'budget_request_interpreted' as const,
       interpretation: {
+        customerQuery: 'cliente exemplo',
         summaryTitle: 'Instalação de cabo para cliente',
         budgetDescription:
           'Orçamento para instalação de cabeamento e infraestrutura básica para o cliente localizado.',
@@ -247,7 +248,7 @@ test('builds an AI-assisted response using local context plus OpenAI interpretat
 
   assert.equal(result.type, 'ai_assisted_agent_response_built');
   assert.equal(result.intakeExtraction.extraction.customerQuery, 'cliente exemplo');
-  assert.equal(result.intakeExtraction.extraction.materialQueries[0], 'cabo pp 3 x 1,5');
+  assert.equal(result.intakeExtraction.extraction.materialQueries[0], 'Cabo PP 3x1,5mm');
   assert.equal(result.localResponse.response.status, 'Aguardando aprovacao');
   assert.equal(result.aiResponse.interpretation.confidence, 'medio');
   assert.equal(
@@ -262,24 +263,10 @@ test('builds an AI-assisted response using local context plus OpenAI interpretat
     result.aiResponse.interpretation.materialItems[0]?.description,
     'Cabo PP 3x1,5mm',
   );
-  assert.equal(result.aiResponse.interpretation.materialItems[0]?.catalogItemId, '1');
-  assert.equal(
-    result.aiResponse.interpretation.materialItems[0]?.catalogItemName,
-    'Cabo PP 3x1,5mm',
-  );
-  assert.equal(
-    openAIBudgetAssistantGateway.lastPayload?.customer?.contact.name,
-    'Cliente Exemplo Ltda',
-  );
-  assert.equal(
-    openAIBudgetAssistantGateway.lastPayload?.materialCandidates[0]?.query,
-    'cabo pp 3 x 1,5',
-  );
-  assert.equal(
-    openAIBudgetAssistantGateway.extractedText,
-    'Instalar cabo pp 3 x 1,5 para cliente exemplo',
-  );
-  assert.equal(openAIBudgetAssistantGateway.extractedModelOverride, null);
+  assert.equal(result.aiResponse.interpretation.materialItems[0]?.catalogItemId, null);
+  assert.equal(result.aiResponse.interpretation.materialItems[0]?.catalogItemName, null);
+  assert.equal(openAIBudgetAssistantGateway.lastPayload?.customer, null);
+  assert.equal(openAIBudgetAssistantGateway.lastPayload?.materialCandidates.length, 0);
   assert.equal(openAIBudgetAssistantGateway.interpretedModelOverride, null);
 });
 
@@ -313,6 +300,7 @@ test('sanitizes AI extraction before querying local context', async () => {
       return {
         type: 'budget_request_interpreted' as const,
         interpretation: {
+          customerQuery: 'posto Alonso',
           summaryTitle: 'Instalação de câmeras no posto',
           budgetDescription: 'ok',
           workDescription: 'ok',
@@ -406,18 +394,9 @@ test('sanitizes AI extraction before querying local context', async () => {
   );
 
   assert.equal(result.intakeExtraction.extraction.customerQuery, 'posto Alonso');
-  assert.deepEqual(result.intakeExtraction.extraction.materialQueries, [
-    'cabo de rede furukawa',
-    'conector rj45',
-    'parafuso 6mm',
-    'switch 4 portas',
-    'camera ip 2mp',
-  ]);
+  assert.deepEqual(result.intakeExtraction.extraction.materialQueries, []);
   assert.equal(openAIBudgetAssistantGateway.lastPayload?.customer, null);
-  assert.equal(
-    openAIBudgetAssistantGateway.lastPayload?.materialCandidates[0]?.query,
-    'cabo de rede furukawa',
-  );
+  assert.equal(openAIBudgetAssistantGateway.lastPayload?.materialCandidates.length, 0);
 });
 
 test('forwards the configured default AI model to intake extraction and interpretation', async () => {
@@ -437,7 +416,6 @@ test('forwards the configured default AI model to intake extraction and interpre
     },
   );
 
-  assert.equal(openAIBudgetAssistantGateway.extractedModelOverride, 'gpt-5.4-mini');
   assert.equal(openAIBudgetAssistantGateway.interpretedModelOverride, 'gpt-5.4-mini');
 });
 
@@ -468,6 +446,7 @@ test('merges standalone brand tokens into compatible material queries', async ()
       return {
         type: 'budget_request_interpreted' as const,
         interpretation: {
+          customerQuery: 'posto Alonso',
           summaryTitle: 'Instalação de câmeras no posto',
           budgetDescription: 'ok',
           workDescription: 'ok',
@@ -561,8 +540,5 @@ test('merges standalone brand tokens into compatible material queries', async ()
   );
 
   assert.equal(result.intakeExtraction.extraction.customerQuery, 'posto Alonso');
-  assert.deepEqual(result.intakeExtraction.extraction.materialQueries, [
-    'cabo de rede furukawa',
-    'conector rj45',
-  ]);
+  assert.deepEqual(result.intakeExtraction.extraction.materialQueries, []);
 });

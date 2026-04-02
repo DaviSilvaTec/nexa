@@ -34,6 +34,7 @@ class FakeOpenAIBudgetAssistantGateway implements OpenAIBudgetAssistantGateway {
     return {
       type: 'budget_request_interpreted' as const,
       interpretation: {
+        customerQuery: null,
         summaryTitle: 'Resumo de teste',
         budgetDescription: '',
         workDescription: '',
@@ -96,8 +97,7 @@ class FakeOpenAIBudgetAssistantGateway implements OpenAIBudgetAssistantGateway {
         resolvedMaterialItems: [
           {
             description: 'Material A',
-            quantityText: '1 unidade',
-            sourceQuery: 'Material A',
+            quantity: 1,
             catalogItemId: '1',
             catalogItemName: 'Material A',
           },
