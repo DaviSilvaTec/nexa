@@ -120,13 +120,15 @@ export class OpenAIHttpBudgetAssistantGateway
               additionalProperties: false,
               required: [
                 'description',
-                'quantity',
+                'quantityText',
+                'sourceQuery',
                 'catalogItemId',
                 'catalogItemName',
               ],
               properties: {
                 description: { type: 'string' },
-                quantity: { type: 'number' },
+                quantityText: { type: 'string' },
+                sourceQuery: { type: ['string', 'null'] },
                 catalogItemId: { type: ['string', 'null'] },
                 catalogItemName: { type: ['string', 'null'] },
               },

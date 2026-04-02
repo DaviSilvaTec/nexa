@@ -217,6 +217,22 @@ test('creates and persists an AI budget session from the assisted flow', async (
     (stored?.payload as { resolvedCustomer?: unknown }).resolvedCustomer,
     undefined,
   );
+  assert.equal(
+    (
+      stored?.payload as {
+        customerCandidates?: Array<{ id?: string }>;
+      }
+    ).customerCandidates?.[0]?.id,
+    'contact-1',
+  );
+  assert.equal(
+    (
+      stored?.payload as {
+        materialCandidatesExpanded?: Array<{ candidates?: Array<{ id?: string }> }>;
+      }
+    ).materialCandidatesExpanded?.[0]?.candidates?.[0]?.id,
+    '1',
+  );
   assert.deepEqual(
     (
       stored?.payload as {
@@ -250,7 +266,7 @@ test('creates and persists an AI budget session from the assisted flow', async (
       hasProposalDraft: false,
       hasReviewInstructions: false,
       hasReviewResult: false,
-      hasExpandedMaterialCandidates: false,
+      hasExpandedMaterialCandidates: true,
       hasCustomerCandidates: true,
       hasFinalResolvedCustomer: false,
       hasFinalResolvedMaterials: false,

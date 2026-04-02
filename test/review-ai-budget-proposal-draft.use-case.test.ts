@@ -181,12 +181,9 @@ test('reviews a generated proposal draft with AI and persists the result', async
     confidence: 'medio',
     status: 'Proposta comercial pronta',
     payload: {
-      resolvedCustomer: {
-        id: '999',
-        name: 'Cliente Exemplo Ltda',
-      },
       aiResponse: {
         interpretation: {
+          customerQuery: 'Cliente Exemplo',
           budgetDescription: 'Descrição principal.',
           workDescription: 'Escopo técnico.',
           materialItems: [
@@ -209,6 +206,35 @@ test('reviews a generated proposal draft with AI and persists the result', async
         commercialBody: 'Rascunho comercial atual.',
         reviewInstructions: 'Retirar um item condicional e melhorar a abertura.',
       },
+      customerCandidates: [
+        {
+          id: '999',
+          name: 'Cliente Exemplo Ltda',
+          code: 'CLI-001',
+          documentNumber: '12345678000199',
+          phone: '(16) 3000-0000',
+          mobilePhone: '(16) 99999-0000',
+          score: 10,
+        },
+      ],
+      materialCandidatesExpanded: [
+        {
+          query: 'Material A',
+          totalMatches: 1,
+          candidates: [
+            {
+              id: '1',
+              name: 'Material A',
+              code: 'MAT-A',
+              price: 10,
+              costPrice: 6,
+              stockQuantity: 8,
+              type: 'P',
+              status: 'A',
+            },
+          ],
+        },
+      ],
     },
   });
 

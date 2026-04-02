@@ -51,23 +51,32 @@ export async function reviewAiBudgetProposalDraft(
   }
 
   const interpretation = asRecord(asRecord(payload.aiResponse).interpretation);
-  const aiContextPayload = asRecord(asRecord(payload.aiContext).payload);
   const interpretationMaterialItems = asMaterialSelectionItems(interpretation.materialItems);
-  const expandedMaterialCandidates = mergeMaterialCandidates(
-    asMaterialCandidates(aiContextPayload.materialCandidates),
-    await buildExpandedMaterialCandidates(
-      interpretationMaterialItems,
-      dependencies.productCatalogCache,
-    ),
+  const persistedMaterialCandidates = asMaterialCandidates(
+    payload.materialCandidatesExpanded,
   );
-  const customerCandidates = await buildCustomerCandidates(
-    [
-      asString(asRecord(payload.resolvedCustomer).name),
-      asString(asRecord(proposalDraft).customerQuery),
-      session.customerQuery,
-    ],
-    dependencies.contactCatalogCache,
-  );
+  const expandedMaterialCandidates =
+    persistedMaterialCandidates.length > 0
+      ? persistedMaterialCandidates
+      : mergeMaterialCandidates(
+          [],
+          await buildExpandedMaterialCandidates(
+            interpretationMaterialItems,
+            dependencies.productCatalogCache,
+          ),
+        );
+  const persistedCustomerCandidates = asCustomerCandidates(payload.customerCandidates);
+  const customerCandidates =
+    persistedCustomerCandidates.length > 0
+      ? persistedCustomerCandidates
+      : await buildCustomerCandidates(
+          [
+            asString(interpretation.customerQuery),
+            asString(asRecord(proposalDraft).customerQuery),
+            session.customerQuery,
+          ],
+          dependencies.contactCatalogCache,
+        );
   const reviewRequestedAt = (input.reviewedAt ?? new Date()).toISOString();
   const requestedSession: AiBudgetSessionRecord = {
     ...session,
@@ -101,7 +110,9 @@ export async function reviewAiBudgetProposalDraft(
     modelOverride: normalizeReviewModel(input.reviewModel),
     reviewBehavior: normalizeReviewBehavior(input.reviewBehavior),
     customerName:
-      asString(asRecord(payload.resolvedCustomer).name) || session.customerQuery,
+      asString(interpretation.customerQuery) ||
+      asString(asRecord(proposalDraft).customerQuery) ||
+      session.customerQuery,
     budgetDescription: asString(interpretation.budgetDescription),
     workDescription: asString(interpretation.workDescription),
     materialItems: asSectionItems(interpretation.materialItems),
@@ -273,6 +284,35 @@ function asMaterialCandidates(
         : [],
     }))
     .filter((item) => item.query.length > 0 && item.candidates.length > 0);
+}
+
+function asCustomerCandidates(
+  value: unknown,
+): Array<{
+  id: string;
+  name: string;
+  code: string | null;
+  documentNumber: string | null;
+  phone: string | null;
+  mobilePhone: string | null;
+  score: number;
+}> {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) => asRecord(item))
+    .map((item) => ({
+      id: asString(item.id),
+      name: asString(item.name),
+      code: asNullableString(item.code),
+      documentNumber: asNullableString(item.documentNumber),
+      phone: asNullableString(item.phone),
+      mobilePhone: asNullableString(item.mobilePhone),
+      score: typeof item.score === 'number' ? item.score : 0,
+    }))
+    .filter((item) => item.id.length > 0 && item.name.length > 0);
 }
 
 function mergeMaterialCandidates(

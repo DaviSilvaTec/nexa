@@ -3273,10 +3273,6 @@
           proposalDraft?.materialItems?.length
             ? proposalDraft.materialItems
             : aiInterpretation?.materialItems || [];
-        const shouldShowInitialCatalogLinks = Boolean(
-          proposalDraftReview?.resolvedMaterialItems?.length ||
-          finalResolvedMaterialItems?.length,
-        );
         const materialBlockTitle = proposalDraft?.materialItems?.length
           ? 'Materiais Consolidados'
           : 'Lista de Materiais';
@@ -3294,6 +3290,10 @@
           payload?.finalResolvedCustomer ||
           payload?.session?.payload?.finalResolvedCustomer ||
           null;
+        const shouldShowInitialCatalogLinks = Boolean(
+          proposalDraftReview?.resolvedMaterialItems?.length ||
+          finalResolvedMaterialItems?.length,
+        );
         const blingPreviewEnabled = shouldShowBlingPreview();
         const blingPreview = buildBlingPreviewData({
           session,

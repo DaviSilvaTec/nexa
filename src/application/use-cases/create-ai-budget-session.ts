@@ -6,6 +6,8 @@ import type { BlingQuoteHistoryCache } from '../catalog/bling-quote-history-cach
 import type { BlingServiceNoteHistoryCache } from '../catalog/bling-service-note-history-cache';
 import type { OpenAIBudgetAssistantGateway } from '../gateways/openai-budget-assistant-gateway';
 import type { AiBudgetSessionRepository } from '../repositories/ai-budget-session-repository';
+import { buildCustomerCandidates } from './build-customer-candidates';
+import { buildExpandedMaterialCandidates } from './build-expanded-material-candidates';
 import { buildAiAssistedAgentResponse } from './build-ai-assisted-agent-response';
 import { updateAiBudgetWorkflowState } from './update-ai-budget-workflow-state';
 
@@ -73,6 +75,14 @@ export async function createAiBudgetSession(
         : {}),
     },
   );
+  const customerCandidates = await buildCustomerCandidates(
+    [response.aiResponse.interpretation.customerQuery, response.intakeExtraction.extraction.customerQuery],
+    dependencies.contactCatalogCache,
+  );
+  const materialCandidatesExpanded = await buildExpandedMaterialCandidates(
+    response.aiResponse.interpretation.materialItems,
+    dependencies.productCatalogCache,
+  );
 
   const timestamp = (input.createdAt ?? new Date()).toISOString();
   const session = {
@@ -86,6 +96,8 @@ export async function createAiBudgetSession(
     payload: updateAiBudgetWorkflowState(
       {
       ...response,
+      customerCandidates,
+      materialCandidatesExpanded,
       },
       timestamp,
       {
@@ -96,11 +108,8 @@ export async function createAiBudgetSession(
         availableData: {
           hasOriginalText: input.originalText.trim().length > 0,
           hasInitialInterpretation: true,
-          hasCustomerCandidates:
-            Boolean(response.aiContext.payload.customer) ||
-            response.intakeExtraction.extraction.customerQuery !== null,
-          hasExpandedMaterialCandidates:
-            response.aiContext.payload.materialCandidates.length > 0,
+          hasCustomerCandidates: customerCandidates.length > 0,
+          hasExpandedMaterialCandidates: materialCandidatesExpanded.length > 0,
         },
       },
     ),
