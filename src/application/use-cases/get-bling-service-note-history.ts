@@ -11,11 +11,13 @@ interface GetBlingServiceNoteHistoryInput {
   now: Date;
   pageSize: number;
   forceRefresh?: boolean;
+  pageDelayMs?: number;
 }
 
 interface GetBlingServiceNoteHistoryDependencies {
   blingServiceNoteGateway: BlingServiceNoteGateway;
   serviceNoteHistoryCache: BlingServiceNoteHistoryCache;
+  wait?: (delayMs: number) => Promise<void>;
 }
 
 type GetBlingServiceNoteHistoryResult = {
@@ -51,6 +53,8 @@ export async function getBlingServiceNoteHistory(
   const items = await fetchAllServiceNotes({
     blingServiceNoteGateway: dependencies.blingServiceNoteGateway,
     pageSize: input.pageSize,
+    pageDelayMs: input.pageDelayMs ?? 0,
+    wait: dependencies.wait ?? defaultWait,
   });
 
   const refreshedHistory: CachedBlingServiceNoteHistory = {
@@ -73,6 +77,8 @@ export async function getBlingServiceNoteHistory(
 async function fetchAllServiceNotes(input: {
   blingServiceNoteGateway: BlingServiceNoteGateway;
   pageSize: number;
+  pageDelayMs: number;
+  wait: (delayMs: number) => Promise<void>;
 }): Promise<BlingServiceNoteSummary[]> {
   const items: BlingServiceNoteSummary[] = [];
   let page = 1;
@@ -89,6 +95,10 @@ async function fetchAllServiceNotes(input: {
       return items;
     }
 
+    if (input.pageDelayMs > 0) {
+      await input.wait(input.pageDelayMs);
+    }
+
     page += 1;
   }
 }
@@ -101,4 +111,10 @@ function isSameDay(syncedAt: string, now: Date): boolean {
     syncedDate.getUTCMonth() === now.getUTCMonth() &&
     syncedDate.getUTCDate() === now.getUTCDate()
   );
+}
+
+async function defaultWait(delayMs: number): Promise<void> {
+  await new Promise((resolve) => {
+    setTimeout(resolve, delayMs);
+  });
 }

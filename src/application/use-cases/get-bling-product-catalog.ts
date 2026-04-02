@@ -11,11 +11,13 @@ interface GetBlingProductCatalogInput {
   now: Date;
   pageSize: number;
   forceRefresh?: boolean;
+  pageDelayMs?: number;
 }
 
 interface GetBlingProductCatalogDependencies {
   blingProductGateway: BlingProductGateway;
   catalogCache: BlingProductCatalogCache;
+  wait?: (delayMs: number) => Promise<void>;
 }
 
 type GetBlingProductCatalogResult = {
@@ -51,6 +53,8 @@ export async function getBlingProductCatalog(
   const items = await fetchAllProducts({
     blingProductGateway: dependencies.blingProductGateway,
     pageSize: input.pageSize,
+    pageDelayMs: input.pageDelayMs ?? 0,
+    wait: dependencies.wait ?? defaultWait,
   });
 
   const refreshedCatalog: CachedBlingProductCatalog = {
@@ -73,6 +77,8 @@ export async function getBlingProductCatalog(
 async function fetchAllProducts(input: {
   blingProductGateway: BlingProductGateway;
   pageSize: number;
+  pageDelayMs: number;
+  wait: (delayMs: number) => Promise<void>;
 }): Promise<BlingProductSummary[]> {
   const items: BlingProductSummary[] = [];
   let page = 1;
@@ -89,6 +95,10 @@ async function fetchAllProducts(input: {
       return items;
     }
 
+    if (input.pageDelayMs > 0) {
+      await input.wait(input.pageDelayMs);
+    }
+
     page += 1;
   }
 }
@@ -101,4 +111,10 @@ function isSameDay(syncedAt: string, now: Date): boolean {
     syncedDate.getUTCMonth() === now.getUTCMonth() &&
     syncedDate.getUTCDate() === now.getUTCDate()
   );
+}
+
+async function defaultWait(delayMs: number): Promise<void> {
+  await new Promise((resolve) => {
+    setTimeout(resolve, delayMs);
+  });
 }

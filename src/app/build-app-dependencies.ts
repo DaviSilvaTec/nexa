@@ -3,8 +3,10 @@ import type { BlingContactCatalogCache } from '../application/catalog/bling-cont
 import type { BlingProductCatalogCache } from '../application/catalog/bling-product-catalog-cache';
 import type { BlingQuoteHistoryCache } from '../application/catalog/bling-quote-history-cache';
 import type { BlingOAuthGateway } from '../application/gateways/bling-oauth-gateway';
+import type { BlingContactGateway } from '../application/gateways/bling-contact-gateway';
 import type { BlingProductGateway } from '../application/gateways/bling-product-gateway';
 import type { BlingQuoteGateway } from '../application/gateways/bling-quote-gateway';
+import type { BlingServiceNoteGateway } from '../application/gateways/bling-service-note-gateway';
 import type { OpenAIBudgetAssistantGateway } from '../application/gateways/openai-budget-assistant-gateway';
 import type { AiBudgetModelRepository } from '../application/repositories/ai-budget-model-repository';
 import type { AiBudgetSessionRepository } from '../application/repositories/ai-budget-session-repository';
@@ -12,11 +14,15 @@ import type {
   ConversationRepository,
   SuspendedAnalysisRepository,
 } from '../domain/conversation/conversation-repository';
+import { BlingHttpContactGateway } from '../infrastructure/integrations/bling/bling-http-contact-gateway';
 import { BlingHttpProductGateway } from '../infrastructure/integrations/bling/bling-http-product-gateway';
 import { BlingHttpQuoteGateway } from '../infrastructure/integrations/bling/bling-http-quote-gateway';
+import { BlingHttpServiceNoteGateway } from '../infrastructure/integrations/bling/bling-http-service-note-gateway';
 import { BlingOAuthHttpGateway } from '../infrastructure/integrations/bling/bling-oauth-http-gateway';
+import { InMemoryBlingContactGateway } from '../infrastructure/integrations/bling/in-memory-bling-contact-gateway';
 import { InMemoryBlingProductGateway } from '../infrastructure/integrations/bling/in-memory-bling-product-gateway';
 import { InMemoryBlingQuoteGateway } from '../infrastructure/integrations/bling/in-memory-bling-quote-gateway';
+import { InMemoryBlingServiceNoteGateway } from '../infrastructure/integrations/bling/in-memory-bling-service-note-gateway';
 import { OpenAIHttpBudgetAssistantGateway } from '../infrastructure/integrations/openai/openai-http-budget-assistant-gateway';
 import { InMemoryOpenAIBudgetAssistantGateway } from '../infrastructure/integrations/openai/in-memory-openai-budget-assistant-gateway';
 import { FileSystemBlingContactCatalogCache } from '../infrastructure/persistence/file-system/file-system-bling-contact-catalog-cache';
@@ -33,7 +39,9 @@ export interface AppDependencies {
   conversationRepository: ConversationRepository;
   suspendedAnalysisRepository: SuspendedAnalysisRepository;
   blingQuoteGateway: BlingQuoteGateway;
+  blingContactGateway: BlingContactGateway;
   blingProductGateway: BlingProductGateway;
+  blingServiceNoteGateway: BlingServiceNoteGateway;
   blingOAuthGateway: BlingOAuthGateway;
   openAIBudgetAssistantGateway: OpenAIBudgetAssistantGateway;
   blingRedirectUri: string;
@@ -67,8 +75,12 @@ export function buildAppDependencies(
       new InMemorySuspendedAnalysisRepository(),
     blingQuoteGateway:
       input.overrides?.blingQuoteGateway ?? buildBlingQuoteGateway(env),
+    blingContactGateway:
+      input.overrides?.blingContactGateway ?? buildBlingContactGateway(env),
     blingProductGateway:
       input.overrides?.blingProductGateway ?? buildBlingProductGateway(env),
+    blingServiceNoteGateway:
+      input.overrides?.blingServiceNoteGateway ?? buildBlingServiceNoteGateway(env),
     blingOAuthGateway:
       input.overrides?.blingOAuthGateway ?? buildBlingOAuthGateway(env),
     openAIBudgetAssistantGateway:
@@ -111,6 +123,22 @@ export function buildAppDependencies(
   };
 }
 
+function buildBlingContactGateway(
+  env: Record<string, string | undefined>,
+): BlingContactGateway {
+  const baseUrl = env.BLING_API_BASE_URL;
+  const accessToken = env.BLING_ACCESS_TOKEN;
+
+  if (baseUrl && accessToken) {
+    return new BlingHttpContactGateway({
+      baseUrl,
+      accessToken,
+    });
+  }
+
+  return new InMemoryBlingContactGateway();
+}
+
 function buildBlingQuoteGateway(
   env: Record<string, string | undefined>,
 ): BlingQuoteGateway {
@@ -141,6 +169,22 @@ function buildBlingProductGateway(
   }
 
   return new InMemoryBlingProductGateway();
+}
+
+function buildBlingServiceNoteGateway(
+  env: Record<string, string | undefined>,
+): BlingServiceNoteGateway {
+  const baseUrl = env.BLING_API_BASE_URL;
+  const accessToken = env.BLING_ACCESS_TOKEN;
+
+  if (baseUrl && accessToken) {
+    return new BlingHttpServiceNoteGateway({
+      baseUrl,
+      accessToken,
+    });
+  }
+
+  return new InMemoryBlingServiceNoteGateway();
 }
 
 function buildBlingOAuthGateway(

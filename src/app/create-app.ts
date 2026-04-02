@@ -20,12 +20,14 @@ import { startAiBudgetSessionFromModel } from '../application/use-cases/start-ai
 import { acceptAiBudgetProposalDraftReview } from '../application/use-cases/accept-ai-budget-proposal-draft-review';
 import { rejectAiBudgetProposalDraftReview } from '../application/use-cases/reject-ai-budget-proposal-draft-review';
 import { appendAppLog } from '../infrastructure/observability/file-system-app-log';
+import type { BlingContactGateway } from '../application/gateways/bling-contact-gateway';
 import type { BlingQuoteGateway } from '../application/gateways/bling-quote-gateway';
 import { buildLocalBudgetContext } from '../application/use-cases/build-local-budget-context';
 import { confirmFinalApproval } from '../application/use-cases/confirm-final-approval';
 import { createBlingQuote } from '../application/use-cases/create-bling-quote';
 import { editDraft } from '../application/use-cases/edit-draft';
 import { exchangeBlingAuthCode } from '../application/use-cases/exchange-bling-auth-code';
+import { getBlingLocalBaseStatus } from '../application/use-cases/get-bling-local-base-status';
 import { refreshBlingToken } from '../application/use-cases/refresh-bling-token';
 import { listBlingProducts } from '../application/use-cases/list-bling-products';
 import { listAiBudgetModels } from '../application/use-cases/list-ai-budget-models';
@@ -34,14 +36,17 @@ import { receiveMessage } from '../application/use-cases/receive-message';
 import { resumeSuspendedAnalysis } from '../application/use-cases/resume-suspended-analysis';
 import { searchLocalCommercialHistory } from '../application/use-cases/search-local-commercial-history';
 import { searchLocalProductCatalog } from '../application/use-cases/search-local-product-catalog';
+import { syncBlingLocalBase } from '../application/use-cases/sync-bling-local-base';
 import {
   buildAppDependencies,
   type AppDependencies,
 } from './build-app-dependencies';
 import { loadLocalEnv } from '../config/load-local-env';
 import { upsertLocalEnv } from '../config/upsert-local-env';
+import { BlingHttpContactGateway } from '../infrastructure/integrations/bling/bling-http-contact-gateway';
 import { BlingHttpQuoteGateway } from '../infrastructure/integrations/bling/bling-http-quote-gateway';
 import { BlingHttpProductGateway } from '../infrastructure/integrations/bling/bling-http-product-gateway';
+import { BlingHttpServiceNoteGateway } from '../infrastructure/integrations/bling/bling-http-service-note-gateway';
 import { InMemoryAiAgentOperationStore } from './ai-agent-operation-store';
 
 export function createApp(dependencies?: Partial<AppDependencies>): FastifyInstance {
@@ -50,6 +55,7 @@ export function createApp(dependencies?: Partial<AppDependencies>): FastifyInsta
     dependencies ? { overrides: dependencies } : {},
   );
   const aiAgentOperationStore = new InMemoryAiAgentOperationStore();
+  let localBlingSyncPromise: Promise<unknown> | null = null;
 
   app.addHook('onRequest', async (request) => {
     await appendAppLog({
@@ -99,6 +105,19 @@ export function createApp(dependencies?: Partial<AppDependencies>): FastifyInsta
     tokenStatus: readBlingTokenStatus(),
   }));
 
+  app.get('/local/settings/bling-sync', async () =>
+    getBlingLocalBaseStatus(
+      {
+        now: new Date(),
+      },
+      {
+        contactCatalogCache: appDependencies.contactCatalogCache,
+        productCatalogCache: appDependencies.productCatalogCache,
+        quoteHistoryCache: appDependencies.quoteHistoryCache,
+        serviceNoteHistoryCache: appDependencies.serviceNoteHistoryCache,
+      },
+    ));
+
   app.post('/local/settings/bling-token/refresh', async (request, reply) => {
     try {
       const tokenStatus = await refreshConfiguredBlingAccessToken(
@@ -119,7 +138,41 @@ export function createApp(dependencies?: Partial<AppDependencies>): FastifyInsta
     }
   });
 
+  app.post('/local/settings/bling-sync/refresh', async (_request, reply) => {
+    try {
+      return await ensureFreshLocalBlingBase(appDependencies, {
+        forceRefresh: true,
+        syncPromiseRef: {
+          get current() {
+            return localBlingSyncPromise;
+          },
+          set current(value) {
+            localBlingSyncPromise = value;
+          },
+        },
+      });
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Falha ao atualizar a base local do Bling.';
+
+      return reply.code(409).send({ error: message });
+    }
+  });
+
   app.get('/app', async (_request, reply) => {
+    void ensureFreshLocalBlingBase(appDependencies, {
+      syncPromiseRef: {
+        get current() {
+          return localBlingSyncPromise;
+        },
+        set current(value) {
+          localBlingSyncPromise = value;
+        },
+      },
+    }).catch(() => {});
+
     const filePath = path.resolve(process.cwd(), 'public/app.html');
     const content = await fs.readFile(filePath, 'utf-8');
 
@@ -188,6 +241,17 @@ export function createApp(dependencies?: Partial<AppDependencies>): FastifyInsta
   });
 
   app.get('/local/commercial-history/search', async (request) => {
+    await ensureFreshLocalBlingBase(appDependencies, {
+      syncPromiseRef: {
+        get current() {
+          return localBlingSyncPromise;
+        },
+        set current(value) {
+          localBlingSyncPromise = value;
+        },
+      },
+    });
+
     const query = request.query as {
       q?: string;
       contactLimit?: string;
@@ -213,6 +277,17 @@ export function createApp(dependencies?: Partial<AppDependencies>): FastifyInsta
   });
 
   app.get('/local/products/search', async (request) => {
+    await ensureFreshLocalBlingBase(appDependencies, {
+      syncPromiseRef: {
+        get current() {
+          return localBlingSyncPromise;
+        },
+        set current(value) {
+          localBlingSyncPromise = value;
+        },
+      },
+    });
+
     const query = request.query as {
       q?: string;
       limit?: string;
@@ -230,6 +305,17 @@ export function createApp(dependencies?: Partial<AppDependencies>): FastifyInsta
   });
 
   app.post('/local/budget-context', async (request) => {
+    await ensureFreshLocalBlingBase(appDependencies, {
+      syncPromiseRef: {
+        get current() {
+          return localBlingSyncPromise;
+        },
+        set current(value) {
+          localBlingSyncPromise = value;
+        },
+      },
+    });
+
     const body = request.body as {
       customerQuery: string;
       materialQueries: string[];
@@ -335,6 +421,17 @@ export function createApp(dependencies?: Partial<AppDependencies>): FastifyInsta
   });
 
   app.post('/local/ai-agent-response', async (request, reply) => {
+    await ensureFreshLocalBlingBase(appDependencies, {
+      syncPromiseRef: {
+        get current() {
+          return localBlingSyncPromise;
+        },
+        set current(value) {
+          localBlingSyncPromise = value;
+        },
+      },
+    });
+
     const body = request.body as {
       sessionId?: string;
       originalText: string;
@@ -382,6 +479,17 @@ export function createApp(dependencies?: Partial<AppDependencies>): FastifyInsta
   });
 
   app.post('/local/ai-agent-response/start', async (request, reply) => {
+    await ensureFreshLocalBlingBase(appDependencies, {
+      syncPromiseRef: {
+        get current() {
+          return localBlingSyncPromise;
+        },
+        set current(value) {
+          localBlingSyncPromise = value;
+        },
+      },
+    });
+
     const body = request.body as {
       sessionId?: string;
       originalText: string;
@@ -666,6 +774,17 @@ export function createApp(dependencies?: Partial<AppDependencies>): FastifyInsta
   });
 
   app.post('/local/ai-sessions/:sessionId/proposal-draft/save', async (request, reply) => {
+    await ensureFreshLocalBlingBase(appDependencies, {
+      syncPromiseRef: {
+        get current() {
+          return localBlingSyncPromise;
+        },
+        set current(value) {
+          localBlingSyncPromise = value;
+        },
+      },
+    });
+
     const params = request.params as { sessionId: string };
     const body = request.body as {
       commercialBody?: string;
@@ -701,6 +820,17 @@ export function createApp(dependencies?: Partial<AppDependencies>): FastifyInsta
   });
 
   app.post('/local/ai-sessions/:sessionId/proposal-draft/review', async (request, reply) => {
+    await ensureFreshLocalBlingBase(appDependencies, {
+      syncPromiseRef: {
+        get current() {
+          return localBlingSyncPromise;
+        },
+        set current(value) {
+          localBlingSyncPromise = value;
+        },
+      },
+    });
+
     const params = request.params as { sessionId: string };
     const body = request.body as {
       reviewModel?: string;
@@ -827,6 +957,17 @@ export function createApp(dependencies?: Partial<AppDependencies>): FastifyInsta
   });
 
   app.post('/local/ai-sessions/:sessionId/confirm-proposal', async (request, reply) => {
+    await ensureFreshLocalBlingBase(appDependencies, {
+      syncPromiseRef: {
+        get current() {
+          return localBlingSyncPromise;
+        },
+        set current(value) {
+          localBlingSyncPromise = value;
+        },
+      },
+    });
+
     const params = request.params as { sessionId: string };
 
     try {
@@ -970,15 +1111,21 @@ async function ensureFreshBlingGateways(
   appDependencies: AppDependencies,
 ): Promise<{
   quoteGateway: BlingQuoteGateway;
+  contactGateway: BlingContactGateway;
   productGateway: AppDependencies['blingProductGateway'];
+  serviceNoteGateway: AppDependencies['blingServiceNoteGateway'];
 }> {
   if (
     !(appDependencies.blingQuoteGateway instanceof BlingHttpQuoteGateway) ||
-    !(appDependencies.blingProductGateway instanceof BlingHttpProductGateway)
+    !(appDependencies.blingProductGateway instanceof BlingHttpProductGateway) ||
+    !(appDependencies.blingContactGateway instanceof BlingHttpContactGateway) ||
+    !(appDependencies.blingServiceNoteGateway instanceof BlingHttpServiceNoteGateway)
   ) {
     return {
       quoteGateway: appDependencies.blingQuoteGateway,
+      contactGateway: appDependencies.blingContactGateway,
       productGateway: appDependencies.blingProductGateway,
+      serviceNoteGateway: appDependencies.blingServiceNoteGateway,
     };
   }
 
@@ -988,7 +1135,9 @@ async function ensureFreshBlingGateways(
   if (!env.BLING_API_BASE_URL || !env.BLING_ACCESS_TOKEN) {
     return {
       quoteGateway: appDependencies.blingQuoteGateway,
+      contactGateway: appDependencies.blingContactGateway,
       productGateway: appDependencies.blingProductGateway,
+      serviceNoteGateway: appDependencies.blingServiceNoteGateway,
     };
   }
 
@@ -1004,7 +1153,15 @@ async function ensureFreshBlingGateways(
         baseUrl: refreshed.apiBaseUrl,
         accessToken: refreshed.accessToken,
       }),
+      contactGateway: new BlingHttpContactGateway({
+        baseUrl: refreshed.apiBaseUrl,
+        accessToken: refreshed.accessToken,
+      }),
       productGateway: new BlingHttpProductGateway({
+        baseUrl: refreshed.apiBaseUrl,
+        accessToken: refreshed.accessToken,
+      }),
+      serviceNoteGateway: new BlingHttpServiceNoteGateway({
         baseUrl: refreshed.apiBaseUrl,
         accessToken: refreshed.accessToken,
       }),
@@ -1016,11 +1173,79 @@ async function ensureFreshBlingGateways(
       baseUrl: env.BLING_API_BASE_URL,
       accessToken: env.BLING_ACCESS_TOKEN,
     }),
+    contactGateway: new BlingHttpContactGateway({
+      baseUrl: env.BLING_API_BASE_URL,
+      accessToken: env.BLING_ACCESS_TOKEN,
+    }),
     productGateway: new BlingHttpProductGateway({
       baseUrl: env.BLING_API_BASE_URL,
       accessToken: env.BLING_ACCESS_TOKEN,
     }),
+    serviceNoteGateway: new BlingHttpServiceNoteGateway({
+      baseUrl: env.BLING_API_BASE_URL,
+      accessToken: env.BLING_ACCESS_TOKEN,
+    }),
   };
+}
+
+async function ensureFreshLocalBlingBase(
+  appDependencies: AppDependencies,
+  input: {
+    forceRefresh?: boolean;
+    syncPromiseRef: {
+      current: Promise<unknown> | null;
+    };
+  },
+) {
+  if (input.syncPromiseRef.current) {
+    return input.syncPromiseRef.current;
+  }
+
+  const promise = (async () => {
+    const {
+      quoteGateway,
+      contactGateway,
+      productGateway,
+      serviceNoteGateway,
+    } = await ensureFreshBlingGateways(appDependencies);
+
+    const result = await syncBlingLocalBase(
+      {
+        now: new Date(),
+        ...(input.forceRefresh !== undefined
+          ? { forceRefresh: input.forceRefresh }
+          : {}),
+      },
+      {
+        blingQuoteGateway: quoteGateway,
+        blingContactGateway: contactGateway,
+        blingProductGateway: productGateway,
+        blingServiceNoteGateway: serviceNoteGateway,
+        contactCatalogCache: appDependencies.contactCatalogCache,
+        productCatalogCache: appDependencies.productCatalogCache,
+        quoteHistoryCache: appDependencies.quoteHistoryCache,
+        serviceNoteHistoryCache: appDependencies.serviceNoteHistoryCache,
+      },
+    );
+
+    await appendAppLog({
+      source: 'bling',
+      event: input.forceRefresh ? 'base_local_atualizada_manual' : 'base_local_verificada',
+      status: result.syncStatus.status,
+      checkedAt: result.syncStatus.checkedAt,
+      sources: result.sources,
+    }).catch(() => {});
+
+    return result;
+  })();
+
+  input.syncPromiseRef.current = promise;
+
+  try {
+    return await promise;
+  } finally {
+    input.syncPromiseRef.current = null;
+  }
 }
 
 async function refreshConfiguredBlingAccessToken(

@@ -2374,8 +2374,13 @@
             <div class="settings-info">
               <div><strong>Token Bling:</strong> <span id="bling-token-status">Carregando...</span></div>
               <div><strong>Validade:</strong> <span id="bling-token-expiry">Carregando...</span></div>
+              <div><strong>Base local:</strong> <span id="bling-sync-status">Carregando...</span></div>
+              <div><strong>Última sync:</strong> <span id="bling-sync-summary">Carregando...</span></div>
               <button type="button" class="button-secondary button-pill" id="refresh-bling-token-button">
                 Renovar token Bling
+              </button>
+              <button type="button" class="button-secondary button-pill" id="refresh-bling-sync-button">
+                Atualizar base local
               </button>
             </div>
           </details>
@@ -2423,7 +2428,10 @@
       const modelList = document.getElementById('ai-model-list');
       const blingTokenStatus = document.getElementById('bling-token-status');
       const blingTokenExpiry = document.getElementById('bling-token-expiry');
+      const blingSyncStatus = document.getElementById('bling-sync-status');
+      const blingSyncSummary = document.getElementById('bling-sync-summary');
       const refreshBlingTokenButton = document.getElementById('refresh-bling-token-button');
+      const refreshBlingSyncButton = document.getElementById('refresh-bling-sync-button');
       const refreshSessionsButton = document.getElementById('refresh-sessions-button');
       const sessionTabButton = document.getElementById('session-tab-button');
       const modelTabButton = document.getElementById('model-tab-button');
@@ -4985,6 +4993,51 @@
         }
       }
 
+      async function loadBlingSyncStatus() {
+        try {
+          const response = await fetch('/local/settings/bling-sync');
+          const payload = await response.json();
+
+          if (!response.ok) {
+            throw new Error(payload?.error || 'Falha ao carregar status da base local do Bling.');
+          }
+
+          const syncStatus = payload.syncStatus || {};
+          const statusLabels = {
+            fresh: 'Atualizada hoje',
+            stale: 'Vencida para hoje',
+            missing: 'Ainda não sincronizada',
+          };
+
+          if (blingSyncStatus) {
+            blingSyncStatus.textContent =
+              statusLabels[syncStatus.status] || 'Desconhecido';
+          }
+
+          if (blingSyncSummary) {
+            const parts = [
+              ['Produtos', syncStatus.products?.syncedAt],
+              ['Contatos', syncStatus.contacts?.syncedAt],
+              ['Propostas', syncStatus.quotes?.syncedAt],
+              ['Notas', syncStatus.serviceNotes?.syncedAt],
+            ]
+              .filter(([, syncedAt]) => Boolean(syncedAt))
+              .map(([label, syncedAt]) => `${label}: ${syncedAt}`);
+
+            blingSyncSummary.textContent =
+              parts.length > 0 ? parts.join(' | ') : 'Nenhuma sincronização registrada';
+          }
+        } catch (error) {
+          if (blingSyncStatus) {
+            blingSyncStatus.textContent = 'Falha ao carregar';
+          }
+
+          if (blingSyncSummary) {
+            blingSyncSummary.textContent = String(error);
+          }
+        }
+      }
+
       function setupSpeechControl({
         button,
         statusElement,
@@ -5208,6 +5261,28 @@
         }
       });
 
+      refreshBlingSyncButton?.addEventListener('click', async () => {
+        try {
+          output.textContent = 'Atualizando base local do Bling...';
+          const response = await fetch('/local/settings/bling-sync/refresh', {
+            method: 'POST',
+          });
+          const payload = await response.json();
+
+          if (!response.ok) {
+            throw new Error(payload?.error || 'Falha ao atualizar a base local do Bling.');
+          }
+
+          await loadBlingSyncStatus();
+          output.textContent = JSON.stringify(payload, null, 2);
+        } catch (error) {
+          setOutputMessage(
+            error instanceof Error ? error.message : 'Falha ao atualizar a base local do Bling.',
+            'error',
+          );
+        }
+      });
+
       sessionTabButton?.addEventListener('click', () => {
         setSidebarTab('sessions');
       });
@@ -5223,6 +5298,7 @@
       loadRecentSessions();
       loadRecentModels();
       loadBlingTokenStatus();
+      loadBlingSyncStatus();
     </script>
   </body>
 </html>
