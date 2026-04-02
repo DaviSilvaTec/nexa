@@ -126,6 +126,7 @@ export interface OpenAIBudgetAssistantGateway {
     materialItems: Array<{
       description: string;
       quantityText: string;
+      sourceQuery: string | null;
     }>;
     materialCandidates: Array<{
       query: string;
@@ -174,6 +175,7 @@ export interface OpenAIBudgetAssistantGateway {
         quantity: number;
         catalogItemId: string | null;
         catalogItemName: string | null;
+        sourceQuery: string | null;
       }>;
       adjustmentNotes: string[];
       confidence: 'alto' | 'medio' | 'baixo';

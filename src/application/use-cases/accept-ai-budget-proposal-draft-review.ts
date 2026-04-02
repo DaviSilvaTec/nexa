@@ -62,12 +62,24 @@ export async function acceptAiBudgetProposalDraftReview(
   const aiContext = asRecord(payload.aiContext);
   const aiContextPayload = asRecord(aiContext.payload);
   const acceptedCommercialBody = input.commercialBody.trim();
-  const currentMaterialItems = extractMaterialItemsFromCommercialBody(
-    acceptedCommercialBody,
+  const reviewResolvedMaterialItems = asReviewResolvedMaterialItems(
+    proposalDraftReview.resolvedMaterialItems,
   );
+  const currentMaterialItems =
+    reviewResolvedMaterialItems.length > 0
+      ? reviewResolvedMaterialItems.map((item) => ({
+          description: item.description,
+          quantityText: String(item.quantity),
+          sourceQuery: item.sourceQuery,
+          catalogItemId: item.catalogItemId,
+          catalogItemName: item.catalogItemName,
+        }))
+      : extractMaterialItemsFromCommercialBody(acceptedCommercialBody);
   const materialCandidates = asMaterialCandidates(aiContextPayload.materialCandidates);
   const materialReconciliation =
-    currentMaterialItems.length > 0 && materialCandidates.length > 0
+    reviewResolvedMaterialItems.length === 0 &&
+    currentMaterialItems.length > 0 &&
+    materialCandidates.length > 0
       ? await dependencies.openAIBudgetAssistantGateway.reconcileProposalMaterials({
           originalText: session.originalText,
           proposalDraft: acceptedCommercialBody,
@@ -89,13 +101,12 @@ export async function acceptAiBudgetProposalDraftReview(
     materialItems: reconciledMaterialItems,
   });
   const extractedCustomerQuery = extractCustomerFromCommercialBody(commercialBody);
-  const { proposalDraftReview: _removedReview, ...restPayload } = payload;
   const updatedSession: AiBudgetSessionRecord = {
     ...session,
     ...(extractedCustomerQuery ? { customerQuery: extractedCustomerQuery } : {}),
     updatedAt: acceptedAt,
     payload: updateAiBudgetWorkflowState({
-      ...restPayload,
+      ...payload,
       aiResponse: {
         ...aiResponse,
         interpretation: {
@@ -103,6 +114,13 @@ export async function acceptAiBudgetProposalDraftReview(
           materialItems: reconciledMaterialItems,
         },
       },
+      acceptedProposalDraftReview: {
+        ...proposalDraftReview,
+        acceptedAt,
+      },
+      finalResolvedMaterialItems:
+        reviewResolvedMaterialItems.length > 0 ? reviewResolvedMaterialItems : [],
+      finalResolvedCustomer: asResolvedCustomer(proposalDraftReview.resolvedCustomer),
       proposalDraft: {
         ...proposalDraft,
         ...(extractedCustomerQuery ? { customerQuery: extractedCustomerQuery } : {}),
@@ -134,6 +152,7 @@ export async function acceptAiBudgetProposalDraftReview(
         hasReviewResult: false,
         hasFinalResolvedMaterials: reconciledMaterialItems.length > 0,
         hasFinalResolvedCustomer:
+          Boolean(asString(asRecord(proposalDraftReview.resolvedCustomer).id)) ||
           Boolean(extractedCustomerQuery) ||
           Boolean(asString(asRecord(payload.resolvedCustomer).name)) ||
           Boolean(session.customerQuery),
@@ -184,6 +203,57 @@ function asMaterialItems(
       catalogItemName: asNullableString(item.catalogItemName),
     }))
     .filter((item) => item.description.length > 0);
+}
+
+function asReviewResolvedMaterialItems(
+  value: unknown,
+): Array<{
+  description: string;
+  quantity: number;
+  catalogItemId: string | null;
+  catalogItemName: string | null;
+  sourceQuery: string | null;
+}> {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) => asRecord(item))
+    .map((item) => ({
+      description: asString(item.description),
+      quantity: asPositiveNumber(item.quantity),
+      catalogItemId: asNullableString(item.catalogItemId),
+      catalogItemName: asNullableString(item.catalogItemName),
+      sourceQuery: asNullableString(item.sourceQuery),
+    }))
+    .filter((item) => item.description.length > 0 && item.quantity > 0);
+}
+
+function asResolvedCustomer(
+  value: unknown,
+):
+  | {
+      id: string;
+      name: string;
+      code: string | null;
+      documentNumber: string | null;
+    }
+  | null {
+  const record = asRecord(value);
+  const id = asString(record.id);
+  const name = asString(record.name);
+
+  if (!id || !name) {
+    return null;
+  }
+
+  return {
+    id,
+    name,
+    code: asNullableString(record.code),
+    documentNumber: asNullableString(record.documentNumber),
+  };
 }
 
 function asMaterialCandidates(
@@ -239,4 +309,8 @@ function asNullableString(value: unknown): string | null {
 
 function asNullableNumber(value: unknown): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function asPositiveNumber(value: unknown): number {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : 0;
 }

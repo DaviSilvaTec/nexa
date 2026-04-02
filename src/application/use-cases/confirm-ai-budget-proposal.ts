@@ -176,9 +176,14 @@ async function resolveContactId(
   contactCatalogCache: BlingContactCatalogCache,
 ): Promise<string> {
   const payload = asRecord(session.payload);
+  const finalResolvedCustomer = asRecord(payload.finalResolvedCustomer);
   const resolvedCustomer = asRecord(payload.resolvedCustomer);
   const aiContext = asRecord(payload.aiContext);
   const aiContextPayload = asRecord(aiContext.payload);
+  const directFinalResolvedCustomerId = asString(finalResolvedCustomer.id);
+  if (directFinalResolvedCustomerId) {
+    return directFinalResolvedCustomerId;
+  }
   const directResolvedCustomerId = asString(resolvedCustomer.id);
 
   if (directResolvedCustomerId) {
@@ -395,13 +400,18 @@ async function resolveProposalItems(
   const productsById = new Map(
     (catalog?.items ?? []).map((item) => [String(item.id), item]),
   );
+  const finalResolvedMaterialItems = Array.isArray(payload.finalResolvedMaterialItems)
+    ? payload.finalResolvedMaterialItems
+    : [];
   const materialCandidatesByQuery = new Map(
     asMaterialCandidates(aiContextPayload.materialCandidates).map((item) => [
       item.query,
       item.candidates,
     ]),
   );
-  const resolvedMaterialItems = materialItems
+  const resolvedMaterialItemsSource =
+    finalResolvedMaterialItems.length > 0 ? finalResolvedMaterialItems : materialItems;
+  const resolvedMaterialItems = resolvedMaterialItemsSource
     .map((item) => asRecord(item))
     .map((item) => {
       const selectedProductId = asString(item.catalogItemId);
@@ -424,7 +434,10 @@ async function resolveProposalItems(
 
       return {
         productId,
-        quantity: extractQuantity(asString(item.quantityText)),
+        quantity:
+          typeof item.quantity === 'number' && Number.isFinite(item.quantity) && item.quantity > 0
+            ? item.quantity
+            : extractQuantity(asString(item.quantityText)),
         value,
       };
     })

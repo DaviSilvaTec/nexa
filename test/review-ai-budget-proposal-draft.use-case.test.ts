@@ -67,7 +67,11 @@ class FakeOpenAIBudgetAssistantGateway implements OpenAIBudgetAssistantGateway {
     customerName: string | null;
     budgetDescription: string;
     workDescription: string;
-    materialItems: Array<{ description: string; quantityText: string }>;
+    materialItems: Array<{
+      description: string;
+      quantityText: string;
+      sourceQuery: string | null;
+    }>;
     customerCandidates: Array<{ id: string }>;
     materialCandidates: Array<{ query: string }>;
     serviceItems: Array<{
@@ -100,6 +104,7 @@ class FakeOpenAIBudgetAssistantGateway implements OpenAIBudgetAssistantGateway {
             quantity: 1,
             catalogItemId: '1',
             catalogItemName: 'Material A',
+            sourceQuery: 'material a',
           },
         ],
         adjustmentNotes: ['Ajustar abertura comercial.'],

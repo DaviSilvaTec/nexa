@@ -54,7 +54,11 @@ class FakeOpenAIBudgetAssistantGateway implements OpenAIBudgetAssistantGateway {
     customerName: string | null;
     budgetDescription: string;
     workDescription: string;
-    materialItems: Array<{ description: string; quantityText: string }>;
+    materialItems: Array<{
+      description: string;
+      quantityText: string;
+      sourceQuery: string | null;
+    }>;
     materialCandidates: Array<{ query: string }>;
     customerCandidates: Array<{ id: string }>;
     serviceItems: Array<{

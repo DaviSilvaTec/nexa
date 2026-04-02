@@ -501,8 +501,36 @@ test('uses a model override only for proposal draft review when requested', asyn
     pointsOfAttention: [],
   });
 
-  const body = JSON.parse(String(capturedInit?.body)) as { model: string };
+  const body = JSON.parse(String(capturedInit?.body)) as {
+    model: string;
+    text: {
+      format: {
+        schema: {
+          properties: {
+            resolvedMaterialItems: {
+              items: {
+                required: string[];
+                properties: Record<string, unknown>;
+              };
+            };
+          };
+        };
+      };
+    };
+  };
   assert.equal(body.model, 'gpt-5.4');
+  assert.deepEqual(
+    body.text.format.schema.properties.resolvedMaterialItems.items.required,
+    ['description', 'quantity', 'catalogItemId', 'catalogItemName', 'sourceQuery'],
+  );
+  assert.ok(
+    'quantity' in
+      body.text.format.schema.properties.resolvedMaterialItems.items.properties,
+  );
+  assert.ok(
+    'sourceQuery' in
+      body.text.format.schema.properties.resolvedMaterialItems.items.properties,
+  );
 });
 
 test('asks proposal draft review to include approximate sums and subtotals', async () => {
@@ -637,6 +665,7 @@ test('retries proposal draft review once when OpenAI cancels the request transie
                 quantity: 10,
                 catalogItemId: '1',
                 catalogItemName: 'Cabo PP 3x1,5mm',
+                sourceQuery: 'cabo pp',
               },
             ],
             adjustmentNotes: [],

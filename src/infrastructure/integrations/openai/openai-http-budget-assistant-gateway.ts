@@ -274,6 +274,7 @@ export class OpenAIHttpBudgetAssistantGateway
     materialItems: Array<{
       description: string;
       quantityText: string;
+      sourceQuery: string | null;
     }>;
     materialCandidates: Array<{
       query: string;
@@ -339,17 +340,17 @@ export class OpenAIHttpBudgetAssistantGateway
               additionalProperties: false,
               required: [
                 'description',
-                'quantityText',
-                'sourceQuery',
+                'quantity',
                 'catalogItemId',
                 'catalogItemName',
+                'sourceQuery',
               ],
               properties: {
                 description: { type: 'string' },
-                quantityText: { type: 'string' },
-                sourceQuery: { type: ['string', 'null'] },
+                quantity: { type: 'number' },
                 catalogItemId: { type: ['string', 'null'] },
                 catalogItemName: { type: ['string', 'null'] },
+                sourceQuery: { type: ['string', 'null'] },
               },
             },
           },
@@ -377,8 +378,12 @@ export class OpenAIHttpBudgetAssistantGateway
         'Não trate nenhum candidato isoladamente como definitivo nesta etapa apenas por aparecer na lista; use o conjunto do contexto para revisar melhor.',
         'Além de revisar o texto comercial, identifique qual cliente da lista enviada parece mais aderente ao pedido original. Preencha resolvedCustomer com esse cliente quando houver aderência suficiente; caso contrário, retorne null.',
         'Também identifique os materiais finais mais aderentes para o orçamento revisado. Preencha resolvedMaterialItems escolhendo explicitamente catalogItemId e catalogItemName quando houver correspondência adequada nos candidatos enviados.',
+        'Use sourceQuery como trilha principal de associação entre o material provável identificado antes e o item final escolhido no catálogo.',
+        'Quando houver materialItems ou materialCandidates indicando materiais físicos do orçamento, resolvedMaterialItems não deve vir vazio.',
+        'Sempre que houver materiais físicos na proposta, retorne uma linha em resolvedMaterialItems para cada material principal que deva entrar no orçamento final, mesmo quando algum item ainda não tiver catalogItemId.',
         'Cada item em resolvedMaterialItems deve trazer quantity como número puro, positivo e pronto para uso operacional no Bling. Não retorne quantity como texto.',
         'Quando não houver correspondência adequada para um material necessário, mantenha catalogItemId e catalogItemName como null, mas ainda retorne o item com descrição útil e quantity numérica coerente.',
+        'Quando materialItems já trouxerem sourceQuery, preserve essa mesma origem em resolvedMaterialItems.sourceQuery sempre que possível.',
         'Quando houver materiais lineares ou proporcionais sem metragem fechada, refine as quantidades aproximadas usando distâncias, tubulações, rotas e demais pistas do contexto técnico, retornando essa quantidade diretamente em quantity.',
         'O corpo comercial sugerido pode usar texto humano como "5 barras de 3 m", mas em resolvedMaterialItems.quantity você deve retornar apenas o número operacional, por exemplo 5.',
         'Evite formatação com pontilhado ou alinhamento visual frágil no corpo comercial. Prefira listas simples e estáveis para o padrão do orçamento no Bling.',
@@ -790,6 +795,7 @@ function normalizeResolvedReviewMaterialItems(
   quantity: number;
   catalogItemId: string | null;
   catalogItemName: string | null;
+  sourceQuery: string | null;
 }> {
   if (!Array.isArray(value)) {
     return [];
@@ -812,6 +818,10 @@ function normalizeResolvedReviewMaterialItems(
       catalogItemName:
         typeof item === 'object' && item !== null && 'catalogItemName' in item
           ? normalizeNullableString(item.catalogItemName)
+          : null,
+      sourceQuery:
+        typeof item === 'object' && item !== null && 'sourceQuery' in item
+          ? normalizeNullableString(item.sourceQuery)
           : null,
     }))
     .filter((item) => item.description.length > 0 && item.quantity > 0);

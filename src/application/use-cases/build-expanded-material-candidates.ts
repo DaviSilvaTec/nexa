@@ -32,7 +32,10 @@ export async function buildExpandedMaterialCandidates(
 
   return materialItems
     .map((item) => {
-      const query = item.description;
+      const query =
+        typeof item.sourceQuery === 'string' && item.sourceQuery.trim().length > 0
+          ? item.sourceQuery.trim()
+          : item.description;
       const rankedCandidates = products
         .map((product) => ({
           product,

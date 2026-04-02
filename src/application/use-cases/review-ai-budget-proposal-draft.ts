@@ -196,7 +196,12 @@ function asStringList(value: unknown): string[] {
 
 function asSectionItems(
   value: unknown,
-): Array<{ description: string; quantityText: string; estimatedValueText: string }> {
+): Array<{
+  description: string;
+  quantityText: string;
+  estimatedValueText: string;
+  sourceQuery: string | null;
+}> {
   if (!Array.isArray(value)) {
     return [];
   }
@@ -207,6 +212,7 @@ function asSectionItems(
       description: asString(item.description),
       quantityText: asString(item.quantityText),
       estimatedValueText: asString(item.estimatedValueText),
+      sourceQuery: asNullableString(item.sourceQuery),
     }))
     .filter((item) => item.description.length > 0);
 }

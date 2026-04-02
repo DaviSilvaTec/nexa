@@ -267,6 +267,79 @@ test('confirms a generated proposal and stores confirmation metadata', async () 
   assert.equal(blingQuoteGateway.lastPayload?.introduction, 'Texto comercial final');
 });
 
+test('prioritizes final resolved customer and material items when confirming to Bling', async () => {
+  const repository = new InMemoryAiBudgetSessionRepository();
+  const blingQuoteGateway = new CapturingBlingQuoteGateway();
+
+  await repository.save({
+    id: 'session-final',
+    createdAt: '2026-03-30T18:00:00.000Z',
+    updatedAt: '2026-03-30T18:10:00.000Z',
+    originalText: 'Texto original',
+    customerQuery: 'Posto Alonso',
+    confidence: 'medio',
+    status: 'Proposta comercial pronta',
+    payload: {
+      proposalDraft: {
+        generatedAt: '2026-03-30T18:10:00.000Z',
+        title: 'Proposta comercial - Posto Alonso',
+        commercialBody: 'Texto comercial final',
+      },
+      finalResolvedCustomer: {
+        id: 'contact-2',
+        name: 'ALONSO Y ALONSO AUTO POSTO LTDA',
+        code: '5',
+        documentNumber: '02878955000171',
+      },
+      finalResolvedMaterialItems: [
+        {
+          description: 'CAMERA IP 2MP',
+          quantity: 3,
+          catalogItemId: 'product-1',
+          catalogItemName: 'CAMERA IP 2MP',
+          sourceQuery: 'camera ip',
+        },
+      ],
+      aiResponse: {
+        interpretation: {
+          materialItems: [
+            {
+              description: 'Item antigo que nao deve prevalecer',
+              quantityText: '1 unidade',
+              catalogItemId: '',
+              catalogItemName: '',
+              sourceQuery: 'item antigo',
+            },
+          ],
+          serviceItems: [],
+        },
+      },
+    },
+  });
+
+  await confirmAiBudgetProposal(
+    {
+      sessionId: 'session-final',
+      confirmedAt: new Date('2026-03-30T18:20:00.000Z'),
+    },
+    {
+      aiBudgetSessionRepository: repository,
+      blingQuoteGateway,
+      contactCatalogCache: new InMemoryContactCatalogCache(),
+      productCatalogCache: new InMemoryProductCatalogCache(),
+    },
+  );
+
+  assert.equal(blingQuoteGateway.lastPayload?.contactId, 'contact-2');
+  assert.deepEqual(blingQuoteGateway.lastPayload?.items, [
+    {
+      productId: 'product-1',
+      quantity: 3,
+      value: 230,
+    },
+  ]);
+});
+
 test('uses only the services section from the commercial body to compose the labor item', async () => {
   const repository = new InMemoryAiBudgetSessionRepository();
   const blingQuoteGateway = new CapturingBlingQuoteGateway();

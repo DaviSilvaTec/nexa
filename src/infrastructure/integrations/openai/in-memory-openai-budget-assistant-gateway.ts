@@ -76,6 +76,7 @@ export class InMemoryOpenAIBudgetAssistantGateway
     materialItems: Array<{
       description: string;
       quantityText: string;
+      sourceQuery: string | null;
     }>;
     materialCandidates: Array<{
       query: string;
@@ -122,6 +123,7 @@ export class InMemoryOpenAIBudgetAssistantGateway
           ),
           catalogItemId: group.candidates[0]?.id || null,
           catalogItemName: group.candidates[0]?.name || null,
+          sourceQuery: group.query,
         })),
         adjustmentNotes: [
           'Gateway em memória ativo para testes locais.',

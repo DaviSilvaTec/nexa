@@ -54,7 +54,11 @@ class FakeOpenAIBudgetAssistantGateway implements OpenAIBudgetAssistantGateway {
     customerName: string | null;
     budgetDescription: string;
     workDescription: string;
-    materialItems: Array<{ description: string; quantityText: string }>;
+    materialItems: Array<{
+      description: string;
+      quantityText: string;
+      sourceQuery: string | null;
+    }>;
     materialCandidates: Array<{ query: string }>;
     customerCandidates: Array<{ id: string }>;
     serviceItems: Array<{
@@ -270,7 +274,15 @@ test('accepts the edited review text and reconciles materials from the accepted 
   );
   assert.equal(
     'proposalDraftReview' in (result.session.payload as Record<string, unknown>),
-    false,
+    true,
+  );
+  assert.equal(
+    (
+      result.session.payload as {
+        acceptedProposalDraftReview?: { acceptedAt?: string };
+      }
+    ).acceptedProposalDraftReview?.acceptedAt,
+    '2026-03-31T15:15:00.000Z',
   );
   assert.equal(
     (

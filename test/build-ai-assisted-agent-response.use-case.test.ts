@@ -184,7 +184,11 @@ class FakeOpenAIBudgetAssistantGateway implements OpenAIBudgetAssistantGateway {
     customerName: string | null;
     budgetDescription: string;
     workDescription: string;
-    materialItems: Array<{ description: string; quantityText: string }>;
+    materialItems: Array<{
+      description: string;
+      quantityText: string;
+      sourceQuery: string | null;
+    }>;
     materialCandidates: Array<{ query: string }>;
     customerCandidates: Array<{ id: string }>;
     serviceItems: Array<{
@@ -331,7 +335,11 @@ test('sanitizes AI extraction before querying local context', async () => {
       customerName: string | null;
       budgetDescription: string;
       workDescription: string;
-      materialItems: Array<{ description: string; quantityText: string }>;
+      materialItems: Array<{
+        description: string;
+        quantityText: string;
+        sourceQuery: string | null;
+      }>;
       materialCandidates: Array<{ query: string }>;
       customerCandidates: Array<{ id: string }>;
       serviceItems: Array<{
@@ -477,7 +485,11 @@ test('merges standalone brand tokens into compatible material queries', async ()
       customerName: string | null;
       budgetDescription: string;
       workDescription: string;
-      materialItems: Array<{ description: string; quantityText: string }>;
+      materialItems: Array<{
+        description: string;
+        quantityText: string;
+        sourceQuery: string | null;
+      }>;
       materialCandidates: Array<{ query: string }>;
       customerCandidates: Array<{ id: string }>;
       serviceItems: Array<{
