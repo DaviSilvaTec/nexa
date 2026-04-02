@@ -2737,6 +2737,52 @@
         }, 120);
       }
 
+      function focusFirstSessionAction() {
+        if (!(nexaResponse instanceof HTMLElement)) {
+          return;
+        }
+
+        const firstEnabledAction = nexaResponse.querySelector(
+          '.response-actions [data-session-status-action]:not([disabled])',
+        );
+
+        if (firstEnabledAction instanceof HTMLElement) {
+          firstEnabledAction.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+          });
+          window.setTimeout(() => {
+            firstEnabledAction.focus();
+          }, 120);
+          return;
+        }
+
+        focusResponseCard();
+      }
+
+      function focusProposalDraftEditor() {
+        if (!(nexaResponse instanceof HTMLElement)) {
+          return;
+        }
+
+        const proposalEditor = nexaResponse.querySelector(
+          '[data-proposal-draft-editor]',
+        );
+
+        if (proposalEditor instanceof HTMLTextAreaElement) {
+          proposalEditor.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          });
+          window.setTimeout(() => {
+            proposalEditor.focus();
+          }, 120);
+          return;
+        }
+
+        focusResponseCard();
+      }
+
       function saveDefaultAiModel(model) {
         try {
           window.localStorage.setItem(
@@ -3893,7 +3939,10 @@
                   }
 
                   renderNexaResponse(buildRenderablePayloadFromLoadedSession(payload.session));
-                  await loadSessionIntoForm(sessionId);
+                  focusFirstSessionAction();
+                  await loadSessionIntoForm(sessionId, {
+                    focusTextField: false,
+                  });
                   await loadRecentSessions();
                   await loadRecentModels();
                   return;
@@ -3916,7 +3965,10 @@
                   }
 
                   renderNexaResponse(buildRenderablePayloadFromLoadedSession(payload.session));
-                  await loadSessionIntoForm(sessionId);
+                  focusProposalDraftEditor();
+                  await loadSessionIntoForm(sessionId, {
+                    focusTextField: false,
+                  });
                   await loadRecentSessions();
                   await loadRecentModels();
                   return;
@@ -4585,6 +4637,7 @@
 
         if (renderResponse) {
           renderNexaResponse(payload);
+          focusFirstSessionAction();
           output.textContent = JSON.stringify(
             {
               label: 'local-ai-agent-response',
@@ -4601,7 +4654,7 @@
         return payload;
       }
 
-      async function loadSessionIntoForm(sessionId) {
+      async function loadSessionIntoForm(sessionId, options = {}) {
         output.textContent = `Carregando sessão ${sessionId}...`;
         const response = await fetch(`/local/ai-sessions/${sessionId}`);
         const payload = await response.json();
@@ -4613,7 +4666,7 @@
         renderNexaResponse(buildRenderablePayloadFromLoadedSession(payload.session));
         if (originalTextField) {
           originalTextField.value = payload.session?.originalText || '';
-          if (shouldAutoFocusTextField()) {
+          if (shouldAutoFocusTextField() && options.focusTextField !== false) {
             originalTextField.focus();
           }
         }
