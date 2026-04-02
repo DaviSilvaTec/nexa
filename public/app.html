@@ -2383,7 +2383,7 @@
       </section>
 
       <section class="output">
-        <article class="response-card" id="nexa-response">
+        <article class="response-card" id="nexa-response" tabindex="-1">
           <div class="response-card-header">
             <h2>Retorno do NEXA</h2>
             <div class="response-view-tabs">
@@ -2459,6 +2459,7 @@
       let activeResponseView = 'summary';
       let currentRenderableResponsePayload = null;
       let operationCountdownTimer = null;
+      let isWaitingWindowActive = false;
       const OPERATION_TIMEOUT_SECONDS = 120;
       const OPERATION_POLL_INTERVAL_SECONDS = 5;
       const DEFAULT_AI_MODEL = 'gpt-5-nano';
@@ -2700,6 +2701,20 @@
           : false;
       }
 
+      function focusResponseCard() {
+        if (!(nexaResponse instanceof HTMLElement)) {
+          return;
+        }
+
+        nexaResponse.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+        window.setTimeout(() => {
+          nexaResponse.focus();
+        }, 120);
+      }
+
       function saveDefaultAiModel(model) {
         try {
           window.localStorage.setItem(
@@ -2746,7 +2761,7 @@
         const focusText = readStoredBoolean(SETTINGS_STORAGE_KEYS.focusText, true);
         const showBlingPreview = readStoredBoolean(
           SETTINGS_STORAGE_KEYS.showBlingPreview,
-          false,
+          true,
         );
 
         if (showLogsToggle instanceof HTMLInputElement) {
@@ -3225,6 +3240,7 @@
       }
 
       function renderNexaResponse(payload) {
+        isWaitingWindowActive = false;
         currentRenderableResponsePayload = payload;
 
         if (!payload || payload.type !== 'ai_assisted_agent_response_built') {
@@ -3267,7 +3283,8 @@
           extraction?.customerQuery,
         ].some((value) => String(value ?? '').trim().length > 0);
         const sessionActionState = getSessionActionState(sessionStatus, {
-          canAttemptBlingConfirmation: customerResolutionCandidate,
+          canAttemptBlingConfirmation:
+            customerResolutionCandidate && !isWaitingWindowActive,
         });
         const displayMaterialItems =
           proposalDraft?.materialItems?.length
@@ -3948,6 +3965,7 @@
                 }
 
                 if (action === 'confirm-proposal') {
+                  resetSendConfirmation();
                   output.textContent = `Confirmando proposta e enviando ao Bling para a sessão ${sessionId}...`;
                   const response = await fetch(
                     `/local/ai-sessions/${sessionId}/confirm-proposal`,
@@ -4137,6 +4155,7 @@
       }
 
       function renderIdleResponse() {
+        isWaitingWindowActive = false;
         currentRenderableResponsePayload = null;
         activeResponseView = 'summary';
         nexaResponse.innerHTML = `
@@ -4165,6 +4184,7 @@
       }
 
       function renderOperationWaiting(operation, secondsUntilTimeout) {
+        isWaitingWindowActive = true;
         const phase = formatOperationPhase(operation?.phase || 'queued');
         activeResponseView = 'summary';
         nexaResponse.innerHTML = `
@@ -4210,9 +4230,11 @@
             </div>
           </div>
         `;
+        focusResponseCard();
       }
 
       function renderProposalReviewWaiting(state) {
+        isWaitingWindowActive = true;
         const step = getProposalReviewWaitingStep(state?.stepIndex || 0);
 
         nexaResponse.innerHTML = `
@@ -4248,6 +4270,7 @@
             </div>
           </div>
         `;
+        focusResponseCard();
       }
 
       function getProposalReviewWaitingStep(stepIndex) {
