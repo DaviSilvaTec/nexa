@@ -1797,6 +1797,20 @@
         background: linear-gradient(180deg, rgba(255, 253, 249, 0.24), rgba(255, 249, 239, 0.72));
       }
 
+      .proposal-review-submit-group {
+        display: grid;
+        gap: 8px;
+        min-width: 260px;
+      }
+
+      .proposal-review-submit-group .inline-select {
+        margin: 0;
+      }
+
+      .proposal-review-submit-group .inline-select select {
+        width: 100%;
+      }
+
       .proposal-draft-actions [data-session-status-action="save-proposal-draft"],
       .proposal-draft-actions [data-session-status-action="accept-proposal-draft-review"] {
         background: linear-gradient(180deg, #c86a28, #a44e18);
@@ -3617,14 +3631,6 @@
                             <span>Este texto será a base do envio ao Bling.</span>
                           </div>
                           <textarea class="proposal-draft-editor" data-proposal-draft-editor data-session-id="${escapeHtml(session.id || '')}">${escapeHtml(proposalDraft.commercialBody || '')}</textarea>
-                          <label class="inline-select">
-                            Modelo de IA para revisão
-                            <select id="proposal-review-model-selector">
-                              <option>gpt-5-nano</option>
-                              <option>gpt-5.4-mini</option>
-                              <option>gpt-5.4</option>
-                            </select>
-                          </label>
                           <div class="inline-audio-field">
                             <div class="inline-audio-field-header">
                               <div class="inline-audio-field-copy">
@@ -3660,14 +3666,24 @@
                           </div>
                         </div>
                         <div class="proposal-draft-actions">
-                          <button
-                            type="button"
-                            class="button-secondary button-pill"
-                            data-session-status-action="review-proposal-draft"
-                            data-session-id="${escapeHtml(session.id || '')}"
-                          >
-                            Mandar pra revisão
-                          </button>
+                          <div class="proposal-review-submit-group">
+                            <label class="inline-select">
+                              Modelo de IA para revisão
+                              <select id="proposal-review-model-selector">
+                                <option>gpt-5-nano</option>
+                                <option>gpt-5.4-mini</option>
+                                <option>gpt-5.4</option>
+                              </select>
+                            </label>
+                            <button
+                              type="button"
+                              class="button-secondary button-pill"
+                              data-session-status-action="review-proposal-draft"
+                              data-session-id="${escapeHtml(session.id || '')}"
+                            >
+                              Mandar pra revisão
+                            </button>
+                          </div>
                           <button
                             type="button"
                             class="button-pill button-primary"
