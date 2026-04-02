@@ -4271,12 +4271,16 @@
                     );
                   }
 
+                  activeResponseView = 'summary';
                   renderNexaResponse(buildRenderablePayloadFromLoadedSession(payload.session));
-                  await loadSessionIntoForm(sessionId);
+                  await loadSessionIntoForm(sessionId, {
+                    focusTextField: false,
+                  });
                   output.textContent =
                     'Revisão descartada. O rascunho principal foi mantido.';
                   await loadRecentSessions();
                   await loadRecentModels();
+                  focusProposalDraftEditor();
                   return;
                 }
 
