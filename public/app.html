@@ -2783,6 +2783,50 @@
         focusResponseCard();
       }
 
+      function focusProposalReviewEditor() {
+        if (!(nexaResponse instanceof HTMLElement)) {
+          return;
+        }
+
+        const reviewEditor = nexaResponse.querySelector(
+          '[data-proposal-draft-review-editor]',
+        );
+
+        if (reviewEditor instanceof HTMLTextAreaElement) {
+          reviewEditor.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          });
+          window.setTimeout(() => {
+            reviewEditor.focus();
+          }, 120);
+          return;
+        }
+
+        focusResponseCard();
+      }
+
+      function focusBlingPreview() {
+        if (!(nexaResponse instanceof HTMLElement)) {
+          return;
+        }
+
+        const previewDocument = nexaResponse.querySelector('.bling-preview-document');
+
+        if (previewDocument instanceof HTMLElement) {
+          previewDocument.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          });
+          window.setTimeout(() => {
+            previewDocument.focus?.();
+          }, 120);
+          return;
+        }
+
+        focusResponseCard();
+      }
+
       function saveDefaultAiModel(model) {
         try {
           window.localStorage.setItem(
@@ -4034,7 +4078,10 @@
                   }
 
                   renderNexaResponse(buildRenderablePayloadFromLoadedSession(payload.session));
-                  await loadSessionIntoForm(sessionId);
+                  await loadSessionIntoForm(sessionId, {
+                    focusTextField: false,
+                  });
+                  focusProposalReviewEditor();
                   await loadRecentSessions();
                   await loadRecentModels();
                   return;
@@ -4132,7 +4179,9 @@
                     );
                   }
 
+                  activeResponseView = 'bling';
                   renderNexaResponse(buildRenderablePayloadFromLoadedSession(payload.session));
+                  focusBlingPreview();
                   await loadSessionIntoForm(sessionId);
                   output.textContent =
                     'Revisão aceita. O rascunho principal foi atualizado.';
