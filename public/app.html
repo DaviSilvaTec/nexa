@@ -1330,6 +1330,11 @@
         line-height: 1.7;
       }
 
+      .bling-preview-actions {
+        display: flex;
+        justify-content: flex-end;
+      }
+
       .response-block + .response-block {
         margin-top: 16px;
         padding-top: 16px;
@@ -2811,7 +2816,9 @@
           return;
         }
 
-        const previewDocument = nexaResponse.querySelector('.bling-preview-document');
+        const previewDocument = nexaResponse.querySelector(
+          '[data-bling-preview-document]',
+        );
 
         if (previewDocument instanceof HTMLElement) {
           previewDocument.scrollIntoView({
@@ -2819,12 +2826,39 @@
             block: 'start',
           });
           window.setTimeout(() => {
-            previewDocument.focus?.();
+            if (typeof previewDocument.focus === 'function') {
+              previewDocument.focus({
+                preventScroll: true,
+              });
+            }
           }, 120);
           return;
         }
 
         focusResponseCard();
+      }
+
+      function focusConfirmProposalButton() {
+        if (!(nexaResponse instanceof HTMLElement)) {
+          return;
+        }
+
+        const confirmButton = nexaResponse.querySelector(
+          '[data-session-status-action="confirm-proposal"]:not([disabled])',
+        );
+
+        if (confirmButton instanceof HTMLElement) {
+          confirmButton.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+          });
+          window.setTimeout(() => {
+            confirmButton.focus();
+          }, 120);
+          return;
+        }
+
+        focusFirstSessionAction();
       }
 
       function saveDefaultAiModel(model) {
@@ -3229,7 +3263,11 @@
               </div>
               <span class="bling-preview-badge">Formato de orçamento Bling</span>
             </div>
-            <div class="bling-preview-document">
+            <div
+              class="bling-preview-document"
+              data-bling-preview-document
+              tabindex="-1"
+            >
               <div class="bling-preview-header">
                 <div class="bling-preview-title">
                   <span class="bling-preview-kicker">Proposta comercial</span>
@@ -3337,6 +3375,15 @@
                   O objetivo é permitir
                   conferência visual antes do envio final ao Bling.
                 </p>
+                <div class="bling-preview-actions">
+                  <button
+                    type="button"
+                    class="button-pill button-primary"
+                    data-bling-preview-action="confirm-preview"
+                  >
+                    OK
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -3906,6 +3953,22 @@
         }
 
         nexaResponse
+          .querySelectorAll('[data-bling-preview-action]')
+          .forEach((button) => {
+            button.addEventListener('click', () => {
+              const action = button.getAttribute('data-bling-preview-action');
+
+              if (action !== 'confirm-preview') {
+                return;
+              }
+
+              activeResponseView = 'summary';
+              renderCurrentResponseView();
+              focusConfirmProposalButton();
+            });
+          });
+
+        nexaResponse
           .querySelectorAll('[data-speech-target]')
           .forEach((speechTrigger) => {
             const targetId = speechTrigger.getAttribute('data-speech-target');
@@ -4181,12 +4244,14 @@
 
                   activeResponseView = 'bling';
                   renderNexaResponse(buildRenderablePayloadFromLoadedSession(payload.session));
-                  focusBlingPreview();
-                  await loadSessionIntoForm(sessionId);
+                  await loadSessionIntoForm(sessionId, {
+                    focusTextField: false,
+                  });
                   output.textContent =
                     'Revisão aceita. O rascunho principal foi atualizado.';
                   await loadRecentSessions();
                   await loadRecentModels();
+                  focusBlingPreview();
                   return;
                 }
 
