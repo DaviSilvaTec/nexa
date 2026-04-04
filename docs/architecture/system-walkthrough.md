@@ -17,6 +17,16 @@ Consultar este arquivo quando for necessário:
 - Complementa os documentos temáticos em `architecture/`, `integrations/`, `learning/` e `patterns/`.
 - Deve ser atualizado sempre que uma alteração validada mudar o comportamento real do sistema.
 
+## PADRÃO DE EXPLICAÇÃO USADO NESTE ARQUIVO
+Nas partes mais importantes do sistema, este walkthrough deve explicar:
+- a função real da unidade documentada;
+- a entrada esperada;
+- a saída esperada;
+- um trecho curto de código;
+- uma explicação objetiva de como aquele trecho produz o comportamento observado.
+
+Esse padrão existe para facilitar leitura técnica sem transformar a documentação em cópia integral dos arquivos.
+
 ## VISÃO GERAL
 O NEXA atual é um backend Node.js + TypeScript com Fastify e uma Web App HTML única servida pelo próprio backend. O sistema opera como um agente assistido para orçamentos:
 
@@ -118,6 +128,31 @@ Função:
 - cai para gateways em memória quando faltam integrações;
 - instancia repositórios e caches baseados em arquivo.
 
+Entrada esperada:
+- `env` opcional com variáveis de ambiente;
+- `overrides` opcionais para testes ou composição manual.
+
+Saída esperada:
+- objeto `AppDependencies` com gateways, caches e repositórios prontos para uso pela aplicação.
+
+Trecho curto:
+```ts
+contactCatalogCache:
+  input.overrides?.contactCatalogCache ??
+  new FileSystemBlingContactCatalogCache({
+    filePath: 'data/bling/contacts/catalog.json',
+  }),
+aiBudgetSessionRepository:
+  input.overrides?.aiBudgetSessionRepository ??
+  new FileSystemAiBudgetSessionRepository({
+    filePath: 'data/nexa/ai-budget-sessions/sessions.json',
+  }),
+```
+
+O que esse trecho faz:
+- escolhe a implementação injetada em testes, quando existir;
+- e, no fluxo normal, liga a aplicação aos arquivos JSON locais que hoje funcionam como persistência padrão.
+
 Responsabilidades principais:
 - `buildBlingQuoteGateway`
 - `buildBlingProductGateway`
@@ -169,6 +204,31 @@ Conteúdo:
 - revisão;
 - confirmação final;
 - referência do Bling.
+
+Entrada esperada:
+- um registro `AiBudgetSessionRecord` completo.
+
+Saída esperada:
+- leitura por id, listagem recente, remoção e gravação atualizada no arquivo.
+
+Trecho curto:
+```ts
+const existingIndex = sessions.findIndex((item) => item.id === session.id);
+
+if (existingIndex >= 0) {
+  sessions[existingIndex] = session;
+} else {
+  sessions.push(session);
+}
+
+await this.writeAll(sessions);
+```
+
+O que esse trecho faz:
+- carrega todas as sessões do JSON;
+- substitui a sessão existente quando o id já existe;
+- ou adiciona uma nova sessão;
+- e grava o arquivo inteiro novamente.
 
 ### Modelos reutilizáveis
 Repositório:

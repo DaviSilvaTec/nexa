@@ -18,15 +18,16 @@ Consultar este arquivo ao iniciar o projeto, ao orientar o Codex, ao revisar a a
 5. `architecture/backend.md`
 6. `architecture/project-structure.md`
 7. `architecture/git-workflow.md`
-8. `architecture/system-walkthrough.md`
-9. `architecture/conversation-flow.md`
-10. `architecture/approval-flow.md`
-11. `architecture/whatsapp.md`
-12. `architecture/bling.md`
-13. `integrations/bling-history.md`
-14. `learning/`
-15. `patterns/`
-16. `setup/`
+8. `architecture/padrao-codex-e-documentacao.md`
+9. `architecture/system-walkthrough.md`
+10. `architecture/conversation-flow.md`
+11. `architecture/approval-flow.md`
+12. `architecture/whatsapp.md`
+13. `architecture/bling.md`
+14. `integrations/bling-history.md`
+15. `learning/`
+16. `patterns/`
+17. `setup/`
 
 ## MAPA DA DOCUMENTAÇÃO
 
@@ -59,6 +60,8 @@ Consultar este arquivo ao iniciar o projeto, ao orientar o Codex, ao revisar a a
   Estrutura recomendada de pastas, módulos e camadas.
 - `architecture/git-workflow.md`
   Padrão oficial de branches, commits, nomenclatura e merge para a `main`.
+- `architecture/padrao-codex-e-documentacao.md`
+  Diretriz padrão de trabalho do Codex, com branches por etapa, commits em português, ciclo Red/Green/Refactor e regra de documentação incremental com trechos curtos de código.
 - `architecture/system-walkthrough.md`
   Explica o funcionamento atual do sistema ponta a ponta, os principais casos de uso, as rotas HTTP, o bootstrap do runtime e a relação entre as funções centrais do NEXA.
 - `architecture/conversation-flow.md`
