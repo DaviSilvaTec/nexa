@@ -2193,8 +2193,10 @@
             Atualizar Sessões
           </button>
         </div>
+        <input type="search" id="sidebar-filter" placeholder="Filtrar sessões..." style="margin-bottom: 12px; width: 100%;">
         <div class="list-panel" id="session-list-panel">
           <div class="session-list" id="ai-session-list">
+
             <p class="muted">Carregando sessões...</p>
           </div>
         </div>
@@ -5423,6 +5425,16 @@
           submitAiAgentButton.click();
         }
       }
+    });
+
+    const sidebarFilter = document.getElementById('sidebar-filter');
+    sidebarFilter.addEventListener('input', (e) => {
+      const term = e.target.value.toLowerCase();
+      const items = document.querySelectorAll('.session-item');
+      items.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        item.style.display = text.includes(term) ? '' : 'none';
+      });
     });
 
     loadDefaultAiModel();
