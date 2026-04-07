@@ -2129,7 +2129,7 @@
               <button type="button" class="button-secondary button-pill button-pill--small" data-copy-target="main-input-textarea" onclick="copyToClipboard('main-input-textarea')">Copiar</button>
             </div>
             <textarea id="main-input-textarea" name="originalText"></textarea>
-
+            <div id="word-counter" style="margin-top: 4px; font-size: 12px; font-weight: 600; color: var(--muted); text-align: right;">0 / 30 palavras mínimas</div>
             <div class="form-footer">
               <div class="primary-actions">
                 <button type="button" id="speech-button" class="microphone-button microphone-button--idle"
@@ -5408,6 +5408,14 @@
     });
 
     setupSpeechInput();
+    const wordCounter = document.getElementById('word-counter');
+    const inputArea = document.getElementById('main-input-textarea');
+    inputArea.addEventListener('input', () => {
+      const count = countMeaningfulWords(inputArea.value);
+      wordCounter.textContent = `${count} / 30 palavras mínimas`;
+      wordCounter.style.color = count >= 30 ? 'var(--accent)' : 'var(--muted)';
+    });
+
     loadDefaultAiModel();
     initializeSettingsPanel();
     setSidebarTab('sessions');
@@ -5415,7 +5423,8 @@
     loadRecentModels();
     loadBlingTokenStatus();
     loadBlingSyncStatus();
-  </script>
+    </script>
+
 </body>
 
 </html>
