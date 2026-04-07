@@ -1986,6 +1986,13 @@
       background: #fff;
     }
 
+    .session-item--active {
+      border-color: var(--accent);
+      background: rgba(255, 252, 246, 0.96);
+      box-shadow: 0 0 0 2px var(--accent-soft), 0 10px 20px rgba(117, 86, 48, 0.08);
+      transform: translateY(-1px);
+    }
+
     .session-item--ready:hover {
       background: #f4fbef;
     }
@@ -2098,6 +2105,58 @@
     .response-card .muted {
       color: #746553;
     }
+
+    [data-tooltip] {
+      position: relative;
+    }
+
+    [data-tooltip]::before {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%) translateY(-4px);
+      padding: 6px 10px;
+      background: var(--ink);
+      color: var(--bg);
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+      border-radius: 6px;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.2s ease;
+      pointer-events: none;
+      z-index: 100;
+      box-shadow: var(--shadow-soft);
+    }
+
+    [data-tooltip]::after {
+      content: "";
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-top-color: var(--ink);
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.2s ease;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    [data-tooltip]:hover::before {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(-8px);
+    }
+
+    [data-tooltip]:hover::after {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(-3px);
+    }
   </style>
 </head>
 
@@ -2133,7 +2192,7 @@
             <div class="form-footer">
               <div class="primary-actions">
                 <button type="button" id="speech-button" class="microphone-button microphone-button--idle"
-                  aria-label="Iniciar captura de voz" title="Clique para começar a falar">
+                  aria-label="Iniciar captura de voz" data-tooltip="Clique para começar a falar">
                   <svg viewBox="0 0 24 24" aria-hidden="true">
                     <path
                       d="M12 15a3 3 0 0 0 3-3V7a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3zm5-3a1 1 0 0 1 2 0 7 7 0 0 1-6 6.93V21h3a1 1 0 0 1 0 2H8a1 1 0 0 1 0-2h3v-2.07A7 7 0 0 1 5 12a1 1 0 0 1 2 0 5 5 0 0 0 10 0z" />
@@ -3718,7 +3777,7 @@
                                   class="microphone-button microphone-button--idle"
                                   data-speech-target="proposal-review-instructions-${escapeHtml(session.id || '')}"
                                   aria-label="Iniciar captura de voz para instruções de revisão"
-                                  title="Clique para ditar instruções de revisão"
+                                  data-tooltip="Clique para ditar instruções de revisão"
                                 >
                                   <svg viewBox="0 0 24 24" aria-hidden="true">
                                     <path
@@ -4841,7 +4900,7 @@
 
               return `
                 <article
-                  class="session-item ${(session.status || 'Aguardando aprovacao') === 'Finalizada' ? 'session-item--ready' : ''} ${(session.status || 'Aguardando aprovacao') === 'Cancelado' ? 'session-item--cancelled' : ''}"
+                  class="session-item ${(session.status || 'Aguardando aprovacao') === 'Finalizada' ? 'session-item--ready' : ''} ${(session.status || 'Aguardando aprovacao') === 'Cancelado' ? 'session-item--cancelled' : ''} ${activeSessionId === session.id ? 'session-item--active' : ''}"
                   data-session-id="${escapeHtml(session.id)}"
                   data-session-created-at="${escapeHtml(session.createdAt || '')}"
                 >
@@ -4982,7 +5041,7 @@
         modelList.innerHTML = models
           .map(
             (model) => `
-                <article class="session-item session-item--ready session-item--model" data-model-id="${escapeHtml(model.id)}">
+                <article class="session-item session-item--ready session-item--model ${activeModelId === model.id ? 'session-item--active' : ''}" data-model-id="${escapeHtml(model.id)}">
                   <div class="session-item-preview">
                     <span class="session-item-kicker">Modelo salvo</span>
                     <strong>${escapeHtml(model.title || 'Modelo sem título')}</strong>
@@ -5187,9 +5246,9 @@
           'aria-label',
           shouldKeepListening ? 'Terminar captura de voz' : 'Iniciar captura de voz',
         );
-        button.title = shouldKeepListening
+        button.setAttribute('data-tooltip', shouldKeepListening
           ? 'Clique para terminar a captura'
-          : 'Clique para começar a falar';
+          : 'Clique para começar a falar');
       }
 
       recognition.onstart = () => {
