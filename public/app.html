@@ -5416,6 +5416,15 @@
       wordCounter.style.color = count >= 30 ? 'var(--accent)' : 'var(--muted)';
     });
 
+    inputArea.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.key === 'Enter') {
+        e.preventDefault();
+        if (!submitAiAgentButton.disabled) {
+          submitAiAgentButton.click();
+        }
+      }
+    });
+
     loadDefaultAiModel();
     initializeSettingsPanel();
     setSidebarTab('sessions');
