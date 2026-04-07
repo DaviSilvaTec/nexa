@@ -17,11 +17,11 @@
         --line-strong: rgba(116, 87, 48, 0.42);
         --ink: #1f1811;
         --muted: #665948;
-        --accent: #b95e1d;
-        --accent-strong: #8f4514;
-        --accent-soft: rgba(185, 94, 29, 0.12);
-        --shadow: 0 24px 60px rgba(70, 51, 26, 0.12);
-        --shadow-soft: 0 12px 28px rgba(70, 51, 26, 0.08);
+        --accent: #1d7ab9;
+        --accent-strong: #145a8f;
+        --accent-soft: rgba(29, 122, 185, 0.12);
+        --shadow: 0 24px 60px rgba(26, 51, 70, 0.12);
+        --shadow-soft: 0 12px 28px rgba(26, 51, 70, 0.08);
       }
 
       * {
@@ -165,16 +165,7 @@
       }
 
       .hero-grid {
-        display: grid;
-        grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.8fr);
-        gap: 18px;
-        align-items: stretch;
-      }
-
-      @media (max-width: 980px) {
-        .hero-grid {
-          grid-template-columns: 1fr;
-        }
+        display: block;
       }
 
       .hero-copy {
@@ -2117,62 +2108,77 @@
               Networked EXecution Agent
             </p>
           </div>
-          <aside class="hero-note" aria-label="Resumo operacional da interface">
-            <span class="hero-note-label">Mesa de operação</span>
-            <div>
-              <h2>Console comercial assistido</h2>
-              <p>
-                Entrada livre, revisão técnica, consolidação comercial e fechamento operacional em um fluxo único.
-              </p>
-            </div>
-            <div class="hero-note-grid">
-              <span>Entrada em linguagem natural</span>
-              <span>Revisão guiada</span>
-              <span>Consolidação de proposta</span>
-              <span>Fechamento com Bling</span>
-            </div>
-          </aside>
         </div>
       </section>
 
       <section class="grid">
-        <form class="panel panel--primary stack session-input-panel" id="ai-agent-response-form">
-          <h2>Interação com o NEXA</h2>
-          <div class="session-form-body">
-            <p>
-              Fale ou digite como falaria no dia a dia. O navegador pode converter sua fala
-              em texto e o NEXA faz a extração inicial antes de consultar a base local.
-            </p>
-            <label class="field-block">
-              Texto original
-              <textarea name="originalText"></textarea>
-            </label>
-            <div class="form-footer">
-              <div class="primary-actions">
+        <div class="stack">
+          <form class="panel panel--primary stack session-input-panel" id="ai-agent-response-form">
+            <h2>Interação com o NEXA</h2>
+            <div class="session-form-body">
+              <p>
+                Fale ou digite como falaria no dia a dia. O navegador pode converter sua fala
+                em texto e o NEXA faz a extração inicial antes de consultar a base local.
+              </p>
+              <label class="field-block">
+                Texto original
+                <textarea name="originalText"></textarea>
+              </label>
+              <div class="form-footer">
+                <div class="primary-actions">
+                  <button
+                    type="button"
+                    id="speech-button"
+                    class="microphone-button microphone-button--idle"
+                    aria-label="Iniciar captura de voz"
+                    title="Clique para começar a falar"
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M12 15a3 3 0 0 0 3-3V7a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3zm5-3a1 1 0 0 1 2 0 7 7 0 0 1-6 6.93V21h3a1 1 0 0 1 0 2H8a1 1 0 0 1 0-2h3v-2.07A7 7 0 0 1 5 12a1 1 0 0 1 2 0 5 5 0 0 0 10 0z"/>
+                    </svg>
+                  </button>
+                  <button type="submit" class="button-pill button-primary" id="submit-ai-agent-button" disabled>Enviar ao NEXA</button>
+                  <button type="button" class="button-secondary button-pill" id="cancel-ai-agent-button">Cancelar</button>
+                </div>
+                <label class="inline-checkbox">
+                  <input type="checkbox" id="budget-finished-checkbox" />
+                  Terminado. Liberar envio ao NEXA.
+                </label>
+                <p class="status-line" id="speech-status">
+                  Voz inativa. Clique no microfone para começar e clique novamente para terminar.
+                </p>
+              </div>
+            </div>
+          </form>
+
+          <article class="response-card" id="nexa-response" tabindex="-1">
+            <div class="response-card-header">
+              <h2>Retorno do NEXA</h2>
+              <div class="response-view-tabs">
                 <button
                   type="button"
-                  id="speech-button"
-                  class="microphone-button microphone-button--idle"
-                  aria-label="Iniciar captura de voz"
-                  title="Clique para começar a falar"
+                  class="response-view-tab is-active"
+                  id="response-view-summary-tab"
                 >
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M12 15a3 3 0 0 0 3-3V7a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3zm5-3a1 1 0 0 1 2 0 7 7 0 0 1-6 6.93V21h3a1 1 0 0 1 0 2H8a1 1 0 0 1 0-2h3v-2.07A7 7 0 0 1 5 12a1 1 0 0 1 2 0 5 5 0 0 0 10 0z"/>
-                  </svg>
+                  Retorno
                 </button>
-                <button type="submit" class="button-pill button-primary" id="submit-ai-agent-button" disabled>Enviar ao NEXA</button>
-                <button type="button" class="button-secondary button-pill" id="cancel-ai-agent-button">Cancelar</button>
+                <button
+                  type="button"
+                  class="response-view-tab"
+                  id="response-view-bling-tab"
+                  hidden
+                >
+                  Prévia Bling
+                </button>
               </div>
-              <label class="inline-checkbox">
-                <input type="checkbox" id="budget-finished-checkbox" />
-                Terminado. Liberar envio ao NEXA.
-              </label>
-              <p class="status-line" id="speech-status">
-                Voz inativa. Clique no microfone para começar e clique novamente para terminar.
-              </p>
             </div>
-          </div>
-        </form>
+            <div class="response-block">
+              <p class="muted">Aguardando execução...</p>
+            </div>
+          </article>
+
+          <pre id="output">Aguardando execução...</pre>
+        </div>
 
         <aside class="panel panel--support stack">
           <h2>Sessões Recentes</h2>
@@ -2404,36 +2410,6 @@
             </div>
           </details>
         </aside>
-      </section>
-
-      <section class="output">
-        <article class="response-card" id="nexa-response" tabindex="-1">
-          <div class="response-card-header">
-            <h2>Retorno do NEXA</h2>
-            <div class="response-view-tabs">
-              <button
-                type="button"
-                class="response-view-tab is-active"
-                id="response-view-summary-tab"
-              >
-                Retorno
-              </button>
-              <button
-                type="button"
-                class="response-view-tab"
-                id="response-view-bling-tab"
-                hidden
-              >
-                Prévia Bling
-              </button>
-            </div>
-          </div>
-          <div class="response-block">
-            <p class="muted">Aguardando execução...</p>
-          </div>
-        </article>
-
-        <pre id="output">Aguardando execução...</pre>
       </section>
     </main>
 

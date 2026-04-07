@@ -4,3 +4,5 @@ node_modules/
 dist/
 data/
 *.log
+.codex
+NEXA_Technical_Report.html
