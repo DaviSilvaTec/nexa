@@ -28,7 +28,7 @@ Nas partes mais importantes do sistema, este walkthrough deve explicar:
 Esse padrão existe para facilitar leitura técnica sem transformar a documentação em cópia integral dos arquivos.
 
 ## VISÃO GERAL
-O NEXA atual é um backend Node.js + TypeScript com Fastify e uma Web App HTML única servida pelo próprio backend. O sistema opera como um agente assistido para orçamentos:
+O NEXA atual é um backend Node.js + TypeScript com Fastify e uma Web App modular servida pelo próprio backend. O frontend é composto por três arquivos independentes: HTML puro, CSS e JavaScript, entregues via `@fastify/static`. O sistema opera como um agente assistido para orçamentos:
 
 1. recebe texto livre;
 2. estrutura esse texto com apoio da OpenAI;
@@ -64,6 +64,10 @@ Arquivos principais:
 - [build-app-dependencies.ts](/home/usuario/workspace/Antigravity/2026/NeXa/src/app/build-app-dependencies.ts)
 - [create-app.ts](/home/usuario/workspace/Antigravity/2026/NeXa/src/app/create-app.ts)
 - [ai-agent-operation-store.ts](/home/usuario/workspace/Antigravity/2026/NeXa/src/app/ai-agent-operation-store.ts)
+
+Servir assets estáticos:
+- o plugin `@fastify/static` está registrado em `createApp` para servir o diretório `public/` sob a rota `/public/`;
+- isso permite que o HTML referencie CSS e JavaScript como arquivos externos via `/public/css/app.css` e `/public/js/app.js`.
 
 ### `src/application`
 Responsável por:
@@ -285,7 +289,10 @@ Objetivo:
 - `GET /health`
   Verificação simples de saúde do serviço.
 - `GET /app`
-  Entrega o arquivo [app.html](/home/usuario/workspace/Antigravity/2026/NeXa/public/app.html).
+  Entrega o arquivo [app.html](/home/usuario/workspace/Antigravity/2026/NeXa/public/app.html) via `reply.sendFile`.
+  O HTML referencia os assets estáticos servidos por `@fastify/static`:
+  - [/public/css/app.css](/home/usuario/workspace/Antigravity/2026/NeXa/public/css/app.css) — estilos completos da interface.
+  - [/public/js/app.js](/home/usuario/workspace/Antigravity/2026/NeXa/public/js/app.js) — toda a lógica de interação, estado e chamadas de API.
 
 ### Configuração do Bling
 - `GET /local/settings/bling-token`
@@ -731,7 +738,7 @@ Na prática, o operador usa o sistema assim:
 
 ## PAINEL DE CONFIGURAÇÕES NA WEB APP
 
-O painel `Configurações`, servido pela própria [app.html](/home/usuario/workspace/Antigravity/2026/NeXa/public/app.html), agora está organizado como uma lista vertical de grupos compactos:
+O painel `Configurações`, servido pela própria interface em [app.html](/home/usuario/workspace/Antigravity/2026/NeXa/public/app.html) com lógica em [app.js](/home/usuario/workspace/Antigravity/2026/NeXa/public/js/app.js), agora está organizado como uma lista vertical de grupos compactos:
 - `Log`
 - `Modelo`
 - `Tema`

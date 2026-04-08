@@ -26,6 +26,24 @@ Consultar este arquivo ao:
 
 ## ENTRADAS
 
+### 2026-04-07 20:57:00 -03
+- __Frontend monolítico separado em arquivos independentes de HTML, CSS e JavaScript__ ✓
+- O arquivo `public/app.html`, que concentrava 5.510 linhas contendo markup, estilos e lógica em um único documento, foi separado em três arquivos independentes.
+- A estrutura HTML pura ficou em [app.html](/home/usuario/workspace/Antigravity/2026/NeXa/public/app.html) com 299 linhas, referenciando os assets externos.
+- Os estilos completos foram extraídos para [public/css/app.css](/home/usuario/workspace/Antigravity/2026/NeXa/public/css/app.css) com 2.152 linhas, incluindo variáveis, temas, componentes e media queries.
+- Toda a lógica de interação, estado e chamadas de API foi extraída para [public/js/app.js](/home/usuario/workspace/Antigravity/2026/NeXa/public/js/app.js) com 3.059 linhas.
+- A indentação extra de 4 espaços que existia dentro das tags `<style>` e `<script>` originais foi removida durante a extração.
+- O plugin `@fastify/static` foi adicionado ao projeto e registrado em `createApp` para servir o diretório `public/` sob a rota `/public/`.
+- A rota `GET /app` deixou de usar `fs.readFile` manual e passou a usar `reply.sendFile('app.html')`.
+- O import de `fs` foi removido de `create-app.ts` por não ser mais necessário.
+- Nenhuma alteração funcional foi feita: o código extraído é idêntico ao conteúdo original.
+- Arquivos impactados:
+  - [app.html](/home/usuario/workspace/Antigravity/2026/NeXa/public/app.html)
+  - [public/css/app.css](/home/usuario/workspace/Antigravity/2026/NeXa/public/css/app.css) (novo)
+  - [public/js/app.js](/home/usuario/workspace/Antigravity/2026/NeXa/public/js/app.js) (novo)
+  - [create-app.ts](/home/usuario/workspace/Antigravity/2026/NeXa/src/app/create-app.ts)
+  - [package.json](/home/usuario/workspace/Antigravity/2026/NeXa/package.json)
+
 ### 2026-04-01 21:40:00 -03
 - __Revisão obrigatória passou a devolver cliente e materiais estruturados, e a prévia do Bling passou a priorizar essa revisão__ ✓
 - O contrato de `reviewProposalDraft` foi ampliado para devolver, além do texto revisado, um `resolvedCustomer` estruturado e uma lista `resolvedMaterialItems` com descrição, quantidade textual e vínculo opcional ao catálogo local.
