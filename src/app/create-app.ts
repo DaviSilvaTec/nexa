@@ -1,6 +1,6 @@
-import fs from 'node:fs/promises';
 import path from 'node:path';
 import Fastify, { type FastifyInstance } from 'fastify';
+import fastifyStatic from '@fastify/static';
 
 import { approveDraft } from '../application/use-cases/approve-draft';
 import { analyzeLocalBudgetMaterials } from '../application/use-cases/analyze-local-budget-materials';
@@ -51,6 +51,12 @@ import { InMemoryAiAgentOperationStore } from './ai-agent-operation-store';
 
 export function createApp(dependencies?: Partial<AppDependencies>): FastifyInstance {
   const app = Fastify();
+
+  void app.register(fastifyStatic, {
+    root: path.resolve(process.cwd(), 'public'),
+    prefix: '/public/',
+  });
+
   const appDependencies = buildAppDependencies(
     dependencies ? { overrides: dependencies } : {},
   );
@@ -173,10 +179,7 @@ export function createApp(dependencies?: Partial<AppDependencies>): FastifyInsta
       },
     }).catch(() => {});
 
-    const filePath = path.resolve(process.cwd(), 'public/app.html');
-    const content = await fs.readFile(filePath, 'utf-8');
-
-    return reply.type('text/html; charset=utf-8').send(content);
+    return reply.sendFile('app.html');
   });
 
   app.get('/auth/bling/callback', async (request, reply) => {
