@@ -16,6 +16,23 @@ Consultar este arquivo antes de implementar qualquer módulo novo, alterar compo
 - A identidade da marca fica em `docs/branding/`.
 - O setup do ambiente fica em `docs/setup/`.
 
+## ARQUIVOS DE REGISTRO OBRIGATÓRIOS
+Sempre que um agente de IA retomar o projeto, carregar contexto do sistema, revisar progresso, planejar uma continuação ou decidir a próxima etapa, ele deve consultar obrigatoriamente estes arquivos de registro:
+- `docs/changelog.md`
+- `docs/architecture/system-walkthrough.md`
+- `docs/implementation-plan.md`
+- `docs/README.md`
+
+Função de cada um nessa leitura obrigatória:
+- `docs/changelog.md` registra o histórico factual das mudanças já implementadas e dos comportamentos observados.
+- `docs/architecture/system-walkthrough.md` descreve o funcionamento atual real do sistema com base no código.
+- `docs/implementation-plan.md` mostra o plano macro, o progresso e o ponto de continuação recomendado.
+- `docs/README.md` funciona como índice documental para localizar rapidamente os demais arquivos relevantes.
+
+Regra prática:
+- nenhum agente deve assumir o estado do sistema sem antes reler esses quatro arquivos;
+- em caso de divergência entre memória anterior e documentação, deve prevalecer a documentação mais recente desses registros, respeitando a prioridade geral definida neste arquivo.
+
 ## IDENTIDADE DO SISTEMA
 
 Nome do sistema: ALLTEC NEXA

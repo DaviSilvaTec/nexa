@@ -13,21 +13,36 @@ Consultar este arquivo ao iniciar o projeto, ao orientar o Codex, ao revisar a a
 ## ORDEM DE LEITURA RECOMENDADA
 1. `../AGENTS.md`
 2. `changelog.md`
-3. `branding/nexa.md`
-4. `orcamento-engine.md`
-5. `architecture/backend.md`
-6. `architecture/project-structure.md`
-7. `architecture/git-workflow.md`
-8. `architecture/padrao-codex-e-documentacao.md`
-9. `architecture/system-walkthrough.md`
-10. `architecture/conversation-flow.md`
-11. `architecture/approval-flow.md`
-12. `architecture/whatsapp.md`
-13. `architecture/bling.md`
-14. `integrations/bling-history.md`
-15. `learning/`
-16. `patterns/`
-17. `setup/`
+3. `architecture/system-walkthrough.md`
+4. `implementation-plan.md`
+5. `README.md`
+6. `branding/nexa.md`
+7. `orcamento-engine.md`
+8. `architecture/backend.md`
+9. `architecture/project-structure.md`
+10. `architecture/git-workflow.md`
+11. `architecture/padrao-codex-e-documentacao.md`
+12. `architecture/conversation-flow.md`
+13. `architecture/approval-flow.md`
+14. `architecture/whatsapp.md`
+15. `architecture/bling.md`
+16. `integrations/bling-history.md`
+17. `learning/`
+18. `patterns/`
+19. `setup/`
+
+## ARQUIVOS DE REGISTRO PRIORITÁRIOS
+Todo agente que for retomar o projeto, carregar contexto ou decidir a próxima etapa deve reler primeiro estes quatro arquivos:
+- `changelog.md`
+- `architecture/system-walkthrough.md`
+- `implementation-plan.md`
+- `README.md`
+
+Objetivo:
+- recuperar o estado factual do sistema;
+- entender o comportamento atual real;
+- localizar o plano de continuação;
+- encontrar rapidamente o restante da documentação relevante.
 
 ## MAPA DA DOCUMENTAÇÃO
 
