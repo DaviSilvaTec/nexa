@@ -23,6 +23,10 @@ const blingSyncSummary = document.getElementById('bling-sync-summary');
 const refreshBlingTokenButton = document.getElementById('refresh-bling-token-button');
 const refreshBlingSyncButton = document.getElementById('refresh-bling-sync-button');
 const refreshSessionsButton = document.getElementById('refresh-sessions-button');
+const bulkSelectionActions = document.getElementById('bulk-selection-actions');
+const bulkSelectionSummary = document.getElementById('bulk-selection-summary');
+const bulkSaveModelButton = document.getElementById('bulk-save-model-button');
+const bulkDeleteButton = document.getElementById('bulk-delete-button');
 const sessionTabButton = document.getElementById('session-tab-button');
 const modelTabButton = document.getElementById('model-tab-button');
 const sessionListPanel = document.getElementById('session-list-panel');
@@ -56,6 +60,10 @@ let activeModelMode = null;
 let activeSidebarTab = 'sessions';
 let activeResponseView = 'summary';
 let currentRenderableResponsePayload = null;
+let recentSessionsCache = [];
+let recentModelsCache = [];
+const selectedSessionIds = new Set();
+const selectedModelIds = new Set();
 let operationCountdownTimer = null;
 let isWaitingWindowActive = false;
 const OPERATION_TIMEOUT_SECONDS = 120;
@@ -126,6 +134,87 @@ function buildSessionCardTitle(session) {
 
 function buildCustomerLabel(customerName) {
   return customerName ? `Cliente: ${customerName}` : 'Cliente não identificado';
+}
+
+function toggleSelection(set, id, checked) {
+  if (!id) {
+    return;
+  }
+
+  if (checked) {
+    set.add(id);
+  } else {
+    set.delete(id);
+  }
+}
+
+function clearSidebarSelections() {
+  selectedSessionIds.clear();
+  selectedModelIds.clear();
+}
+
+function getSelectedSessions() {
+  return recentSessionsCache.filter((session) => selectedSessionIds.has(session.id));
+}
+
+function getSelectedModels() {
+  return recentModelsCache.filter((model) => selectedModelIds.has(model.id));
+}
+
+function renderBulkSelectionActions() {
+  if (!(bulkSelectionActions instanceof HTMLElement)) {
+    return;
+  }
+
+  const isSessionsTab = activeSidebarTab === 'sessions';
+  const selectedCount = isSessionsTab ? selectedSessionIds.size : selectedModelIds.size;
+
+  bulkSelectionActions.classList.toggle('is-hidden', selectedCount === 0);
+
+  if (selectedCount === 0) {
+    if (bulkSelectionSummary instanceof HTMLElement) {
+      bulkSelectionSummary.textContent = '';
+    }
+    if (bulkSaveModelButton instanceof HTMLButtonElement) {
+      bulkSaveModelButton.hidden = true;
+      bulkSaveModelButton.disabled = true;
+    }
+    if (bulkDeleteButton instanceof HTMLButtonElement) {
+      bulkDeleteButton.hidden = true;
+      bulkDeleteButton.disabled = true;
+    }
+    return;
+  }
+
+  if (bulkSelectionSummary instanceof HTMLElement) {
+    bulkSelectionSummary.textContent =
+      selectedCount === 1
+        ? '1 item selecionado'
+        : `${selectedCount} itens selecionados`;
+  }
+
+  if (bulkDeleteButton instanceof HTMLButtonElement) {
+    bulkDeleteButton.hidden = false;
+    bulkDeleteButton.disabled = false;
+  }
+
+  if (bulkSaveModelButton instanceof HTMLButtonElement) {
+    if (isSessionsTab) {
+      const selectedFinalizedSessions = getSelectedSessions().filter(
+        (session) => (session.status || 'Aguardando aprovacao') === 'Finalizada',
+      );
+      bulkSaveModelButton.hidden = false;
+      bulkSaveModelButton.disabled = selectedFinalizedSessions.length === 0;
+      bulkSaveModelButton.title =
+        selectedFinalizedSessions.length === 0
+          ? 'Selecione pelo menos uma sessão finalizada para salvar como modelo.'
+          : '';
+    } else {
+      bulkSaveModelButton.hidden = true;
+      bulkSaveModelButton.disabled = true;
+      bulkSaveModelButton.title = '';
+    }
+  }
 }
 
 function countMeaningfulWords(value) {
@@ -2119,6 +2208,7 @@ function setSidebarTab(tab) {
   modelTabButton?.classList.toggle('is-active', activeSidebarTab === 'models');
   sessionListPanel?.classList.toggle('is-hidden', activeSidebarTab !== 'sessions');
   modelListPanel?.classList.toggle('is-hidden', activeSidebarTab !== 'models');
+  renderBulkSelectionActions();
 }
 
 function buildRenderablePayloadFromLoadedSession(loadedSession) {
@@ -2438,9 +2528,16 @@ async function loadRecentSessions() {
     const response = await fetch('/local/ai-sessions');
     const payload = await response.json();
     const sessions = payload.sessions || [];
+    recentSessionsCache = sessions;
+    Array.from(selectedSessionIds).forEach((id) => {
+      if (!sessions.some((session) => session.id === id)) {
+        selectedSessionIds.delete(id);
+      }
+    });
 
     if (sessions.length === 0) {
       sessionList.innerHTML = '<p class="muted">Nenhuma sessão salva até o momento.</p>';
+      renderBulkSelectionActions();
       return;
     }
 
@@ -2457,6 +2554,16 @@ async function loadRecentSessions() {
               data-session-id="${escapeHtml(session.id)}"
               data-session-created-at="${escapeHtml(session.createdAt || '')}"
             >
+              <div class="session-item-selection">
+                <label class="session-item-checkbox">
+                  <input
+                    type="checkbox"
+                    data-session-select="${escapeHtml(session.id)}"
+                    ${selectedSessionIds.has(session.id) ? 'checked' : ''}
+                  />
+                  Selecionar
+                </label>
+              </div>
               <div class="session-item-preview">
                 <span class="session-item-kicker">Sessão assistida</span>
                 <strong>${escapeHtml(buildSessionCardTitle(session))}</strong>
@@ -2481,6 +2588,18 @@ async function loadRecentSessions() {
         },
       )
       .join('');
+
+    sessionList.querySelectorAll('[data-session-select]').forEach((checkbox) => {
+      checkbox.addEventListener('change', (event) => {
+        const target = event.currentTarget;
+        if (!(target instanceof HTMLInputElement)) {
+          return;
+        }
+
+        toggleSelection(selectedSessionIds, target.getAttribute('data-session-select'), target.checked);
+        renderBulkSelectionActions();
+      });
+    });
 
     sessionList.querySelectorAll('[data-session-action]').forEach((button) => {
       button.addEventListener('click', async () => {
@@ -2572,9 +2691,12 @@ async function loadRecentSessions() {
         }
       });
     });
+
+    renderBulkSelectionActions();
   } catch (error) {
     sessionList.innerHTML =
       `<p class="muted">Falha ao carregar sessões: ${escapeHtml(String(error))}</p>`;
+    renderBulkSelectionActions();
   }
 }
 
@@ -2585,9 +2707,16 @@ async function loadRecentModels() {
     const response = await fetch('/local/ai-models');
     const payload = await response.json();
     const models = payload.models || [];
+    recentModelsCache = models;
+    Array.from(selectedModelIds).forEach((id) => {
+      if (!models.some((model) => model.id === id)) {
+        selectedModelIds.delete(id);
+      }
+    });
 
     if (models.length === 0) {
       modelList.innerHTML = '<p class="muted">Nenhum modelo salvo até o momento.</p>';
+      renderBulkSelectionActions();
       return;
     }
 
@@ -2595,6 +2724,16 @@ async function loadRecentModels() {
       .map(
         (model) => `
             <article class="session-item session-item--ready session-item--model ${activeModelId === model.id ? 'session-item--active' : ''}" data-model-id="${escapeHtml(model.id)}">
+              <div class="session-item-selection">
+                <label class="session-item-checkbox">
+                  <input
+                    type="checkbox"
+                    data-model-select="${escapeHtml(model.id)}"
+                    ${selectedModelIds.has(model.id) ? 'checked' : ''}
+                  />
+                  Selecionar
+                </label>
+              </div>
               <div class="session-item-preview">
                 <span class="session-item-kicker">Modelo salvo</span>
                 <strong>${escapeHtml(model.title || 'Modelo sem título')}</strong>
@@ -2617,6 +2756,18 @@ async function loadRecentModels() {
           `,
       )
       .join('');
+
+    modelList.querySelectorAll('[data-model-select]').forEach((checkbox) => {
+      checkbox.addEventListener('change', (event) => {
+        const target = event.currentTarget;
+        if (!(target instanceof HTMLInputElement)) {
+          return;
+        }
+
+        toggleSelection(selectedModelIds, target.getAttribute('data-model-select'), target.checked);
+        renderBulkSelectionActions();
+      });
+    });
 
     modelList.querySelectorAll('[data-model-action]').forEach((button) => {
       button.addEventListener('click', async () => {
@@ -2672,9 +2823,12 @@ async function loadRecentModels() {
         }
       });
     });
+
+    renderBulkSelectionActions();
   } catch (error) {
     modelList.innerHTML =
       `<p class="muted">Falha ao carregar modelos: ${escapeHtml(String(error))}</p>`;
+    renderBulkSelectionActions();
   }
 }
 
@@ -2951,6 +3105,149 @@ refreshSessionsButton.addEventListener('click', async () => {
   await loadRecentModels();
 });
 
+bulkSaveModelButton?.addEventListener('click', async () => {
+  try {
+    const selectedFinalizedSessions = getSelectedSessions().filter(
+      (session) => (session.status || 'Aguardando aprovacao') === 'Finalizada',
+    );
+
+    if (selectedFinalizedSessions.length === 0) {
+      setOutputMessage('Selecione pelo menos uma sessão finalizada para salvar como modelo.', 'warn');
+      return;
+    }
+
+    const confirmed = window.confirm(
+      selectedFinalizedSessions.length === 1
+        ? 'Salvar a sessão selecionada como modelo?'
+        : `Salvar ${selectedFinalizedSessions.length} sessões finalizadas como modelos?`,
+    );
+
+    if (!confirmed) {
+      setOutputMessage('Ação em lote cancelada.', 'warn');
+      return;
+    }
+
+    for (const session of selectedFinalizedSessions) {
+      const response = await fetch(`/local/ai-sessions/${session.id}/save-as-model`, {
+        method: 'POST',
+      });
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(payload?.error || `Falha ao salvar a sessão ${session.id} como modelo.`);
+      }
+
+      if (activeSessionId === session.id) {
+        clearActiveSessionState();
+        if (originalTextField) {
+          originalTextField.value = '';
+        }
+      }
+    }
+
+    selectedSessionIds.clear();
+    await loadRecentSessions();
+    await loadRecentModels();
+    setSidebarTab('models');
+    setOutputMessage('Sessões selecionadas salvas como modelo.', 'debug');
+  } catch (error) {
+    setOutputMessage(
+      error instanceof Error ? error.message : 'Falha ao salvar as sessões selecionadas como modelo.',
+      'error',
+    );
+  }
+});
+
+bulkDeleteButton?.addEventListener('click', async () => {
+  try {
+    if (activeSidebarTab === 'sessions') {
+      const selectedSessions = getSelectedSessions();
+
+      if (selectedSessions.length === 0) {
+        setOutputMessage('Selecione ao menos uma sessão para apagar.', 'warn');
+        return;
+      }
+
+      const confirmed = window.confirm(
+        selectedSessions.length === 1
+          ? 'Apagar a sessão selecionada? Esta ação não pode ser desfeita.'
+          : `Apagar ${selectedSessions.length} sessões selecionadas? Esta ação não pode ser desfeita.`,
+      );
+
+      if (!confirmed) {
+        setOutputMessage('Ação em lote cancelada.', 'warn');
+        return;
+      }
+
+      for (const session of selectedSessions) {
+        const response = await fetch(`/local/ai-sessions/${session.id}`, {
+          method: 'DELETE',
+        });
+        const payload = await response.json();
+
+        if (!response.ok) {
+          throw new Error(payload?.error || `Falha ao apagar a sessão ${session.id}.`);
+        }
+
+        if (activeSessionId === session.id) {
+          clearActiveSessionState();
+          clearActiveModelState();
+          if (originalTextField) {
+            originalTextField.value = '';
+          }
+        }
+      }
+
+      selectedSessionIds.clear();
+      await loadRecentSessions();
+      setOutputMessage('Sessões selecionadas apagadas.', 'debug');
+      return;
+    }
+
+    const selectedModels = getSelectedModels();
+
+    if (selectedModels.length === 0) {
+      setOutputMessage('Selecione ao menos um modelo para apagar.', 'warn');
+      return;
+    }
+
+    const confirmed = window.confirm(
+      selectedModels.length === 1
+        ? 'Apagar o modelo selecionado? Esta ação não pode ser desfeita.'
+        : `Apagar ${selectedModels.length} modelos selecionados? Esta ação não pode ser desfeita.`,
+    );
+
+    if (!confirmed) {
+      setOutputMessage('Ação em lote cancelada.', 'warn');
+      return;
+    }
+
+    for (const model of selectedModels) {
+      const response = await fetch(`/local/ai-models/${model.id}`, {
+        method: 'DELETE',
+      });
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(payload?.error || `Falha ao apagar o modelo ${model.id}.`);
+      }
+
+      if (activeModelId === model.id) {
+        clearActiveModelState();
+      }
+    }
+
+    selectedModelIds.clear();
+    await loadRecentModels();
+    setOutputMessage('Modelos selecionados apagados.', 'debug');
+  } catch (error) {
+    setOutputMessage(
+      error instanceof Error ? error.message : 'Falha ao apagar os itens selecionados.',
+      'error',
+    );
+  }
+});
+
 cancelAiAgentButton?.addEventListener('click', () => {
   const hasContext =
     Boolean(getOriginalTextValue()) || Boolean(activeSessionId) || Boolean(activeModelId);
@@ -3015,10 +3312,12 @@ refreshBlingSyncButton?.addEventListener('click', async () => {
 
 sessionTabButton?.addEventListener('click', () => {
   setSidebarTab('sessions');
+  renderBulkSelectionActions();
 });
 
 modelTabButton?.addEventListener('click', () => {
   setSidebarTab('models');
+  renderBulkSelectionActions();
 });
 
 setupSpeechInput();
@@ -3052,6 +3351,7 @@ sidebarFilter.addEventListener('input', (e) => {
 loadDefaultAiModel();
 initializeSettingsPanel();
 setSidebarTab('sessions');
+renderBulkSelectionActions();
 loadRecentSessions();
 loadRecentModels();
 loadBlingTokenStatus();

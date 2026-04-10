@@ -522,6 +522,25 @@ button:disabled {
 .session-actions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.bulk-selection-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.bulk-selection-actions.is-hidden {
+  display: none;
+}
+
+.bulk-selection-summary {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
 }
 
 .list-tabs {
@@ -1945,6 +1964,29 @@ button:disabled {
   border: 1px solid var(--line);
   box-shadow: 0 10px 24px rgba(70, 51, 26, 0.05);
   overflow: hidden;
+}
+
+.session-item-selection {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.session-item-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.session-item-checkbox input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
 }
 
 .session-item::before {

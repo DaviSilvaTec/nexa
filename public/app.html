@@ -99,6 +99,15 @@
           <button type="button" class="button-secondary button-pill" id="refresh-sessions-button">
             Atualizar Sessões
           </button>
+          <div class="bulk-selection-actions is-hidden" id="bulk-selection-actions" aria-live="polite">
+            <span class="bulk-selection-summary" id="bulk-selection-summary"></span>
+            <button type="button" class="button-secondary button-pill" id="bulk-save-model-button" hidden>
+              Salvar como modelo
+            </button>
+            <button type="button" class="button-danger button-pill" id="bulk-delete-button" hidden>
+              Apagar selecionados
+            </button>
+          </div>
         </div>
         <input type="search" id="sidebar-filter" placeholder="Filtrar sessões..." style="margin-bottom: 12px; width: 100%;">
         <div class="list-panel" id="session-list-panel">
