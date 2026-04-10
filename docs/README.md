@@ -117,6 +117,10 @@ Objetivo:
 - `patterns/eletrica.md`
 - `patterns/rede.md`
 
+### Análises técnicas
+- `analysis/relatorio-tecnico-2026-04-09.md`
+  Relatório técnico completo gerado em 09/04/2026, cobrindo arquitetura, stack, estrutura, problemas identificados, prioridades e roadmap.
+
 ### Setup e ambiente
 - `setup/environment.md`
 - `setup/local-development.md`
